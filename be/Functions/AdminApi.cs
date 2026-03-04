@@ -19,12 +19,27 @@ namespace CepFunctions.Functions;
 public class AdminApi
 {
     private readonly SharePointClient _sp;
+    private readonly OrchestratorTimer _orchestrator;
     private readonly ILogger<AdminApi> _log;
 
-    public AdminApi(SharePointClient sp, ILogger<AdminApi> log)
+    public AdminApi(SharePointClient sp, OrchestratorTimer orchestrator, ILogger<AdminApi> log)
     {
         _sp = sp;
+        _orchestrator = orchestrator;
         _log = log;
+    }
+
+    // ------------------------------------------------------------------
+    // POST /api/admin/sync  – manually trigger the orchestrator (dev/ops use)
+    // ------------------------------------------------------------------
+    [Function("AdminTriggerSync")]
+    public async Task<IActionResult> TriggerSyncAsync(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "ops/sync")] HttpRequest req,
+        CancellationToken ct)
+    {
+        _log.LogInformation("Manual sync triggered via admin API");
+        var (enqueued, status) = await _orchestrator.RunSyncAsync(ct);
+        return new OkObjectResult(new { enqueued, status });
     }
 
     // ------------------------------------------------------------------
@@ -32,7 +47,7 @@ public class AdminApi
     // ------------------------------------------------------------------
     [Function("AdminGetConfig")]
     public async Task<IActionResult> GetConfigAsync(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "admin/config")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "ops/config")] HttpRequest req,
         CancellationToken ct)
     {
         var config = await _sp.GetConfigAsync(ct);
@@ -44,7 +59,7 @@ public class AdminApi
     // ------------------------------------------------------------------
     [Function("AdminSetConfig")]
     public async Task<IActionResult> SetConfigAsync(
-        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "admin/config")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "ops/config")] HttpRequest req,
         CancellationToken ct)
     {
         CepConfig? newConfig;
@@ -70,7 +85,7 @@ public class AdminApi
     // ------------------------------------------------------------------
     [Function("AdminStatus")]
     public async Task<IActionResult> GetStatusAsync(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "admin/status")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "ops/status")] HttpRequest req,
         CancellationToken ct)
     {
         var state = await _sp.GetSyncStateAsync(ct);

@@ -51,20 +51,27 @@ public class EnrollmentApi
         var existing = await _sp.GetUserByAadIdAsync(body.AadUserId, ct);
         bool isNew = existing is null;
 
+        // In M365 the UPN is the email – use it as fallback when email is not provided explicitly
+        var resolvedEmail = body.Email ?? body.UserPrincipalName;
+
         var user = existing ?? new CepUser
         {
             AadUserId = body.AadUserId,
             UserPrincipalName = body.UserPrincipalName,
             DisplayName = body.DisplayName ?? body.UserPrincipalName,
-            Email = body.Email ?? "",
+            Email = resolvedEmail,
             EnrollmentDate = DateTime.UtcNow,
         };
 
         // Update / re-activate fields
         user.IsActive = true;
+        user.UserPrincipalName = body.UserPrincipalName;
+        user.DisplayName = body.DisplayName ?? user.DisplayName;
         user.Department = body.Department ?? user.Department;
         user.Team = body.Team ?? user.Team;
         user.IsEngagementNudgesEnabled = body.IsEngagementNudgesEnabled ?? user.IsEngagementNudgesEnabled;
+        // Always refresh email if it was empty (e.g. enrolled before this fix)
+        if (string.IsNullOrEmpty(user.Email)) user.Email = resolvedEmail;
         if (isNew) user.EnrollmentDate = DateTime.UtcNow;
 
         await _sp.UpsertUserAsync(user, ct);

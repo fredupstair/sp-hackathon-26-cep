@@ -18,24 +18,25 @@ public class CepBadge
     public Dictionary<string, object?> ToSpFields() => new()
     {
         ["Title"] = BadgeName,
-        ["AadUserId"] = AadUserId,
-        ["UserEmail"] = UserEmail,
-        ["BadgeKey"] = BadgeKey,
-        ["Description"] = Description,
-        ["EarnedDate"] = EarnedDate?.ToUniversalTime().ToString("o"),
-        ["MonthKey"] = MonthKey,
+        ["CEP_Badge_AadUserId"] = AadUserId,
+        ["CEP_Badge_UserEmail"] = UserEmail,
+        ["CEP_Badge_BadgeKey"] = BadgeKey,
+        ["CEP_Badge_BadgeType"] = BadgeName,
+        ["CEP_Badge_Description"] = Description,
+        ["CEP_Badge_EarnedDate"] = EarnedDate?.ToUniversalTime().ToString("o"),
+        ["CEP_Badge_MonthKey"] = MonthKey,
     };
 
     public static CepBadge FromSpFields(string spItemId, Dictionary<string, object?> f) => new()
     {
         SpItemId = spItemId,
-        AadUserId = f.Str("AadUserId"),
-        UserEmail = f.Str("UserEmail"),
-        BadgeKey = f.Str("BadgeKey"),
+        AadUserId = f.Str("CEP_Badge_AadUserId"),
+        UserEmail = f.Str("CEP_Badge_UserEmail"),
+        BadgeKey = f.Str("CEP_Badge_BadgeKey"),
         BadgeName = f.Str("Title"),
-        Description = f.Str("Description"),
-        EarnedDate = f.Dt("EarnedDate"),
-        MonthKey = f.Str("MonthKey"),
+        Description = f.Str("CEP_Badge_Description"),
+        EarnedDate = f.Dt("CEP_Badge_EarnedDate"),
+        MonthKey = f.Str("CEP_Badge_MonthKey"),
     };
 
     // Canonical badge keys

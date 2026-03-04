@@ -65,14 +65,13 @@ public class SharePointClient
 
     public async Task UpsertConfigAsync(CepConfig config, CancellationToken ct = default)
     {
-        var existing = await GetAllFieldsAsync(_listConfig, ct: ct);
-        var lookup = existing.ToDictionary(f => f.Str("Title"), f => f.Str("id"));
-
+        // Config is a single row now - upsert the whole row
+        var existing = await GetAllItemsAsync(_listConfig, ct: ct);
+        var first = existing.FirstOrDefault();
         foreach (var row in config.ToSpRows())
         {
-            var key = row.Str("Title");
-            if (lookup.TryGetValue(key, out var spId))
-                await PatchItemAsync(_listConfig, spId, row, ct);
+            if (first is not null && first.TryGetValue("id", out var spid))
+                await PatchItemAsync(_listConfig, spid?.ToString() ?? "", row, ct);
             else
                 await CreateItemAsync(_listConfig, row, ct);
         }
@@ -106,8 +105,10 @@ public class SharePointClient
 
     public async Task<List<CepUser>> GetActiveUsersAsync(CancellationToken ct = default)
     {
-        var filter = "fields/IsActive eq true";
-        var items = await GetAllItemsAsync(_listUsers, filter, ct);
+        // Note: filtering CEP_IsActive (Boolean, non-indexed) via OData on SharePoint Graph
+        // silently returns empty results even with the HonorNonIndexed Prefer header.
+        // Fetch all users and filter in memory instead.
+        var items = await GetAllItemsAsync(_listUsers, ct: ct);
         return items.Select(i =>
         {
             var id = i.TryGetValue("id", out var v) ? v?.ToString() ?? "" : "";
@@ -115,12 +116,14 @@ public class SharePointClient
                 ? JsonSerializer.Deserialize<Dictionary<string, object?>>(je.GetRawText(), JsonOpts) ?? []
                 : i;
             return CepUser.FromSpFields(id, fields);
-        }).ToList();
+        })
+        .Where(u => u.IsActive)
+        .ToList();
     }
 
     public async Task<CepUser?> GetUserByAadIdAsync(string aadUserId, CancellationToken ct = default)
     {
-        var filter = $"fields/AadUserId eq '{aadUserId}'";
+        var filter = $"fields/CEP_AadUserId eq '{aadUserId}'";
         var items = await GetAllItemsAsync(_listUsers, filter, ct);
         var first = items.FirstOrDefault();
         if (first is null) return null;
@@ -130,7 +133,7 @@ public class SharePointClient
 
     public async Task<CepUser?> GetUserByUpnAsync(string upn, CancellationToken ct = default)
     {
-        var filter = $"fields/UserPrincipalName eq '{upn}'";
+        var filter = $"fields/CEP_UserPrincipalName eq '{upn}'";
         var items = await GetAllItemsAsync(_listUsers, filter, ct);
         var first = items.FirstOrDefault();
         if (first is null) return null;
@@ -162,7 +165,7 @@ public class SharePointClient
     public async Task<Dictionary<(string AppKey, DateOnly Date), CepActivityLog>> GetActivityLogsForUserMonthAsync(
         string aadUserId, string monthKey, CancellationToken ct = default)
     {
-        var filter = $"fields/AadUserId eq '{aadUserId}' and fields/MonthKey eq '{monthKey}'";
+        var filter = $"fields/CEP_Log_AadUserId eq '{aadUserId}' and fields/CEP_Log_MonthKey eq '{monthKey}'";
         var items = await GetAllItemsAsync(_listActivityLog, filter, ct);
         return items
             .Select(i =>
@@ -189,7 +192,7 @@ public class SharePointClient
     /// <summary>Deletes all existing rows for a given month+scope, then bulk-creates new ones.</summary>
     public async Task ReplaceLeaderboardAsync(string monthKey, string scope, IEnumerable<CepLeaderboardEntry> entries, CancellationToken ct = default)
     {
-        var filter = $"fields/MonthKey eq '{monthKey}' and fields/Scope eq '{scope}'";
+        var filter = $"fields/CEP_LB_MonthKey eq '{monthKey}' and fields/CEP_LB_Scope eq '{scope}'";
         var existing = await GetAllItemsAsync(_listLeaderboard, filter, ct);
         foreach (var item in existing)
         {
@@ -203,7 +206,7 @@ public class SharePointClient
     public async Task<List<CepLeaderboardEntry>> GetLeaderboardAsync(
         string monthKey, string scope, int page = 1, int pageSize = 20, CancellationToken ct = default)
     {
-        var filter = $"fields/MonthKey eq '{monthKey}' and fields/Scope eq '{scope}'";
+        var filter = $"fields/CEP_LB_MonthKey eq '{monthKey}' and fields/CEP_LB_Scope eq '{scope}'";
         var items = await GetAllItemsAsync(_listLeaderboard, filter, ct);
         return items
             .Select(i => CepLeaderboardEntry.FromSpFields(
@@ -221,7 +224,7 @@ public class SharePointClient
 
     public async Task<List<CepBadge>> GetUserBadgesAsync(string aadUserId, CancellationToken ct = default)
     {
-        var filter = $"fields/AadUserId eq '{aadUserId}'";
+        var filter = $"fields/CEP_Badge_AadUserId eq '{aadUserId}'";
         var items = await GetAllItemsAsync(_listBadges, filter, ct);
         return items.Select(i => CepBadge.FromSpFields(
             i.TryGetValue("id", out var v) ? v?.ToString() ?? "" : "",
@@ -231,9 +234,9 @@ public class SharePointClient
     /// <summary>Creates a badge only if it doesn't already exist (idempotent).</summary>
     public async Task<bool> TryAwardBadgeAsync(CepBadge badge, CancellationToken ct = default)
     {
-        var filter = $"fields/AadUserId eq '{badge.AadUserId}' and fields/BadgeKey eq '{badge.BadgeKey}'";
+        var filter = $"fields/CEP_Badge_AadUserId eq '{badge.AadUserId}' and fields/CEP_Badge_BadgeKey eq '{badge.BadgeKey}'";
         if (!string.IsNullOrEmpty(badge.MonthKey))
-            filter += $" and fields/MonthKey eq '{badge.MonthKey}'";
+            filter += $" and fields/CEP_Badge_MonthKey eq '{badge.MonthKey}'";
 
         var existing = await GetAllItemsAsync(_listBadges, filter, ct);
         if (existing.Count > 0) return false; // Already awarded
@@ -259,6 +262,8 @@ public class SharePointClient
         {
             using var req = new HttpRequestMessage(HttpMethod.Get, url);
             req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            // Allow non-indexed column filters (SP lists < 5000 rows in this hackathon context)
+            req.Headers.TryAddWithoutValidation("Prefer", "HonorNonIndexedQueriesWarningMayFailRandomly");
             var resp = await _http.SendAsync(req, ct);
             resp.EnsureSuccessStatusCode();
 
@@ -299,7 +304,12 @@ public class SharePointClient
         req.Content = new StringContent(body, Encoding.UTF8, "application/json");
 
         var resp = await _http.SendAsync(req, ct);
-        resp.EnsureSuccessStatusCode();
+        if (!resp.IsSuccessStatusCode)
+        {
+            var errBody = await resp.Content.ReadAsStringAsync(ct);
+            throw new HttpRequestException(
+                $"Graph POST {url} → {(int)resp.StatusCode}: {errBody}");
+        }
 
         using var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync(ct));
         return doc.RootElement.TryGetProperty("id", out var id) ? id.GetString() ?? "" : "";
@@ -317,7 +327,12 @@ public class SharePointClient
         req.Content = new StringContent(body, Encoding.UTF8, "application/json");
 
         var resp = await _http.SendAsync(req, ct);
-        resp.EnsureSuccessStatusCode();
+        if (!resp.IsSuccessStatusCode)
+        {
+            var errBody = await resp.Content.ReadAsStringAsync(ct);
+            throw new HttpRequestException(
+                $"Graph PATCH {url} → {(int)resp.StatusCode}: {errBody}");
+        }
     }
 
     private async Task DeleteItemAsync(string listId, string itemId, CancellationToken ct)

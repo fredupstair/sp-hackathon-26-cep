@@ -45,9 +45,12 @@ public class OrchestratorTimer
     }
 
     [Function("OrchestratorTimer")]
-    public async Task RunAsync(
+    public Task RunAsync(
         [TimerTrigger("0 0 3 * * *")] TimerInfo timer,
-        CancellationToken ct)
+        CancellationToken ct) => RunSyncAsync(ct);
+
+    /// <summary>Core sync logic – callable from the timer trigger or from the admin HTTP endpoint.</summary>
+    public async Task<(int Enqueued, string Status)> RunSyncAsync(CancellationToken ct)
     {
         var correlationId = Guid.NewGuid().ToString("N");
         var runTime = DateTime.UtcNow;
@@ -58,6 +61,7 @@ public class OrchestratorTimer
         state.LastRunCorrelationId = correlationId;
         await _sp.UpsertSyncStateAsync(state, ct);
 
+        int enqueued = 0;
         try
         {
             var config = await _sp.GetConfigAsync(ct);
@@ -68,7 +72,6 @@ public class OrchestratorTimer
             var queueClient = new QueueClient(_cfg["AzureWebJobsStorage"], queueName);
             await queueClient.CreateIfNotExistsAsync(cancellationToken: ct);
 
-            int enqueued = 0;
             foreach (var user in users.Take(config.MaxUsersPerIngestionBatch))
             {
                 var msg = new IngestMessage
@@ -88,16 +91,9 @@ public class OrchestratorTimer
 
             _log.LogInformation("[{CorrId}] Enqueued {Count} messages", correlationId, enqueued);
 
-            // -----------------------------------------------------------
-            // Leaderboard rebuild (runs after ingest in this same timer OR
-            // you can move this to a separate daily timer offset by +2 hours)
-            // -----------------------------------------------------------
             await RebuildLeaderboardsAsync(correlationId, runTime, config, ct);
-
-            // Inactivity nudges
             await SendInactivityNudgesAsync(correlationId, config, runTime, ct);
 
-            // Persist success
             state.LastRunStatus = "Success";
             state.LastSuccessfulRunUtc = runTime;
             state.LastRunSummary = $"Enqueued {enqueued} users for ingest.";
@@ -112,6 +108,7 @@ public class OrchestratorTimer
         {
             await _sp.UpsertSyncStateAsync(state, ct);
         }
+        return (enqueued, state.LastRunStatus);
     }
 
     // ------------------------------------------------------------------
