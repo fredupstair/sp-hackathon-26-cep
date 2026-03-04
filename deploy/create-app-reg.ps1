@@ -161,6 +161,99 @@ if (-not $sp) {
 $spObjId = $sp.id
 
 # ---------------------------------------------------------------------------
+# 5.5 Expose an API – App ID URI + user_impersonation scope
+#     Required so that SPFx AadHttpClient can obtain an access token
+#     targeting this app on behalf of the signed-in user.
+# ---------------------------------------------------------------------------
+Info "Configuring Expose an API (App ID URI + user_impersonation scope)..."
+
+$appIdUri = "api://$appId"
+
+# Set App ID URI if not already set
+$currentUris = az ad app show --id $appObjId --query "identifierUris" --output json 2>$null | ConvertFrom-Json
+if (-not ($currentUris -contains $appIdUri)) {
+    az ad app update --id $appObjId --identifier-uris $appIdUri --output none 2>$null
+    Ok "App ID URI set: $appIdUri"
+} else {
+    Ok "App ID URI already present: $appIdUri"
+}
+
+# Add user_impersonation delegated scope if not already present
+$existingScope = az ad app show --id $appObjId `
+    --query "api.oauth2PermissionScopes[?value=='user_impersonation'].id | [0]" `
+    --output tsv 2>$null
+
+if (-not [string]::IsNullOrWhiteSpace($existingScope)) {
+    Warn "Scope 'user_impersonation' already exists (id: $($existingScope.Trim())) – skipping"
+    $scopeId = $existingScope.Trim()
+} else {
+    $scopeId  = [System.Guid]::NewGuid().ToString()
+    $scopePatch = @{
+        api = @{
+            oauth2PermissionScopes = @(
+                @{
+                    id                      = $scopeId
+                    adminConsentDescription = "Consente alle web part SPFx di chiamare le CEP Azure Functions per conto dell'utente"
+                    adminConsentDisplayName = "Accesso a CEP Functions come utente autenticato"
+                    userConsentDescription  = "Chiama le CEP Functions per conto tuo"
+                    userConsentDisplayName  = "Accesso a CEP Functions"
+                    isEnabled               = $true
+                    type                    = "Admin"
+                    value                   = "user_impersonation"
+                }
+            )
+        }
+    } | ConvertTo-Json -Depth 10 -Compress
+
+    $tmpScope = [System.IO.Path]::GetTempFileName() + ".json"
+    $scopePatch | Set-Content -Path $tmpScope -Encoding UTF8
+
+    az rest --method PATCH `
+        --uri "https://graph.microsoft.com/v1.0/applications/$appObjId" `
+        --headers "Content-Type=application/json" `
+        --body "@$tmpScope" --output none 2>$null
+    Remove-Item $tmpScope -Force -ErrorAction SilentlyContinue
+
+    Ok "Scope 'user_impersonation' created (id: $scopeId)"
+}
+
+# ---------------------------------------------------------------------------
+# 5.6 Pre-authorize "SharePoint Online Web Client Extensibility" (SPFx broker)
+#     Without this, SharePoint Admin Center returns "The requested permission
+#     isn't valid" when trying to approve the webApiPermissionRequest.
+# ---------------------------------------------------------------------------
+Info "Pre-authorizing SharePoint Online Web Client Extensibility (SPFx broker)..."
+
+$spfxBrokerAppId = "08e18876-6177-487e-b8b5-cf950c1e598c"
+$existingPreAuth = az ad app show --id $appObjId `
+    --query "api.preAuthorizedApplications[?appId=='$spfxBrokerAppId'].appId | [0]" `
+    --output tsv 2>$null
+
+if (-not [string]::IsNullOrWhiteSpace($existingPreAuth)) {
+    Ok "SPFx broker already pre-authorized – skipping"
+} else {
+    $preAuthPatch = @{
+        api = @{
+            preAuthorizedApplications = @(
+                @{
+                    appId                  = $spfxBrokerAppId
+                    delegatedPermissionIds = @($scopeId)
+                }
+            )
+        }
+    } | ConvertTo-Json -Depth 10 -Compress
+
+    $tmpPreAuth = [System.IO.Path]::GetTempFileName() + ".json"
+    $preAuthPatch | Set-Content -Path $tmpPreAuth -Encoding UTF8
+    az rest --method PATCH `
+        --uri "https://graph.microsoft.com/v1.0/applications/$appObjId" `
+        --headers "Content-Type=application/json" `
+        --body "@$tmpPreAuth" --output none 2>$null
+    Remove-Item $tmpPreAuth -Force -ErrorAction SilentlyContinue
+    Ok "SPFx broker pre-authorized for scope '$scopeId'"
+}
+
+# ---------------------------------------------------------------------------
 # 6. Admin consent (grant application permissions)
 # ---------------------------------------------------------------------------
 Info "Granting admin consent..."
@@ -246,9 +339,26 @@ Write-Host "  `"ClientId`":     `"$appId`","
 Write-Host "  `"ClientSecret`": `"$clientSecret`","
 Write-Host ""
 Write-Host "  (SpSiteId and ListId_* → run .\get-sp-ids.ps1 if not yet done)" -ForegroundColor DarkGray
+
+Write-Host ""
+Write-Host "=== Update fe/config/package-solution.json ===" -ForegroundColor Yellow
+Write-Host "  Replace the 'webApiPermissionRequests' block with:"
+Write-Host ""
+Write-Host "  `"webApiPermissionRequests`": [" -ForegroundColor White
+Write-Host "    {" -ForegroundColor White
+Write-Host "      `"resource`": `"$appIdUri`"," -ForegroundColor Cyan
+Write-Host "      `"scope`": `"user_impersonation`"" -ForegroundColor White
+Write-Host "    }" -ForegroundColor White
+Write-Host "  ]" -ForegroundColor White
+Write-Host ""
+Write-Host "  Then in CepApiClient.ts / CepOptinWebPart.ts use '$appIdUri' as the resource URI" -ForegroundColor DarkGray
+Write-Host "  (it's the value you set in the Property Pane → Function App Base URL)" -ForegroundColor DarkGray
+
 Write-Host ""
 Write-Host "IMPORTANT – also:" -ForegroundColor Yellow
 Write-Host "  1. In Entra portal, verify API permissions show 'Granted' (green tick)."
 Write-Host "  2. If AiEnterpriseInteraction.Read.All requires specific licensing, verify in tenant admin."
 Write-Host "  3. TeamsActivity.Send requires the Teams App to be installed for target users."
+Write-Host "  4. After deploying the .sppkg, approve the user_impersonation permission in:"
+Write-Host "     SharePoint Admin Center → Advanced → API access"
 Write-Host ""

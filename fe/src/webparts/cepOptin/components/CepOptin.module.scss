@@ -2,33 +2,99 @@
 
 .cepOptin {
   overflow: hidden;
-  padding: 1em;
+  padding: 16px;
   color: "[theme:bodyText, default: #323130]";
   color: var(--bodyText);
+
   &.teams {
-    font-family: $ms-font-family-fallbacks;
+    font-family: inherit;
   }
 }
 
-.welcome {
+.container {
+  max-width: 640px;
+}
+
+.enrollForm {
+  display: block; // explicit declaration ensures sass typings are generated
+}
+
+.headerIcon {
+  font-size: 32px;
+  color: "[theme:themePrimary, default: #0078d4]";
+  color: var(--themePrimary);
+}
+
+.title {
+  font-weight: 600;
+}
+
+.subtitle {
+  color: "[theme:bodySubtext, default: #605e5c]";
+  color: var(--bodySubtext);
+}
+
+.transparencyBox {
+  background: "[theme:neutralLighter, default: #f3f2f1]";
+  background: var(--neutralLighter);
+  border-radius: 4px;
+  padding: 12px 16px;
+  border-left: 4px solid "[theme:themePrimary, default: #0078d4]";
+  border-left-color: var(--themePrimary);
+}
+
+.transparencyList {
+  margin: 4px 0 4px 20px;
+  padding: 0;
+  li {
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+}
+
+.note {
+  color: "[theme:bodySubtext, default: #605e5c]";
+  color: var(--bodySubtext);
+  font-style: italic;
+}
+
+.consentCheckbox {
+  :global(.ms-Checkbox-label) {
+    align-items: flex-start;
+  }
+}
+
+.statusCard {
+  background: "[theme:neutralLighter, default: #f3f2f1]";
+  background: var(--neutralLighter);
+  border-radius: 6px;
+  padding: 16px;
+  border: 1px solid "[theme:neutralLight, default: #edebe9]";
+  border-color: var(--neutralLight);
+}
+
+.metricBox {
+  min-width: 90px;
+  align-items: center;
   text-align: center;
 }
 
-.welcomeImage {
-  width: 100%;
-  max-width: 420px;
+.metricValue {
+  font-weight: 700;
+  color: "[theme:themePrimary, default: #0078d4]";
+  color: var(--themePrimary);
+  line-height: 1;
 }
 
-.links {
-  a {
-    text-decoration: none;
-    color: "[theme:link, default:#03787c]";
-    color: var(--link); // note: CSS Custom Properties support is limited to modern browsers only
+.metricLabel {
+  color: "[theme:bodySubtext, default: #605e5c]";
+  color: var(--bodySubtext);
+  text-align: center;
+}
 
-    &:hover {
-      text-decoration: underline;
-      color: "[theme:linkHovered, default: #014446]";
-      color: var(--linkHovered); // note: CSS Custom Properties support is limited to modern browsers only
-    }
-  }
+.leaveButton {
+  color: "[theme:errorText, default: #a4262c]";
+  color: var(--errorText);
+  border-color: "[theme:errorText, default: #a4262c]";
+  border-color: var(--errorText);
 }

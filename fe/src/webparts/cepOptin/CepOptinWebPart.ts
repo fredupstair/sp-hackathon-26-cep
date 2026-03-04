@@ -3,94 +3,90 @@ import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
 import {
   type IPropertyPaneConfiguration,
-  PropertyPaneTextField
+  PropertyPaneTextField,
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
+import { AadHttpClient } from '@microsoft/sp-http';
 
-import * as strings from 'CepOptinWebPartStrings';
 import CepOptin from './components/CepOptin';
 import { ICepOptinProps } from './components/ICepOptinProps';
+import { CepApiClient } from '../../services/CepApiClient';
 
 export interface ICepOptinWebPartProps {
-  description: string;
+  functionAppBaseUrl: string;
+  /** Client ID (appId) of the CEP-Backend app registration – used to build the AAD resource URI */
+  functionAppClientId: string;
 }
 
 export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebPartProps> {
 
   private _isDarkTheme: boolean = false;
-  private _environmentMessage: string = '';
+  private _aadClient: AadHttpClient | undefined;
+  private _apiClient: CepApiClient | undefined;
+
+  protected async onInit(): Promise<void> {
+    await super.onInit();
+    await this._initApiClient();
+  }
+
+  private async _initApiClient(): Promise<void> {
+    const baseUrl = this.properties.functionAppBaseUrl?.trim();
+    const clientId = this.properties.functionAppClientId?.trim();
+    if (!baseUrl || !clientId) return;
+    try {
+      // The resource URI for AAD token acquisition MUST be the App ID URI (api://<clientId>)
+      // NOT the Function App URL – the approved grant is scoped to the App ID URI.
+      const aadResourceUri = `api://${clientId}`;
+      this._aadClient = await this.context.aadHttpClientFactory.getClient(aadResourceUri);
+      this._apiClient = new CepApiClient(
+        this._aadClient,
+        baseUrl,
+        this.context.pageContext.aadInfo?.userId?.toString() ?? this.context.pageContext.user.email
+      );
+    } catch (e) {
+      console.error('[CepOptin] Failed to initialise AAD HTTP client:', e);
+    }
+  }
 
   public render(): void {
     const element: React.ReactElement<ICepOptinProps> = React.createElement(
       CepOptin,
       {
-        description: this.properties.description,
+        functionAppBaseUrl: this.properties.functionAppBaseUrl || '',
+        apiClient: this._apiClient,
+        userDisplayName: this.context.pageContext.user.displayName,
+        userEmail: this.context.pageContext.user.email,
+        userAadId: this.context.pageContext.aadInfo?.userId?.toString() ?? '',
         isDarkTheme: this._isDarkTheme,
-        environmentMessage: this._environmentMessage,
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
-        userDisplayName: this.context.pageContext.user.displayName
       }
     );
-
     ReactDom.render(element, this.domElement);
   }
 
-  protected onInit(): Promise<void> {
-    return this._getEnvironmentMessage().then(message => {
-      this._environmentMessage = message;
-    });
-  }
-
-
-
-  private _getEnvironmentMessage(): Promise<string> {
-    if (!!this.context.sdks.microsoftTeams) { // running in Teams, office.com or Outlook
-      return this.context.sdks.microsoftTeams.teamsJs.app.getContext()
-        .then(context => {
-          let environmentMessage: string = '';
-          switch (context.app.host.name) {
-            case 'Office': // running in Office
-              environmentMessage = this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentOffice : strings.AppOfficeEnvironment;
-              break;
-            case 'Outlook': // running in Outlook
-              environmentMessage = this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentOutlook : strings.AppOutlookEnvironment;
-              break;
-            case 'Teams': // running in Teams
-            case 'TeamsModern':
-              environmentMessage = this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentTeams : strings.AppTeamsTabEnvironment;
-              break;
-            default:
-              environmentMessage = strings.UnknownEnvironment;
-          }
-
-          return environmentMessage;
-        });
-    }
-
-    return Promise.resolve(this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentSharePoint : strings.AppSharePointEnvironment);
-  }
-
   protected onThemeChanged(currentTheme: IReadonlyTheme | undefined): void {
-    if (!currentTheme) {
-      return;
-    }
-
+    if (!currentTheme) return;
     this._isDarkTheme = !!currentTheme.isInverted;
-    const {
-      semanticColors
-    } = currentTheme;
-
+    const { semanticColors } = currentTheme;
     if (semanticColors) {
       this.domElement.style.setProperty('--bodyText', semanticColors.bodyText || null);
       this.domElement.style.setProperty('--link', semanticColors.link || null);
       this.domElement.style.setProperty('--linkHovered', semanticColors.linkHovered || null);
     }
-
   }
 
   protected onDispose(): void {
     ReactDom.unmountComponentAtNode(this.domElement);
+  }
+
+  protected async onPropertyPaneFieldChanged(propertyPath: string): Promise<void> {
+    if (propertyPath === 'functionAppBaseUrl' || propertyPath === 'functionAppClientId') {
+      this._aadClient = undefined;
+      this._apiClient = undefined;
+      await this._initApiClient();
+      this.render();
+    }
   }
 
   protected get dataVersion(): Version {
@@ -101,21 +97,36 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
     return {
       pages: [
         {
-          header: {
-            description: strings.PropertyPaneDescription
-          },
+          header: { description: 'Configura la connessione al backend CEP' },
           groups: [
             {
-              groupName: strings.BasicGroupName,
+              groupName: 'Backend Azure Functions',
               groupFields: [
-                PropertyPaneTextField('description', {
-                  label: strings.DescriptionFieldLabel
-                })
-              ]
-            }
-          ]
-        }
-      ]
+                PropertyPaneTextField('functionAppBaseUrl', {
+                  label: 'Function App Base URL',
+                  placeholder: 'https://<nome-app>.azurewebsites.net',
+                  description: "URL base della Function App, senza trailing slash.",
+                  onGetErrorMessage: (value: string) => {
+                    if (!value) return 'Campo obbligatorio';
+                    try { new URL(value); return ''; } catch { return 'URL non valido'; }
+                  },
+                }),
+                PropertyPaneTextField('functionAppClientId', {
+                  label: 'App Registration Client ID',
+                  placeholder: '00000000-0000-0000-0000-000000000000',
+                  description: "Client ID (appId) dell'app registration CEP-Backend in Entra ID.",
+                  onGetErrorMessage: (value: string) => {
+                    if (!value) return 'Campo obbligatorio';
+                    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+                      ? '' : 'Deve essere un GUID valido';
+                  },
+                }),
+              ],
+            },
+          ],
+        },
+      ],
     };
   }
 }
+
