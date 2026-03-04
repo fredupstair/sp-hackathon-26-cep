@@ -10058,3 +10058,111 @@ Stack:    at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
 [2026-03-04T18:34:06.375Z] Transfer-Encoding:chunked
 [2026-03-04T18:34:06.377Z] Content-Type:application/xml
 [2026-03-04T18:34:06.378Z] 
+[2026-03-04T18:34:06.858Z] Request [2155c265-7119-45c3-a934-d02b95c9d4a3] GET http://127.0.0.1:10001/devstoreaccount1/cep-ingest/messages?numofmessages=1&visibilitytimeout=600
+[2026-03-04T18:34:06.858Z] x-ms-version:2024-08-04
+[2026-03-04T18:34:06.859Z] Accept:application/xml
+[2026-03-04T18:34:06.860Z] x-ms-client-request-id:2155c265-7119-45c3-a934-d02b95c9d4a3
+[2026-03-04T18:34:06.861Z] x-ms-return-client-request-id:true
+[2026-03-04T18:34:06.862Z] User-Agent:azsdk-net-Storage.Queues/12.19.0 (.NET 8.0.23; Microsoft Windows 10.0.26200)
+[2026-03-04T18:34:06.862Z] x-ms-date:Wed, 04 Mar 2026 18:34:06 GMT
+[2026-03-04T18:34:06.862Z] Authorization:REDACTED
+[2026-03-04T18:34:06.863Z] client assembly: Azure.Storage.Queues
+[2026-03-04T18:34:06.864Z] Response [2155c265-7119-45c3-a934-d02b95c9d4a3] 200 OK (00.0s)
+[2026-03-04T18:34:06.865Z] Server:Azurite-Queue/3.35.0
+[2026-03-04T18:34:06.866Z] x-ms-client-request-id:2155c265-7119-45c3-a934-d02b95c9d4a3
+[2026-03-04T18:34:06.866Z] x-ms-request-id:48c5f78b-4a41-4bb4-959d-236a61a4eb13
+[2026-03-04T18:34:06.866Z] x-ms-version:2025-11-05
+[2026-03-04T18:34:06.867Z] Date:Wed, 04 Mar 2026 18:34:06 GMT
+[2026-03-04T18:34:06.868Z] Connection:keep-alive
+[2026-03-04T18:34:06.868Z] Keep-Alive:REDACTED
+[2026-03-04T18:34:06.869Z] Transfer-Encoding:chunked
+[2026-03-04T18:34:06.869Z] Content-Type:application/xml
+[2026-03-04T18:34:06.870Z] 
+[2026-03-04T18:34:07.075Z] Request [d286f476-5849-48cf-bcff-2999356b00b3] PUT http://127.0.0.1:10000/devstoreaccount1/azure-webjobs-hosts/locks/avapc391413448-990183040/host?comp=lease
+[2026-03-04T18:34:07.077Z] x-ms-lease-action:renew
+[2026-03-04T18:34:07.080Z] x-ms-lease-id:000000000000000000000000FB3B8F48
+[2026-03-04T18:34:07.081Z] x-ms-version:2024-08-04
+[2026-03-04T18:34:07.081Z] Accept:application/xml
+[2026-03-04T18:34:07.082Z] x-ms-client-request-id:d286f476-5849-48cf-bcff-2999356b00b3
+[2026-03-04T18:34:07.083Z] x-ms-return-client-request-id:true
+[2026-03-04T18:34:07.084Z] User-Agent:azsdk-net-Storage.Blobs/12.21.2 (.NET 8.0.23; Microsoft Windows 10.0.26200)
+[2026-03-04T18:34:07.084Z] x-ms-date:Wed, 04 Mar 2026 18:34:07 GMT
+[2026-03-04T18:34:07.085Z] Authorization:REDACTED
+[2026-03-04T18:34:07.085Z] client assembly: Azure.Storage.Blobs
+[2026-03-04T18:34:07.088Z] Response [d286f476-5849-48cf-bcff-2999356b00b3] 200 OK (00.0s)
+[2026-03-04T18:34:07.089Z] Server:Azurite-Blob/3.35.0
+[2026-03-04T18:34:07.090Z] ETag:"0x22BAC1CA3988000"
+[2026-03-04T18:34:07.090Z] x-ms-lease-id:000000000000000000000000FB3B8F48
+[2026-03-04T18:34:07.091Z] x-ms-client-request-id:d286f476-5849-48cf-bcff-2999356b00b3
+[2026-03-04T18:34:07.092Z] x-ms-request-id:438b2a15-4e15-4bab-838c-995e186ed8e3
+[2026-03-04T18:34:07.093Z] x-ms-version:2025-11-05
+[2026-03-04T18:34:07.094Z] Date:Wed, 04 Mar 2026 18:34:07 GMT
+[2026-03-04T18:34:07.095Z] Connection:keep-alive
+[2026-03-04T18:34:07.096Z] Keep-Alive:REDACTED
+[2026-03-04T18:34:07.097Z] Last-Modified:Wed, 04 Mar 2026 18:18:31 GMT
+[2026-03-04T18:34:07.098Z] Content-Length:0
+[2026-03-04T18:34:07.098Z] 
+[2026-03-04T18:34:07.703Z] Request [0a18cd26-dbb0-4348-b5c5-b8ec8fcf6909] GET http://127.0.0.1:10001/devstoreaccount1/cep-ingest/messages?numofmessages=1&visibilitytimeout=600
+[2026-03-04T18:34:07.738Z] x-ms-version:2024-08-04
+[2026-03-04T18:34:07.748Z] Accept:application/xml
+[2026-03-04T18:34:07.788Z] x-ms-client-request-id:0a18cd26-dbb0-4348-b5c5-b8ec8fcf6909
+[2026-03-04T18:34:07.816Z] x-ms-return-client-request-id:true
+[2026-03-04T18:34:07.823Z] User-Agent:azsdk-net-Storage.Queues/12.19.0 (.NET 8.0.23; Microsoft Windows 10.0.26200)
+[2026-03-04T18:34:07.825Z] x-ms-date:Wed, 04 Mar 2026 18:34:07 GMT
+[2026-03-04T18:34:07.827Z] Authorization:REDACTED
+[2026-03-04T18:34:07.830Z] client assembly: Azure.Storage.Queues
+[2026-03-04T18:34:07.833Z] Response [0a18cd26-dbb0-4348-b5c5-b8ec8fcf6909] 200 OK (00.0s)
+[2026-03-04T18:34:07.834Z] Server:Azurite-Queue/3.35.0
+[2026-03-04T18:34:07.835Z] x-ms-client-request-id:0a18cd26-dbb0-4348-b5c5-b8ec8fcf6909
+[2026-03-04T18:34:07.836Z] x-ms-request-id:1904b606-0868-45a2-802d-2c12dfd1d42a
+[2026-03-04T18:34:07.838Z] x-ms-version:2025-11-05
+[2026-03-04T18:34:07.839Z] Date:Wed, 04 Mar 2026 18:34:07 GMT
+[2026-03-04T18:34:07.841Z] Connection:keep-alive
+[2026-03-04T18:34:07.842Z] Keep-Alive:REDACTED
+[2026-03-04T18:34:07.845Z] Transfer-Encoding:chunked
+[2026-03-04T18:34:07.846Z] Content-Type:application/xml
+[2026-03-04T18:34:07.847Z] 
+[2026-03-04T18:34:08.358Z] Request [c8ef657f-56fc-44dd-90ad-a202a2c49719] PUT http://127.0.0.1:10000/devstoreaccount1/azure-webjobs-hosts/locks/avapc391413448-990183040/Host.Functions.OrchestratorTimer.Listener?comp=lease
+[2026-03-04T18:34:08.360Z] x-ms-lease-action:renew
+[2026-03-04T18:34:08.361Z] x-ms-lease-id:d9518463-4279-4d3d-a66b-5182e09e6f09
+[2026-03-04T18:34:08.363Z] x-ms-version:2024-08-04
+[2026-03-04T18:34:08.364Z] Accept:application/xml
+[2026-03-04T18:34:08.364Z] x-ms-client-request-id:c8ef657f-56fc-44dd-90ad-a202a2c49719
+[2026-03-04T18:34:08.366Z] x-ms-return-client-request-id:true
+[2026-03-04T18:34:08.367Z] User-Agent:azsdk-net-Storage.Blobs/12.21.2 (.NET 8.0.23; Microsoft Windows 10.0.26200)
+[2026-03-04T18:34:08.368Z] x-ms-date:Wed, 04 Mar 2026 18:34:08 GMT
+[2026-03-04T18:34:08.369Z] Authorization:REDACTED
+[2026-03-04T18:34:08.370Z] client assembly: Azure.Storage.Blobs
+[2026-03-04T18:34:08.372Z] Response [c8ef657f-56fc-44dd-90ad-a202a2c49719] 200 OK (00.0s)
+[2026-03-04T18:34:08.373Z] Server:Azurite-Blob/3.35.0
+[2026-03-04T18:34:08.374Z] ETag:"0x227187B13B58BC0"
+[2026-03-04T18:34:08.375Z] x-ms-lease-id:d9518463-4279-4d3d-a66b-5182e09e6f09
+[2026-03-04T18:34:08.376Z] x-ms-client-request-id:c8ef657f-56fc-44dd-90ad-a202a2c49719
+[2026-03-04T18:34:08.378Z] x-ms-request-id:acea502b-f9c3-4396-b35c-36f9bb6442cc
+[2026-03-04T18:34:08.378Z] x-ms-version:2025-11-05
+[2026-03-04T18:34:08.379Z] Date:Wed, 04 Mar 2026 18:34:08 GMT
+[2026-03-04T18:34:08.380Z] Connection:keep-alive
+[2026-03-04T18:34:08.380Z] Keep-Alive:REDACTED
+[2026-03-04T18:34:08.381Z] Last-Modified:Wed, 04 Mar 2026 14:14:51 GMT
+[2026-03-04T18:34:08.381Z] Content-Length:0
+[2026-03-04T18:34:08.382Z] 
+[2026-03-04T18:34:09.412Z] Request [cfb2a493-42ce-4ab6-86db-ff8277833642] GET http://127.0.0.1:10001/devstoreaccount1/cep-ingest/messages?numofmessages=1&visibilitytimeout=600
+[2026-03-04T18:34:09.415Z] x-ms-version:2024-08-04
+[2026-03-04T18:34:09.416Z] Accept:application/xml
+[2026-03-04T18:34:09.416Z] x-ms-client-request-id:cfb2a493-42ce-4ab6-86db-ff8277833642
+[2026-03-04T18:34:09.417Z] x-ms-return-client-request-id:true
+[2026-03-04T18:34:09.418Z] User-Agent:azsdk-net-Storage.Queues/12.19.0 (.NET 8.0.23; Microsoft Windows 10.0.26200)
+[2026-03-04T18:34:09.418Z] x-ms-date:Wed, 04 Mar 2026 18:34:09 GMT
+[2026-03-04T18:34:09.419Z] Authorization:REDACTED
+[2026-03-04T18:34:09.420Z] client assembly: Azure.Storage.Queues
+[2026-03-04T18:34:09.421Z] Response [cfb2a493-42ce-4ab6-86db-ff8277833642] 200 OK (00.0s)
+[2026-03-04T18:34:09.422Z] Server:Azurite-Queue/3.35.0
+[2026-03-04T18:34:09.423Z] x-ms-client-request-id:cfb2a493-42ce-4ab6-86db-ff8277833642
+[2026-03-04T18:34:09.423Z] x-ms-request-id:9e75abf0-662d-476f-b661-42b4a75740c6
+[2026-03-04T18:34:09.423Z] x-ms-version:2025-11-05
+[2026-03-04T18:34:09.424Z] Date:Wed, 04 Mar 2026 18:34:09 GMT
+[2026-03-04T18:34:09.425Z] Connection:keep-alive
+[2026-03-04T18:34:09.425Z] Keep-Alive:REDACTED
+[2026-03-04T18:34:09.426Z] Transfer-Encoding:chunked
+[2026-03-04T18:34:09.427Z] Content-Type:application/xml
+[2026-03-04T18:34:09.427Z] 
