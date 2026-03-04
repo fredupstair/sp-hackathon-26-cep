@@ -5,8 +5,7 @@
 .github/agents/problem-solver.agent.md
 .github/agents/product-manager.agent.md
 .github/agents/tech-spec-reviewer.agent.md
-docs/copilot-engagement-program-prd.md
-docs/copilot-engagement-program-techspec.md
+docs/
 be/obj
 be/bin
 be/Debug
