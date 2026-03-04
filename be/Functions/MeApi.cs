@@ -136,11 +136,19 @@ public class MeApi
     // ------------------------------------------------------------------
 
     /// <summary>
-    /// Returns the caller's Entra Object ID (OID) as injected by EasyAuth
-    /// (X-MS-CLIENT-PRINCIPAL-ID header). Returns null if EasyAuth is not active.
+    /// Returns the caller's Entra Object ID (OID).
+    /// Production (EasyAuth enabled): taken from X-MS-CLIENT-PRINCIPAL-ID injected by Azure.
+    /// Local dev (no EasyAuth): falls back to X-User-Id header for manual testing.
     /// </summary>
-    private static string? GetCallerId(HttpRequest req) =>
-        req.Headers.TryGetValue("X-MS-CLIENT-PRINCIPAL-ID", out var v) ? v.FirstOrDefault() : null;
+    private static string? GetCallerId(HttpRequest req)
+    {
+        if (req.Headers.TryGetValue("X-MS-CLIENT-PRINCIPAL-ID", out var easyAuth) &&
+            easyAuth.FirstOrDefault() is { Length: > 0 } oid)
+            return oid;
+
+        // Local dev fallback – never trusted in production (EasyAuth blocks arbitrary headers)
+        return req.Headers.TryGetValue("X-User-Id", out var devId) ? devId.FirstOrDefault() : null;
+    }
 
     private static UnauthorizedObjectResult Unauthorized() =>
         new("Authenticated user identity not found. Ensure EasyAuth is enabled on the Function App.");
