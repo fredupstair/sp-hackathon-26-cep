@@ -8,8 +8,12 @@ namespace CepFunctions.Functions;
 
 /// <summary>
 /// "Me" API – returns data scoped to the calling user.
-/// The caller's AadUserId must be passed in the X-User-Id header
-/// (in production this should come from the validated Entra ID token).
+///
+/// Authentication:
+///   - Production (EasyAuth enabled): caller identity is taken from the
+///     X-MS-CLIENT-PRINCIPAL-ID header injected by Azure App Service Authentication.
+///   - Local dev (EasyAuth not present): falls back to the X-User-Id header
+///     so that local testing with REST clients still works.
 ///
 /// GET /api/me/summary?month=YYYY-MM
 /// GET /api/me/usage?from=YYYY-MM-DD&amp;to=YYYY-MM-DD
@@ -132,12 +136,12 @@ public class MeApi
     // ------------------------------------------------------------------
 
     /// <summary>
-    /// In production: validate the Entra ID bearer token and extract the oid claim.
-    /// For the hackathon MVP we accept X-User-Id header (must be secured by APIM / EasyAuth).
+    /// Returns the caller's Entra Object ID (OID) as injected by EasyAuth
+    /// (X-MS-CLIENT-PRINCIPAL-ID header). Returns null if EasyAuth is not active.
     /// </summary>
     private static string? GetCallerId(HttpRequest req) =>
-        req.Headers.TryGetValue("X-User-Id", out var v) ? v.FirstOrDefault() : null;
+        req.Headers.TryGetValue("X-MS-CLIENT-PRINCIPAL-ID", out var v) ? v.FirstOrDefault() : null;
 
     private static UnauthorizedObjectResult Unauthorized() =>
-        new("X-User-Id header is required.");
+        new("Authenticated user identity not found. Ensure EasyAuth is enabled on the Function App.");
 }

@@ -1,6 +1,12 @@
 // ─── Enrollment ──────────────────────────────────────────────────────────────
 
 export interface IEnrollmentJoinRequest {
+  // identity – auto-injected by CepApiClient from SPFx context
+  aadUserId: string;
+  userPrincipalName: string;
+  displayName?: string;
+  email?: string;
+  // form fields
   department: string;
   team: string;
   isEngagementNudgesEnabled: boolean;
