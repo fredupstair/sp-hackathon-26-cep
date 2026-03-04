@@ -1,0 +1,19 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "useGulp": false,
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "22.22.0",
+    "sdksVersions": {},
+    "version": "1.22.1",
+    "libraryName": "cep",
+    "libraryId": "0d2c71e2-3531-4fb0-a4db-c6a02e75c8e7",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "cep",
+    "solutionShortDescription": "cep description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}
