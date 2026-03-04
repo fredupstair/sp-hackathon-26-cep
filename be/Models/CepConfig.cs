@@ -17,35 +17,36 @@ public class CepConfig
 
     public static CepConfig FromSpItems(IEnumerable<Dictionary<string, object?>> items)
     {
+        // CEP_Config uses one row with named columns (not key-value rows)
         var cfg = new CepConfig();
-        var lookup = items.ToDictionary(
-            f => f.Str("Title"),
-            f => f.Str("Value"));
+        var first = items.FirstOrDefault();
+        if (first is null) return cfg;
 
-        if (lookup.TryGetValue("SyncFrequency", out var v) && !string.IsNullOrEmpty(v)) cfg.SyncFrequency = v;
-        if (lookup.TryGetValue("PointsPerPrompt", out v) && int.TryParse(v, out var i)) cfg.PointsPerPrompt = i;
-        if (lookup.TryGetValue("LevelThresholdSilver", out v) && int.TryParse(v, out i)) cfg.LevelThresholdSilver = i;
-        if (lookup.TryGetValue("LevelThresholdGold", out v) && int.TryParse(v, out i)) cfg.LevelThresholdGold = i;
-        if (lookup.TryGetValue("InactivityDaysForNudge", out v) && int.TryParse(v, out i)) cfg.InactivityDaysForNudge = i;
-        if (lookup.TryGetValue("LeaderboardRefreshNotificationEnabled", out v)) cfg.LeaderboardRefreshNotificationEnabled = v?.ToLower() == "true";
-        if (lookup.TryGetValue("MaxUsersPerIngestionBatch", out v) && int.TryParse(v, out i)) cfg.MaxUsersPerIngestionBatch = i;
-        if (lookup.TryGetValue("TimeZone", out v) && !string.IsNullOrEmpty(v)) cfg.TimeZone = v;
+        if (first.Str("CEP_Cfg_SyncFrequency") is { Length: > 0 } sf) cfg.SyncFrequency = sf;
+        if (int.TryParse(first.Str("CEP_Cfg_PointsPerPrompt"), out var ppp)) cfg.PointsPerPrompt = ppp;
+        if (int.TryParse(first.Str("CEP_Cfg_LevelThresholdSilver"), out var s)) cfg.LevelThresholdSilver = s;
+        if (int.TryParse(first.Str("CEP_Cfg_LevelThresholdGold"), out var g)) cfg.LevelThresholdGold = g;
+        if (int.TryParse(first.Str("CEP_Cfg_InactivityDaysForNudge"), out var d)) cfg.InactivityDaysForNudge = d;
+        cfg.LeaderboardRefreshNotificationEnabled = first.Bool("CEP_Cfg_LeaderboardRefreshNotifE", true);
+        if (int.TryParse(first.Str("CEP_Cfg_MaxUsersPerIngestionBatc"), out var m)) cfg.MaxUsersPerIngestionBatch = m;
+        if (first.Str("CEP_Cfg_TimeZone") is { Length: > 0 } tz) cfg.TimeZone = tz;
 
         return cfg;
     }
 
     public IEnumerable<Dictionary<string, object?>> ToSpRows() =>
     [
-        Row("SyncFrequency", SyncFrequency),
-        Row("PointsPerPrompt", PointsPerPrompt.ToString()),
-        Row("LevelThresholdSilver", LevelThresholdSilver.ToString()),
-        Row("LevelThresholdGold", LevelThresholdGold.ToString()),
-        Row("InactivityDaysForNudge", InactivityDaysForNudge.ToString()),
-        Row("LeaderboardRefreshNotificationEnabled", LeaderboardRefreshNotificationEnabled.ToString()),
-        Row("MaxUsersPerIngestionBatch", MaxUsersPerIngestionBatch.ToString()),
-        Row("TimeZone", TimeZone),
+        new()
+        {
+            ["Title"] = "Config",
+            ["CEP_Cfg_SyncFrequency"] = SyncFrequency,
+            ["CEP_Cfg_PointsPerPrompt"] = PointsPerPrompt,
+            ["CEP_Cfg_LevelThresholdSilver"] = LevelThresholdSilver,
+            ["CEP_Cfg_LevelThresholdGold"] = LevelThresholdGold,
+            ["CEP_Cfg_InactivityDaysForNudge"] = InactivityDaysForNudge,
+            ["CEP_Cfg_LeaderboardRefreshNotifE"] = LeaderboardRefreshNotificationEnabled,
+            ["CEP_Cfg_MaxUsersPerIngestionBatc"] = MaxUsersPerIngestionBatch,
+            ["CEP_Cfg_TimeZone"] = TimeZone,
+        }
     ];
-
-    private static Dictionary<string, object?> Row(string key, string value) =>
-        new() { ["Title"] = key, ["Value"] = value };
 }

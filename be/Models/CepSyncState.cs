@@ -12,18 +12,18 @@ public class CepSyncState
     public Dictionary<string, object?> ToSpFields() => new()
     {
         ["Title"] = "SyncState",
-        ["LastSuccessfulRunUtc"] = LastSuccessfulRunUtc?.ToUniversalTime().ToString("o"),
-        ["LastRunStatus"] = LastRunStatus,
-        ["LastRunCorrelationId"] = LastRunCorrelationId,
-        ["LastRunSummary"] = LastRunSummary,
+        ["CEP_Sync_LastSuccessfulRunUtc"] = LastSuccessfulRunUtc?.ToUniversalTime().ToString("o"),
+        ["CEP_Sync_LastRunStatus"] = LastRunStatus,
+        ["CEP_Sync_LastRunCorrelationId"] = LastRunCorrelationId,
+        ["CEP_Sync_LastRunSummary"] = LastRunSummary,
     };
 
     public static CepSyncState FromSpFields(string spItemId, Dictionary<string, object?> f) => new()
     {
         SpItemId = spItemId,
-        LastSuccessfulRunUtc = f.Dt("LastSuccessfulRunUtc"),
-        LastRunStatus = f.Str("LastRunStatus", "Unknown"),
-        LastRunCorrelationId = f.Str("LastRunCorrelationId"),
-        LastRunSummary = f.Str("LastRunSummary"),
+        LastSuccessfulRunUtc = f.Dt("CEP_Sync_LastSuccessfulRunUtc"),
+        LastRunStatus = f.Str("CEP_Sync_LastRunStatus", "Unknown"),
+        LastRunCorrelationId = f.Str("CEP_Sync_LastRunCorrelationId"),
+        LastRunSummary = f.Str("CEP_Sync_LastRunSummary"),
     };
 }

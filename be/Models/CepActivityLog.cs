@@ -26,25 +26,25 @@ public class CepActivityLog
     public Dictionary<string, object?> ToSpFields() => new()
     {
         ["Title"] = $"{AadUserId}_{MonthKey}_{AppKey}",
-        ["AadUserId"] = AadUserId,
-        ["UserEmail"] = UserEmail,
-        ["UsageDate"] = UsageDate.ToString("yyyy-MM-dd"),
-        ["AppKey"] = AppKey,
-        ["PromptCount"] = PromptCount,
-        ["PointsEarned"] = PointsEarned,
-        ["MonthKey"] = MonthKey,
+        ["CEP_Log_AadUserId"] = AadUserId,
+        ["CEP_Log_UserEmail"] = UserEmail,
+        ["CEP_Log_UsageDate"] = UsageDate.ToString("yyyy-MM-dd"),
+        ["CEP_Log_AppKey"] = AppKey,
+        ["CEP_Log_PromptCount"] = PromptCount,
+        ["CEP_Log_PointsEarned"] = PointsEarned,
+        ["CEP_Log_MonthKey"] = MonthKey,
     };
 
     public static CepActivityLog FromSpFields(string spItemId, Dictionary<string, object?> f) => new()
     {
         SpItemId = spItemId,
-        AadUserId = f.Str("AadUserId"),
-        UserEmail = f.Str("UserEmail"),
-        UsageDate = f.Dt("UsageDate") ?? DateTime.UtcNow.Date,
-        AppKey = f.Str("AppKey"),
-        PromptCount = f.Int("PromptCount"),
-        PointsEarned = f.Int("PointsEarned"),
-        MonthKey = f.Str("MonthKey"),
+        AadUserId = f.Str("CEP_Log_AadUserId"),
+        UserEmail = f.Str("CEP_Log_UserEmail"),
+        UsageDate = f.Dt("CEP_Log_UsageDate") ?? DateTime.UtcNow.Date,
+        AppKey = f.Str("CEP_Log_AppKey"),
+        PromptCount = f.Int("CEP_Log_PromptCount"),
+        PointsEarned = f.Int("CEP_Log_PointsEarned"),
+        MonthKey = f.Str("CEP_Log_MonthKey"),
     };
 
     /// <summary>

@@ -1,3 +1,4 @@
+using CepFunctions.Functions;
 using CepFunctions.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,9 @@ var host = new HostBuilder()
         services.AddScoped<PointsEngine>();
         services.AddScoped<BadgeEngine>();
         services.AddScoped<TeamsNotifier>();
+
+        // Register OrchestratorTimer so it can be injected into AdminApi
+        services.AddTransient<OrchestratorTimer>();
     })
     .Build();
 

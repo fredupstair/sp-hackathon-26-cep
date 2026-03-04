@@ -51,9 +51,11 @@ function Invoke-Az {
         $errDetail = az @Args 2>&1 | Where-Object { $_ -notmatch '^WARNING' } | Select-Object -First 3
         Fatal "az $($Args -join ' ') failed: $errDetail"
     }
-    # Strip any non-JSON preamble lines (e.g. // comments sometimes emitted by az CLI)
-    $jsonLines = $result | Where-Object { $_ -notmatch '^\s*//' }
-    return $jsonLines | ConvertFrom-Json
+    # Strip any non-JSON preamble (az CLI sometimes emits status lines before the JSON)
+    $raw = ($result -join "`n")
+    $jsonStart = $raw.IndexOfAny([char[]]@('{','['))
+    if ($jsonStart -lt 0) { return $null }
+    return $raw.Substring($jsonStart) | ConvertFrom-Json
 }
 
 # ---------------------------------------------------------------------------
@@ -168,16 +170,19 @@ $graphSpId = (az ad sp show --id "00000003-0000-0000-c000-000000000000" --query 
 foreach ($roleId in @($idAiInteraction, $idTeamsActivity, $idSitesSelected)) {
     if (-not $roleId) { continue }
     # Use REST via az rest for appRoleAssignments (more reliable than az ad)
-    $body = @{
+    $bodyObj = @{
         principalId = $spObjId
         resourceId  = $graphSpId
         appRoleId   = $roleId
-    } | ConvertTo-Json -Compress
+    }
+    $tmpBody = [System.IO.Path]::GetTempFileName() + ".json"
+    ($bodyObj | ConvertTo-Json -Compress) | Set-Content -Path $tmpBody -Encoding UTF8
 
     $result = az rest --method POST `
         --uri "https://graph.microsoft.com/v1.0/servicePrincipals/$spObjId/appRoleAssignments" `
         --headers "Content-Type=application/json" `
-        --body $body 2>&1
+        --body "@$tmpBody" 2>&1
+    Remove-Item $tmpBody -Force -ErrorAction SilentlyContinue
 
     if ($LASTEXITCODE -eq 0) {
         Ok "Granted role $roleId"
@@ -196,13 +201,17 @@ foreach ($roleId in @($idAiInteraction, $idTeamsActivity, $idSitesSelected)) {
 # 7. Create client secret (1 year)
 # ---------------------------------------------------------------------------
 Info "Creating client secret (valid 1 year)..."
-$secretResult = Invoke-Az @("ad","app","credential","reset",
-    "--id",$appObjId,
-    "--years","1",
-    "--append",
-    "--display-name","CEP-Local-$(Get-Date -Format 'yyyyMMdd')")
+$clientSecret = (az ad app credential reset `
+    --id $appObjId `
+    --years 1 `
+    --append `
+    --display-name "CEP-Local-$(Get-Date -Format 'yyyyMMdd')" `
+    --query password `
+    --output tsv 2>$null).Trim()
 
-$clientSecret = $secretResult.password
+if ([string]::IsNullOrWhiteSpace($clientSecret)) {
+    Fatal "Failed to create client secret – check permissions in Entra portal"
+}
 Ok "Client secret created"
 
 # ---------------------------------------------------------------------------
