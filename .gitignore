@@ -1,0 +1,9 @@
+.github/agents/architect.agent.md
+.github/agents/engineer.agent.md
+.github/agents/feature-builder.agent.md
+.github/agents/implementation-reviewer.agent.md
+.github/agents/problem-solver.agent.md
+.github/agents/product-manager.agent.md
+.github/agents/tech-spec-reviewer.agent.md
+docs/copilot-engagement-program-prd.md
+docs/copilot-engagement-program-techspec.md

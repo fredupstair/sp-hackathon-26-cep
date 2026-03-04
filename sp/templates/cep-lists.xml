@@ -1,0 +1,627 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  PnP Provisioning Template – Copilot Engagement Program
+  Lists: CEP_Users | CEP_ActivityLog | CEP_Leaderboard | CEP_Badges | CEP_Config | CEP_SyncState
+  Schema: http://schemas.dev.office.com/PnP/2022/09/ProvisioningSchema
+  Apply with: Invoke-PnPSiteTemplate -Path .\templates\cep-lists.xml
+-->
+<pnp:Provisioning
+  xmlns:pnp="http://schemas.dev.office.com/PnP/2022/09/ProvisioningSchema"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <pnp:Preferences Generator="PnP.Framework" />
+
+  <pnp:Templates ID="CONTAINER-CEP">
+    <pnp:ProvisioningTemplate ID="CEP-LISTS" Version="1" Scope="Web">
+
+      <!-- ═══════════════════════════════════════════════════════
+           SITE COLUMNS  (Group: "CEP Columns")
+           ═══════════════════════════════════════════════════════ -->
+      <pnp:SiteFields>
+
+        <!-- ── CEP_Users ─────────────────────────────────────── -->
+        <Field ID="{A1B2C3D4-0001-0001-0001-000000000001}"
+               Name="CEP_UserEmail"         DisplayName="User Email"
+               Type="Text"                  Group="CEP Columns"
+               Indexed="TRUE"               MaxLength="255" />
+
+        <Field ID="{A1B2C3D4-0001-0001-0001-000000000002}"
+               Name="CEP_UserPrincipalName" DisplayName="User Principal Name"
+               Type="Text"                  Group="CEP Columns"
+               Indexed="TRUE"               MaxLength="255" />
+
+        <Field ID="{A1B2C3D4-0001-0001-0001-000000000003}"
+               Name="CEP_AadUserId"         DisplayName="AAD User Id"
+               Type="Text"                  Group="CEP Columns"
+               Indexed="TRUE"               MaxLength="255" />
+
+        <Field ID="{A1B2C3D4-0001-0001-0001-000000000004}"
+               Name="CEP_Department"        DisplayName="Department"
+               Type="Text"                  Group="CEP Columns"
+               Indexed="TRUE"               MaxLength="255" />
+
+        <Field ID="{A1B2C3D4-0001-0001-0001-000000000005}"
+               Name="CEP_Team"              DisplayName="Team"
+               Type="Text"                  Group="CEP Columns"
+               Indexed="TRUE"               MaxLength="255" />
+
+        <Field ID="{A1B2C3D4-0001-0001-0001-000000000006}"
+               Name="CEP_EnrollmentDate"    DisplayName="Enrollment Date"
+               Type="DateTime"              Group="CEP Columns"
+               Format="DateTime" />
+
+        <Field ID="{A1B2C3D4-0001-0001-0001-000000000007}"
+               Name="CEP_CurrentLevel"      DisplayName="Current Level"
+               Type="Choice"                Group="CEP Columns"
+               Format="Dropdown"            Default="Bronze">
+          <CHOICES>
+            <CHOICE>Bronze</CHOICE>
+            <CHOICE>Silver</CHOICE>
+            <CHOICE>Gold</CHOICE>
+          </CHOICES>
+        </Field>
+
+        <Field ID="{A1B2C3D4-0001-0001-0001-000000000008}"
+               Name="CEP_TotalPoints"       DisplayName="Total Points"
+               Type="Number"                Group="CEP Columns"
+               Decimals="0"                 Min="0" />
+
+        <Field ID="{A1B2C3D4-0001-0001-0001-000000000009}"
+               Name="CEP_MonthlyPoints"     DisplayName="Monthly Points"
+               Type="Number"                Group="CEP Columns"
+               Decimals="0"                 Min="0" />
+
+        <Field ID="{A1B2C3D4-0001-0001-0001-000000000010}"
+               Name="CEP_IsActive"          DisplayName="Is Active"
+               Type="Boolean"               Group="CEP Columns">
+          <Default>1</Default>
+        </Field>
+
+        <Field ID="{A1B2C3D4-0001-0001-0001-000000000011}"
+               Name="CEP_LastActivityDate"  DisplayName="Last Activity Date"
+               Type="DateTime"              Group="CEP Columns"
+               Format="DateTime"            Indexed="TRUE" />
+
+        <Field ID="{A1B2C3D4-0001-0001-0001-000000000012}"
+               Name="CEP_IsEngagementNudgesEnabled" DisplayName="Engagement Nudges Enabled"
+               Type="Boolean"               Group="CEP Columns">
+          <Default>1</Default>
+        </Field>
+
+        <Field ID="{A1B2C3D4-0001-0001-0001-000000000013}"
+               Name="CEP_LastSyncWatermarkUtc" DisplayName="Last Sync Watermark (UTC)"
+               Type="DateTime"              Group="CEP Columns"
+               Format="DateTime" />
+
+        <Field ID="{A1B2C3D4-0001-0001-0001-000000000014}"
+               Name="CEP_LastNudgeSentUtc"  DisplayName="Last Nudge Sent (UTC)"
+               Type="DateTime"              Group="CEP Columns"
+               Format="DateTime" />
+
+        <Field ID="{A1B2C3D4-0001-0001-0001-000000000015}"
+               Name="CEP_LastLeaderboardNotifiedMonth" DisplayName="Last Leaderboard Notified Month"
+               Type="Text"                  Group="CEP Columns"
+               MaxLength="10" />
+
+        <!-- ── CEP_ActivityLog ────────────────────────────────── -->
+        <Field ID="{A1B2C3D4-0002-0002-0002-000000000001}"
+               Name="CEP_Log_AadUserId"     DisplayName="AAD User Id"
+               Type="Text"                  Group="CEP Columns"
+               Indexed="TRUE"               MaxLength="255" />
+
+        <Field ID="{A1B2C3D4-0002-0002-0002-000000000002}"
+               Name="CEP_Log_UserEmail"     DisplayName="User Email"
+               Type="Text"                  Group="CEP Columns"
+               MaxLength="255" />
+
+        <Field ID="{A1B2C3D4-0002-0002-0002-000000000003}"
+               Name="CEP_Log_UsageDate"     DisplayName="Usage Date"
+               Type="DateTime"              Group="CEP Columns"
+               Format="DateOnly"            Indexed="TRUE" />
+
+        <Field ID="{A1B2C3D4-0002-0002-0002-000000000004}"
+               Name="CEP_Log_AppKey"        DisplayName="App"
+               Type="Choice"                Group="CEP Columns"
+               Format="Dropdown">
+          <CHOICES>
+            <CHOICE>Word</CHOICE>
+            <CHOICE>Excel</CHOICE>
+            <CHOICE>PowerPoint</CHOICE>
+            <CHOICE>Outlook</CHOICE>
+            <CHOICE>Teams</CHOICE>
+            <CHOICE>OneNote</CHOICE>
+            <CHOICE>Loop</CHOICE>
+            <CHOICE>M365Chat</CHOICE>
+            <CHOICE>Other</CHOICE>
+          </CHOICES>
+        </Field>
+
+        <Field ID="{A1B2C3D4-0002-0002-0002-000000000005}"
+               Name="CEP_Log_PromptCount"   DisplayName="Prompt Count"
+               Type="Number"                Group="CEP Columns"
+               Decimals="0"                 Min="0" />
+
+        <Field ID="{A1B2C3D4-0002-0002-0002-000000000006}"
+               Name="CEP_Log_PointsEarned"  DisplayName="Points Earned"
+               Type="Number"                Group="CEP Columns"
+               Decimals="0"                 Min="0" />
+
+        <Field ID="{A1B2C3D4-0002-0002-0002-000000000007}"
+               Name="CEP_Log_MonthKey"      DisplayName="Month Key"
+               Type="Text"                  Group="CEP Columns"
+               Indexed="TRUE"               MaxLength="10" />
+
+        <!-- ── CEP_Leaderboard ────────────────────────────────── -->
+        <Field ID="{A1B2C3D4-0003-0003-0003-000000000001}"
+               Name="CEP_LB_UserEmail"      DisplayName="User Email"
+               Type="Text"                  Group="CEP Columns"
+               MaxLength="255" />
+
+        <Field ID="{A1B2C3D4-0003-0003-0003-000000000002}"
+               Name="CEP_LB_DisplayName"    DisplayName="Display Name"
+               Type="Text"                  Group="CEP Columns"
+               MaxLength="255" />
+
+        <Field ID="{A1B2C3D4-0003-0003-0003-000000000003}"
+               Name="CEP_LB_Department"     DisplayName="Department"
+               Type="Text"                  Group="CEP Columns"
+               MaxLength="255" />
+
+        <Field ID="{A1B2C3D4-0003-0003-0003-000000000004}"
+               Name="CEP_LB_Team"           DisplayName="Team"
+               Type="Text"                  Group="CEP Columns"
+               MaxLength="255" />
+
+        <Field ID="{A1B2C3D4-0003-0003-0003-000000000005}"
+               Name="CEP_LB_AadUserId"      DisplayName="AAD User Id"
+               Type="Text"                  Group="CEP Columns"
+               MaxLength="255" />
+
+        <Field ID="{A1B2C3D4-0003-0003-0003-000000000006}"
+               Name="CEP_LB_MonthlyPoints"  DisplayName="Monthly Points"
+               Type="Number"                Group="CEP Columns"
+               Decimals="0"                 Min="0" />
+
+        <Field ID="{A1B2C3D4-0003-0003-0003-000000000007}"
+               Name="CEP_LB_Rank"           DisplayName="Rank"
+               Type="Number"                Group="CEP Columns"
+               Decimals="0"                 Min="1" />
+
+        <Field ID="{A1B2C3D4-0003-0003-0003-000000000008}"
+               Name="CEP_LB_Level"          DisplayName="Level"
+               Type="Choice"                Group="CEP Columns"
+               Format="Dropdown">
+          <CHOICES>
+            <CHOICE>Bronze</CHOICE>
+            <CHOICE>Silver</CHOICE>
+            <CHOICE>Gold</CHOICE>
+          </CHOICES>
+        </Field>
+
+        <Field ID="{A1B2C3D4-0003-0003-0003-000000000009}"
+               Name="CEP_LB_Scope"          DisplayName="Scope"
+               Type="Choice"                Group="CEP Columns"
+               Format="Dropdown"            Indexed="TRUE">
+          <CHOICES>
+            <CHOICE>Global</CHOICE>
+            <CHOICE>Department</CHOICE>
+            <CHOICE>Team</CHOICE>
+          </CHOICES>
+        </Field>
+
+        <Field ID="{A1B2C3D4-0003-0003-0003-000000000010}"
+               Name="CEP_LB_MonthKey"       DisplayName="Month Key"
+               Type="Text"                  Group="CEP Columns"
+               Indexed="TRUE"               MaxLength="10" />
+
+        <!-- ── CEP_Badges ──────────────────────────────────────── -->
+        <Field ID="{A1B2C3D4-0004-0004-0004-000000000001}"
+               Name="CEP_Badge_UserEmail"   DisplayName="User Email"
+               Type="Text"                  Group="CEP Columns"
+               MaxLength="255" />
+
+        <Field ID="{A1B2C3D4-0004-0004-0004-000000000002}"
+               Name="CEP_Badge_AadUserId"   DisplayName="AAD User Id"
+               Type="Text"                  Group="CEP Columns"
+               Indexed="TRUE"               MaxLength="255" />
+
+        <Field ID="{A1B2C3D4-0004-0004-0004-000000000003}"
+               Name="CEP_Badge_BadgeKey"    DisplayName="Badge Key"
+               Type="Text"                  Group="CEP Columns"
+               Indexed="TRUE"               MaxLength="100" />
+
+        <Field ID="{A1B2C3D4-0004-0004-0004-000000000004}"
+               Name="CEP_Badge_BadgeType"   DisplayName="Badge Type"
+               Type="Choice"                Group="CEP Columns"
+               Format="Dropdown">
+          <CHOICES>
+            <CHOICE>FirstSteps</CHOICE>
+            <CHOICE>CrossAppExplorer</CHOICE>
+            <CHOICE>WeeklyWarrior</CHOICE>
+            <CHOICE>MonthlyMaster</CHOICE>
+            <CHOICE>ConsistencyKing</CHOICE>
+          </CHOICES>
+        </Field>
+
+        <Field ID="{A1B2C3D4-0004-0004-0004-000000000005}"
+               Name="CEP_Badge_EarnedDate"  DisplayName="Earned Date"
+               Type="DateTime"              Group="CEP Columns"
+               Format="DateTime" />
+
+        <Field ID="{A1B2C3D4-0004-0004-0004-000000000006}"
+               Name="CEP_Badge_Description" DisplayName="Description"
+               Type="Note"                  Group="CEP Columns"
+               NumLines="3"                 RichText="FALSE" />
+
+        <Field ID="{A1B2C3D4-0004-0004-0004-000000000007}"
+               Name="CEP_Badge_MonthKey"    DisplayName="Month Key"
+               Type="Text"                  Group="CEP Columns"
+               MaxLength="10" />
+
+        <!-- ── CEP_Config ──────────────────────────────────────── -->
+        <Field ID="{A1B2C3D4-0005-0005-0005-000000000001}"
+               Name="CEP_Cfg_SyncFrequency" DisplayName="Sync Frequency"
+               Type="Text"                  Group="CEP Columns"
+               MaxLength="50" />
+
+        <Field ID="{A1B2C3D4-0005-0005-0005-000000000002}"
+               Name="CEP_Cfg_PointsPerPrompt" DisplayName="Points Per Prompt"
+               Type="Number"                Group="CEP Columns"
+               Decimals="0"                 Min="1" />
+
+        <Field ID="{A1B2C3D4-0005-0005-0005-000000000003}"
+               Name="CEP_Cfg_LevelThresholdSilver" DisplayName="Level Threshold Silver"
+               Type="Number"                Group="CEP Columns"
+               Decimals="0"                 Min="0" />
+
+        <Field ID="{A1B2C3D4-0005-0005-0005-000000000004}"
+               Name="CEP_Cfg_LevelThresholdGold" DisplayName="Level Threshold Gold"
+               Type="Number"                Group="CEP Columns"
+               Decimals="0"                 Min="0" />
+
+        <Field ID="{A1B2C3D4-0005-0005-0005-000000000005}"
+               Name="CEP_Cfg_InactivityDaysForNudge" DisplayName="Inactivity Days For Nudge"
+               Type="Number"                Group="CEP Columns"
+               Decimals="0"                 Min="1" />
+
+        <Field ID="{A1B2C3D4-0005-0005-0005-000000000006}"
+               Name="CEP_Cfg_LeaderboardRefreshNotifEnabled" DisplayName="Leaderboard Refresh Notification Enabled"
+               Type="Boolean"               Group="CEP Columns">
+          <Default>1</Default>
+        </Field>
+
+        <Field ID="{A1B2C3D4-0005-0005-0005-000000000007}"
+               Name="CEP_Cfg_MaxUsersPerIngestionBatch" DisplayName="Max Users Per Ingestion Batch"
+               Type="Number"                Group="CEP Columns"
+               Decimals="0"                 Min="1" />
+
+        <Field ID="{A1B2C3D4-0005-0005-0005-000000000008}"
+               Name="CEP_Cfg_TimeZone"      DisplayName="Time Zone"
+               Type="Text"                  Group="CEP Columns"
+               MaxLength="100" />
+
+        <!-- ── CEP_SyncState ───────────────────────────────────── -->
+        <Field ID="{A1B2C3D4-0006-0006-0006-000000000001}"
+               Name="CEP_Sync_LastSuccessfulRunUtc" DisplayName="Last Successful Run (UTC)"
+               Type="DateTime"              Group="CEP Columns"
+               Format="DateTime" />
+
+        <Field ID="{A1B2C3D4-0006-0006-0006-000000000002}"
+               Name="CEP_Sync_LastRunStatus" DisplayName="Last Run Status"
+               Type="Choice"                Group="CEP Columns"
+               Format="Dropdown">
+          <CHOICES>
+            <CHOICE>Success</CHOICE>
+            <CHOICE>Failure</CHOICE>
+            <CHOICE>Running</CHOICE>
+          </CHOICES>
+        </Field>
+
+        <Field ID="{A1B2C3D4-0006-0006-0006-000000000003}"
+               Name="CEP_Sync_LastRunCorrelationId" DisplayName="Last Run Correlation Id"
+               Type="Text"                  Group="CEP Columns"
+               MaxLength="100" />
+
+        <Field ID="{A1B2C3D4-0006-0006-0006-000000000004}"
+               Name="CEP_Sync_LastRunSummary" DisplayName="Last Run Summary"
+               Type="Note"                  Group="CEP Columns"
+               NumLines="6"                 RichText="FALSE" />
+
+        <Field ID="{A1B2C3D4-0006-0006-0006-000000000005}"
+               Name="CEP_Sync_UsersProcessed" DisplayName="Users Processed"
+               Type="Number"                Group="CEP Columns"
+               Decimals="0"                 Min="0" />
+
+        <Field ID="{A1B2C3D4-0006-0006-0006-000000000006}"
+               Name="CEP_Sync_PromptsIngested" DisplayName="Prompts Ingested"
+               Type="Number"                Group="CEP Columns"
+               Decimals="0"                 Min="0" />
+
+      </pnp:SiteFields>
+
+      <!-- ═══════════════════════════════════════════════════════
+           LISTS
+           ═══════════════════════════════════════════════════════ -->
+      <pnp:Lists>
+
+        <!-- ── 1. CEP_Users ───────────────────────────────────── -->
+        <pnp:ListInstance
+          Title="CEP_Users"
+          Url="Lists/CEP_Users"
+          TemplateType="100"
+          Description="Copilot Engagement Program – enrolled users">
+          <pnp:ContentTypeBindings>
+            <pnp:ContentTypeBinding ContentTypeID="0x01" Default="true" />
+          </pnp:ContentTypeBindings>
+          <pnp:FieldRefs>
+            <pnp:FieldRef ID="{A1B2C3D4-0001-0001-0001-000000000001}" Name="CEP_UserEmail"         DisplayName="User Email"             Required="true" />
+            <pnp:FieldRef ID="{A1B2C3D4-0001-0001-0001-000000000002}" Name="CEP_UserPrincipalName" DisplayName="User Principal Name"    Required="true" />
+            <pnp:FieldRef ID="{A1B2C3D4-0001-0001-0001-000000000003}" Name="CEP_AadUserId"         DisplayName="AAD User Id"            Required="true" />
+            <pnp:FieldRef ID="{A1B2C3D4-0001-0001-0001-000000000004}" Name="CEP_Department"        DisplayName="Department" />
+            <pnp:FieldRef ID="{A1B2C3D4-0001-0001-0001-000000000005}" Name="CEP_Team"              DisplayName="Team" />
+            <pnp:FieldRef ID="{A1B2C3D4-0001-0001-0001-000000000006}" Name="CEP_EnrollmentDate"    DisplayName="Enrollment Date" />
+            <pnp:FieldRef ID="{A1B2C3D4-0001-0001-0001-000000000007}" Name="CEP_CurrentLevel"      DisplayName="Current Level" />
+            <pnp:FieldRef ID="{A1B2C3D4-0001-0001-0001-000000000008}" Name="CEP_TotalPoints"       DisplayName="Total Points" />
+            <pnp:FieldRef ID="{A1B2C3D4-0001-0001-0001-000000000009}" Name="CEP_MonthlyPoints"     DisplayName="Monthly Points" />
+            <pnp:FieldRef ID="{A1B2C3D4-0001-0001-0001-000000000010}" Name="CEP_IsActive"          DisplayName="Is Active" />
+            <pnp:FieldRef ID="{A1B2C3D4-0001-0001-0001-000000000011}" Name="CEP_LastActivityDate"  DisplayName="Last Activity Date" />
+            <pnp:FieldRef ID="{A1B2C3D4-0001-0001-0001-000000000012}" Name="CEP_IsEngagementNudgesEnabled" DisplayName="Engagement Nudges Enabled" />
+            <pnp:FieldRef ID="{A1B2C3D4-0001-0001-0001-000000000013}" Name="CEP_LastSyncWatermarkUtc" DisplayName="Last Sync Watermark (UTC)" />
+            <pnp:FieldRef ID="{A1B2C3D4-0001-0001-0001-000000000014}" Name="CEP_LastNudgeSentUtc"  DisplayName="Last Nudge Sent (UTC)" />
+            <pnp:FieldRef ID="{A1B2C3D4-0001-0001-0001-000000000015}" Name="CEP_LastLeaderboardNotifiedMonth" DisplayName="Last Leaderboard Notified Month" />
+          </pnp:FieldRefs>
+          <pnp:Views>
+            <View Name="All Users" DisplayName="All Users" DefaultView="TRUE" MobileView="TRUE" MobileDefaultView="TRUE">
+              <Query>
+                <OrderBy><FieldRef Name="CEP_MonthlyPoints" Ascending="FALSE"/></OrderBy>
+              </Query>
+              <ViewFields>
+                <FieldRef Name="LinkTitle" />
+                <FieldRef Name="CEP_UserEmail" />
+                <FieldRef Name="CEP_Department" />
+                <FieldRef Name="CEP_Team" />
+                <FieldRef Name="CEP_CurrentLevel" />
+                <FieldRef Name="CEP_TotalPoints" />
+                <FieldRef Name="CEP_MonthlyPoints" />
+                <FieldRef Name="CEP_IsActive" />
+                <FieldRef Name="CEP_EnrollmentDate" />
+                <FieldRef Name="CEP_LastActivityDate" />
+              </ViewFields>
+              <RowLimit Paged="TRUE">50</RowLimit>
+            </View>
+            <View Name="Active Users" DisplayName="Active Users">
+              <Query>
+                <Where><Eq><FieldRef Name="CEP_IsActive"/><Value Type="Boolean">1</Value></Eq></Where>
+                <OrderBy><FieldRef Name="CEP_MonthlyPoints" Ascending="FALSE"/></OrderBy>
+              </Query>
+              <ViewFields>
+                <FieldRef Name="LinkTitle" />
+                <FieldRef Name="CEP_UserEmail" />
+                <FieldRef Name="CEP_AadUserId" />
+                <FieldRef Name="CEP_Department" />
+                <FieldRef Name="CEP_Team" />
+                <FieldRef Name="CEP_CurrentLevel" />
+                <FieldRef Name="CEP_TotalPoints" />
+                <FieldRef Name="CEP_MonthlyPoints" />
+                <FieldRef Name="CEP_LastActivityDate" />
+                <FieldRef Name="CEP_LastSyncWatermarkUtc" />
+              </ViewFields>
+              <RowLimit Paged="TRUE">100</RowLimit>
+            </View>
+          </pnp:Views>
+        </pnp:ListInstance>
+
+        <!-- ── 2. CEP_ActivityLog ─────────────────────────────── -->
+        <pnp:ListInstance
+          Title="CEP_ActivityLog"
+          Url="Lists/CEP_ActivityLog"
+          TemplateType="100"
+          Description="Copilot Engagement Program – daily usage aggregates per user per app">
+          <pnp:ContentTypeBindings>
+            <pnp:ContentTypeBinding ContentTypeID="0x01" Default="true" />
+          </pnp:ContentTypeBindings>
+          <pnp:FieldRefs>
+            <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000001}" Name="CEP_Log_AadUserId"    DisplayName="AAD User Id"   Required="true" />
+            <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000002}" Name="CEP_Log_UserEmail"    DisplayName="User Email" />
+            <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000003}" Name="CEP_Log_UsageDate"    DisplayName="Usage Date"    Required="true" />
+            <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000004}" Name="CEP_Log_AppKey"       DisplayName="App"           Required="true" />
+            <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000005}" Name="CEP_Log_PromptCount"  DisplayName="Prompt Count" />
+            <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000006}" Name="CEP_Log_PointsEarned" DisplayName="Points Earned" />
+            <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000007}" Name="CEP_Log_MonthKey"     DisplayName="Month Key"     Required="true" />
+          </pnp:FieldRefs>
+          <pnp:Views>
+            <View Name="All Activity" DisplayName="All Activity" DefaultView="TRUE">
+              <Query>
+                <OrderBy><FieldRef Name="CEP_Log_UsageDate" Ascending="FALSE"/></OrderBy>
+              </Query>
+              <ViewFields>
+                <FieldRef Name="LinkTitle" />
+                <FieldRef Name="CEP_Log_AadUserId" />
+                <FieldRef Name="CEP_Log_UserEmail" />
+                <FieldRef Name="CEP_Log_UsageDate" />
+                <FieldRef Name="CEP_Log_AppKey" />
+                <FieldRef Name="CEP_Log_PromptCount" />
+                <FieldRef Name="CEP_Log_PointsEarned" />
+                <FieldRef Name="CEP_Log_MonthKey" />
+              </ViewFields>
+              <RowLimit Paged="TRUE">100</RowLimit>
+            </View>
+          </pnp:Views>
+        </pnp:ListInstance>
+
+        <!-- ── 3. CEP_Leaderboard ─────────────────────────────── -->
+        <pnp:ListInstance
+          Title="CEP_Leaderboard"
+          Url="Lists/CEP_Leaderboard"
+          TemplateType="100"
+          Description="Copilot Engagement Program – materialized monthly leaderboard">
+          <pnp:ContentTypeBindings>
+            <pnp:ContentTypeBinding ContentTypeID="0x01" Default="true" />
+          </pnp:ContentTypeBindings>
+          <pnp:FieldRefs>
+            <pnp:FieldRef ID="{A1B2C3D4-0003-0003-0003-000000000001}" Name="CEP_LB_UserEmail"     DisplayName="User Email" />
+            <pnp:FieldRef ID="{A1B2C3D4-0003-0003-0003-000000000002}" Name="CEP_LB_DisplayName"   DisplayName="Display Name" />
+            <pnp:FieldRef ID="{A1B2C3D4-0003-0003-0003-000000000003}" Name="CEP_LB_Department"    DisplayName="Department" />
+            <pnp:FieldRef ID="{A1B2C3D4-0003-0003-0003-000000000004}" Name="CEP_LB_Team"          DisplayName="Team" />
+            <pnp:FieldRef ID="{A1B2C3D4-0003-0003-0003-000000000005}" Name="CEP_LB_AadUserId"     DisplayName="AAD User Id" />
+            <pnp:FieldRef ID="{A1B2C3D4-0003-0003-0003-000000000006}" Name="CEP_LB_MonthlyPoints" DisplayName="Monthly Points" />
+            <pnp:FieldRef ID="{A1B2C3D4-0003-0003-0003-000000000007}" Name="CEP_LB_Rank"          DisplayName="Rank" />
+            <pnp:FieldRef ID="{A1B2C3D4-0003-0003-0003-000000000008}" Name="CEP_LB_Level"         DisplayName="Level" />
+            <pnp:FieldRef ID="{A1B2C3D4-0003-0003-0003-000000000009}" Name="CEP_LB_Scope"         DisplayName="Scope"         Required="true" />
+            <pnp:FieldRef ID="{A1B2C3D4-0003-0003-0003-000000000010}" Name="CEP_LB_MonthKey"      DisplayName="Month Key"     Required="true" />
+          </pnp:FieldRefs>
+          <pnp:Views>
+            <View Name="Current Month Global" DisplayName="Current Month Global" DefaultView="TRUE">
+              <Query>
+                <Where>
+                  <Eq><FieldRef Name="CEP_LB_Scope"/><Value Type="Choice">Global</Value></Eq>
+                </Where>
+                <OrderBy><FieldRef Name="CEP_LB_Rank" Ascending="TRUE"/></OrderBy>
+              </Query>
+              <ViewFields>
+                <FieldRef Name="CEP_LB_Rank" />
+                <FieldRef Name="CEP_LB_DisplayName" />
+                <FieldRef Name="CEP_LB_Department" />
+                <FieldRef Name="CEP_LB_Team" />
+                <FieldRef Name="CEP_LB_MonthlyPoints" />
+                <FieldRef Name="CEP_LB_Level" />
+                <FieldRef Name="CEP_LB_Scope" />
+                <FieldRef Name="CEP_LB_MonthKey" />
+              </ViewFields>
+              <RowLimit Paged="TRUE">50</RowLimit>
+            </View>
+          </pnp:Views>
+        </pnp:ListInstance>
+
+        <!-- ── 4. CEP_Badges ──────────────────────────────────── -->
+        <pnp:ListInstance
+          Title="CEP_Badges"
+          Url="Lists/CEP_Badges"
+          TemplateType="100"
+          Description="Copilot Engagement Program – badges earned by users">
+          <pnp:ContentTypeBindings>
+            <pnp:ContentTypeBinding ContentTypeID="0x01" Default="true" />
+          </pnp:ContentTypeBindings>
+          <pnp:FieldRefs>
+            <pnp:FieldRef ID="{A1B2C3D4-0004-0004-0004-000000000001}" Name="CEP_Badge_UserEmail"   DisplayName="User Email" />
+            <pnp:FieldRef ID="{A1B2C3D4-0004-0004-0004-000000000002}" Name="CEP_Badge_AadUserId"   DisplayName="AAD User Id"  Required="true" />
+            <pnp:FieldRef ID="{A1B2C3D4-0004-0004-0004-000000000003}" Name="CEP_Badge_BadgeKey"    DisplayName="Badge Key"    Required="true" />
+            <pnp:FieldRef ID="{A1B2C3D4-0004-0004-0004-000000000004}" Name="CEP_Badge_BadgeType"   DisplayName="Badge Type"   Required="true" />
+            <pnp:FieldRef ID="{A1B2C3D4-0004-0004-0004-000000000005}" Name="CEP_Badge_EarnedDate"  DisplayName="Earned Date" />
+            <pnp:FieldRef ID="{A1B2C3D4-0004-0004-0004-000000000006}" Name="CEP_Badge_Description" DisplayName="Description" />
+            <pnp:FieldRef ID="{A1B2C3D4-0004-0004-0004-000000000007}" Name="CEP_Badge_MonthKey"    DisplayName="Month Key" />
+          </pnp:FieldRefs>
+          <pnp:Views>
+            <View Name="All Badges" DisplayName="All Badges" DefaultView="TRUE">
+              <Query>
+                <OrderBy><FieldRef Name="CEP_Badge_EarnedDate" Ascending="FALSE"/></OrderBy>
+              </Query>
+              <ViewFields>
+                <FieldRef Name="LinkTitle" />
+                <FieldRef Name="CEP_Badge_AadUserId" />
+                <FieldRef Name="CEP_Badge_UserEmail" />
+                <FieldRef Name="CEP_Badge_BadgeKey" />
+                <FieldRef Name="CEP_Badge_BadgeType" />
+                <FieldRef Name="CEP_Badge_EarnedDate" />
+                <FieldRef Name="CEP_Badge_MonthKey" />
+              </ViewFields>
+              <RowLimit Paged="TRUE">50</RowLimit>
+            </View>
+          </pnp:Views>
+        </pnp:ListInstance>
+
+        <!-- ── 5. CEP_Config ──────────────────────────────────── -->
+        <pnp:ListInstance
+          Title="CEP_Config"
+          Url="Lists/CEP_Config"
+          TemplateType="100"
+          Description="Copilot Engagement Program – runtime configuration (admin-editable)">
+          <pnp:ContentTypeBindings>
+            <pnp:ContentTypeBinding ContentTypeID="0x01" Default="true" />
+          </pnp:ContentTypeBindings>
+          <pnp:FieldRefs>
+            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000001}" Name="CEP_Cfg_SyncFrequency"                      DisplayName="Sync Frequency" />
+            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000002}" Name="CEP_Cfg_PointsPerPrompt"                    DisplayName="Points Per Prompt" />
+            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000003}" Name="CEP_Cfg_LevelThresholdSilver"               DisplayName="Level Threshold Silver" />
+            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000004}" Name="CEP_Cfg_LevelThresholdGold"                 DisplayName="Level Threshold Gold" />
+            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000005}" Name="CEP_Cfg_InactivityDaysForNudge"             DisplayName="Inactivity Days For Nudge" />
+            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000006}" Name="CEP_Cfg_LeaderboardRefreshNotifEnabled"     DisplayName="Leaderboard Refresh Notification Enabled" />
+            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000007}" Name="CEP_Cfg_MaxUsersPerIngestionBatch"          DisplayName="Max Users Per Ingestion Batch" />
+            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000008}" Name="CEP_Cfg_TimeZone"                           DisplayName="Time Zone" />
+          </pnp:FieldRefs>
+          <pnp:Views>
+            <View Name="Configuration" DisplayName="Configuration" DefaultView="TRUE">
+              <Query><OrderBy><FieldRef Name="Title" Ascending="TRUE"/></OrderBy></Query>
+              <ViewFields>
+                <FieldRef Name="LinkTitle" />
+                <FieldRef Name="CEP_Cfg_SyncFrequency" />
+                <FieldRef Name="CEP_Cfg_PointsPerPrompt" />
+                <FieldRef Name="CEP_Cfg_LevelThresholdSilver" />
+                <FieldRef Name="CEP_Cfg_LevelThresholdGold" />
+                <FieldRef Name="CEP_Cfg_InactivityDaysForNudge" />
+                <FieldRef Name="CEP_Cfg_LeaderboardRefreshNotifEnabled" />
+                <FieldRef Name="CEP_Cfg_MaxUsersPerIngestionBatch" />
+                <FieldRef Name="CEP_Cfg_TimeZone" />
+              </ViewFields>
+              <RowLimit Paged="FALSE">30</RowLimit>
+            </View>
+          </pnp:Views>
+          <pnp:DataRows>
+            <!-- Default configuration record -->
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Default</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_SyncFrequency">daily</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_PointsPerPrompt">1</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_LevelThresholdSilver">500</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_LevelThresholdGold">1500</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_InactivityDaysForNudge">3</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_LeaderboardRefreshNotifEnabled">1</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_MaxUsersPerIngestionBatch">50</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_TimeZone">UTC</pnp:DataValue>
+            </pnp:DataRow>
+          </pnp:DataRows>
+        </pnp:ListInstance>
+
+        <!-- ── 6. CEP_SyncState ───────────────────────────────── -->
+        <pnp:ListInstance
+          Title="CEP_SyncState"
+          Url="Lists/CEP_SyncState"
+          TemplateType="100"
+          Description="Copilot Engagement Program – backend sync run state">
+          <pnp:ContentTypeBindings>
+            <pnp:ContentTypeBinding ContentTypeID="0x01" Default="true" />
+          </pnp:ContentTypeBindings>
+          <pnp:FieldRefs>
+            <pnp:FieldRef ID="{A1B2C3D4-0006-0006-0006-000000000001}" Name="CEP_Sync_LastSuccessfulRunUtc"  DisplayName="Last Successful Run (UTC)" />
+            <pnp:FieldRef ID="{A1B2C3D4-0006-0006-0006-000000000002}" Name="CEP_Sync_LastRunStatus"         DisplayName="Last Run Status" />
+            <pnp:FieldRef ID="{A1B2C3D4-0006-0006-0006-000000000003}" Name="CEP_Sync_LastRunCorrelationId"  DisplayName="Last Run Correlation Id" />
+            <pnp:FieldRef ID="{A1B2C3D4-0006-0006-0006-000000000004}" Name="CEP_Sync_LastRunSummary"        DisplayName="Last Run Summary" />
+            <pnp:FieldRef ID="{A1B2C3D4-0006-0006-0006-000000000005}" Name="CEP_Sync_UsersProcessed"        DisplayName="Users Processed" />
+            <pnp:FieldRef ID="{A1B2C3D4-0006-0006-0006-000000000006}" Name="CEP_Sync_PromptsIngested"       DisplayName="Prompts Ingested" />
+          </pnp:FieldRefs>
+          <pnp:Views>
+            <View Name="Run History" DisplayName="Run History" DefaultView="TRUE">
+              <Query>
+                <OrderBy><FieldRef Name="Created" Ascending="FALSE"/></OrderBy>
+              </Query>
+              <ViewFields>
+                <FieldRef Name="LinkTitle" />
+                <FieldRef Name="CEP_Sync_LastRunStatus" />
+                <FieldRef Name="CEP_Sync_LastSuccessfulRunUtc" />
+                <FieldRef Name="CEP_Sync_LastRunCorrelationId" />
+                <FieldRef Name="CEP_Sync_UsersProcessed" />
+                <FieldRef Name="CEP_Sync_PromptsIngested" />
+                <FieldRef Name="CEP_Sync_LastRunSummary" />
+                <FieldRef Name="Created" />
+              </ViewFields>
+              <RowLimit Paged="TRUE">30</RowLimit>
+            </View>
+          </pnp:Views>
+        </pnp:ListInstance>
+
+      </pnp:Lists>
+
+    </pnp:ProvisioningTemplate>
+  </pnp:Templates>
+
+</pnp:Provisioning>
