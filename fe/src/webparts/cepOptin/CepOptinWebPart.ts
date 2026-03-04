@@ -42,7 +42,9 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
       this._apiClient = new CepApiClient(
         this._aadClient,
         baseUrl,
-        this.context.pageContext.aadInfo?.userId?.toString() ?? this.context.pageContext.user.email
+        this.context.pageContext.aadInfo?.userId?.toString() ?? this.context.pageContext.user.email,
+        this.context.pageContext.user.email,
+        this.context.pageContext.user.displayName
       );
     } catch (e) {
       console.error('[CepOptin] Failed to initialise AAD HTTP client:', e);

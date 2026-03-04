@@ -23,11 +23,15 @@ export class CepApiClient {
   private readonly _client: AadHttpClient;
   private readonly _baseUrl: string;
   private readonly _userId: string;
+  private readonly _userPrincipalName: string;
+  private readonly _displayName: string;
 
-  constructor(client: AadHttpClient, baseUrl: string, userId: string) {
+  constructor(client: AadHttpClient, baseUrl: string, userId: string, userPrincipalName: string, displayName: string) {
     this._client = client;
     this._baseUrl = baseUrl.replace(/\/$/, '');
     this._userId = userId;
+    this._userPrincipalName = userPrincipalName;
+    this._displayName = displayName;
   }
 
   /** Default extra headers sent with every request */
@@ -37,12 +41,19 @@ export class CepApiClient {
 
   // ─── Enrollment ────────────────────────────────────────────────────────────
 
-  public async join(data: IEnrollmentJoinRequest): Promise<void> {
+  public async join(data: Omit<IEnrollmentJoinRequest, 'aadUserId' | 'userPrincipalName' | 'displayName' | 'email'>): Promise<void> {
+    const body: IEnrollmentJoinRequest = {
+      ...data,
+      aadUserId: this._userId,
+      userPrincipalName: this._userPrincipalName,
+      displayName: this._displayName,
+      email: this._userPrincipalName,
+    };
     const response = await this._client.post(
       `${this._baseUrl}/api/enrollment/join`,
       AadHttpClient.configurations.v1,
       {
-        body: JSON.stringify(data),
+        body: JSON.stringify(body),
         headers: { ...this._defaultHeaders, 'Content-Type': 'application/json' },
       }
     );
@@ -53,7 +64,10 @@ export class CepApiClient {
     const response = await this._client.post(
       `${this._baseUrl}/api/enrollment/leave`,
       AadHttpClient.configurations.v1,
-      { headers: { ...this._defaultHeaders, 'Content-Type': 'application/json' } }
+      {
+        body: JSON.stringify({ aadUserId: this._userId }),
+        headers: { ...this._defaultHeaders, 'Content-Type': 'application/json' },
+      }
     );
     await this._assertOk(response);
   }

@@ -48,6 +48,11 @@ public class EnrollmentApi
         if (body is null || string.IsNullOrEmpty(body.AadUserId) || string.IsNullOrEmpty(body.UserPrincipalName))
             return new BadRequestObjectResult("AadUserId and UserPrincipalName are required.");
 
+        // When EasyAuth is active, verify the caller matches the body identity (anti-spoofing).
+        var easyAuthId = GetEasyAuthPrincipalId(req);
+        if (easyAuthId is not null && !string.Equals(easyAuthId, body.AadUserId, StringComparison.OrdinalIgnoreCase))
+            return new ObjectResult("Authenticated user does not match the supplied AadUserId.") { StatusCode = 403 };
+
         var existing = await _sp.GetUserByAadIdAsync(body.AadUserId, ct);
         bool isNew = existing is null;
 
@@ -105,6 +110,11 @@ public class EnrollmentApi
         if (body is null || string.IsNullOrEmpty(body.AadUserId))
             return new BadRequestObjectResult("AadUserId is required.");
 
+        // When EasyAuth is active, verify the caller matches the body identity (anti-spoofing).
+        var easyAuthId = GetEasyAuthPrincipalId(req);
+        if (easyAuthId is not null && !string.Equals(easyAuthId, body.AadUserId, StringComparison.OrdinalIgnoreCase))
+            return new ObjectResult("Authenticated user does not match the supplied AadUserId.") { StatusCode = 403 };
+
         var user = await _sp.GetUserByAadIdAsync(body.AadUserId, ct);
         if (user is null)
             return new NotFoundObjectResult("User not enrolled.");
@@ -115,6 +125,19 @@ public class EnrollmentApi
 
         return new OkObjectResult(new { message = "Left the program successfully." });
     }
+
+    // ------------------------------------------------------------------
+    // Helpers
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// Returns the Entra OID injected by EasyAuth (X-MS-CLIENT-PRINCIPAL-ID).
+    /// Returns null when running locally without EasyAuth – validation is skipped.
+    /// </summary>
+    private static string? GetEasyAuthPrincipalId(HttpRequest req) =>
+        req.Headers.TryGetValue("X-MS-CLIENT-PRINCIPAL-ID", out var v)
+            ? v.FirstOrDefault()
+            : null;
 
     // ------------------------------------------------------------------
     // DTOs

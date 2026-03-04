@@ -323,6 +323,52 @@ if ($emptyKeys) {
     Write-Host "    Usa: az functionapp config appsettings set --name $functionAppName --resource-group $ResourceGroupName --settings KEY=VALUE" -ForegroundColor DarkGray
 }
 
+# ─── 6b. CORS ───────────────────────────────────────────────────────────────
+Section "6b. CORS"
+
+# Derive SharePoint tenant origin from SpSiteUrl (e.g. https://contoso.sharepoint.com)
+$spOrigin = if ($SpSiteUrl) {
+    $uri = [System.Uri]$SpSiteUrl
+    "$($uri.Scheme)://$($uri.Host)"
+} else { $null }
+
+if ($spOrigin) {
+    Info "Aggiunta origine CORS: $spOrigin"
+    az functionapp cors add `
+        --name $functionAppName `
+        --resource-group $ResourceGroupName `
+        --allowed-origins $spOrigin `
+        --output none 2>$null | Out-Null
+    Ok "CORS configurato per $spOrigin"
+} else {
+    Warn "SpSiteUrl non fornito – CORS non configurato. Aggiungilo manualmente."
+}
+
+# ─── 6c. EasyAuth (Entra ID) ───────────────────────────────────────────────
+Section "6c. EasyAuth – Entra ID"
+
+if ([string]::IsNullOrWhiteSpace($AppRegClientId)) {
+    Warn "AppRegClientId non fornito – EasyAuth saltato. Riesegui lo script con -AppRegClientId dopo create-app-reg.ps1."
+} else {
+    Info "Configuro EasyAuth (Entra ID) sulla Function App..."
+    az webapp auth microsoft update `
+        --name $functionAppName `
+        --resource-group $ResourceGroupName `
+        --client-id $AppRegClientId `
+        --tenant-id $TenantId `
+        --issuer "https://login.microsoftonline.com/$TenantId/v2.0" `
+        --client-secret $AppRegClientSecret `
+        --output none 2>$null | Out-Null
+    az webapp auth update `
+        --name $functionAppName `
+        --resource-group $ResourceGroupName `
+        --enabled true `
+        --action LoginWithAzureActiveDirectory `
+        --output none 2>$null | Out-Null
+    Ok "EasyAuth abilitato – provider: Microsoft / Entra ID"
+    Ok "Ogni richiesta HTTP ora richiede un token Entra ID valido prima di raggiungere il codice."
+}
+
 # ─── 7. Build + Publish + Deploy ────────────────────────────────────────────
 if ($SkipDeploy) {
     Warn "SkipDeploy specificato – salto build e deploy. Risorse Azure pronte."
