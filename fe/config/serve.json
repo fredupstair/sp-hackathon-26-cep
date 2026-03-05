@@ -2,5 +2,29 @@
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/spfx-serve.schema.json",
   "port": 4321,
   "https": true,
-  "initialPage": "https://federicoporceddumvp.sharepoint.com/sites/Copilot-Engagement-Program/_layouts/workbench.aspx"
+  "initialPage": "https://federicoporceddumvp.sharepoint.com/sites/Copilot-Engagement-Program/_layouts/workbench.aspx",
+  "serveConfigurations": {
+    "default": {
+      "pageUrl": "https://{tenantDomain}/SitePages/myPage.aspx",
+      "customActions": {
+        "76600779-f064-4aac-8d2f-6800cc00ac06": {
+          "location": "ClientSideExtension.ApplicationCustomizer",
+          "properties": {
+            "testMessage": "Test message"
+          }
+        }
+      }
+    },
+    "cepBar": {
+      "pageUrl": "https://{tenantDomain}/SitePages/myPage.aspx",
+      "customActions": {
+        "76600779-f064-4aac-8d2f-6800cc00ac06": {
+          "location": "ClientSideExtension.ApplicationCustomizer",
+          "properties": {
+            "testMessage": "Test message"
+          }
+        }
+      }
+    }
+  }
 }

@@ -21,7 +21,10 @@
     "@microsoft/sp-property-pane": "1.22.1",
     "@microsoft/sp-webpart-base": "1.22.1",
     "@microsoft/sp-lodash-subset": "1.22.1",
-    "@microsoft/sp-office-ui-fabric-core": "1.22.1"
+    "@microsoft/sp-office-ui-fabric-core": "1.22.1",
+    "@microsoft/decorators": "1.22.1",
+    "@microsoft/sp-dialog": "1.22.1",
+    "@microsoft/sp-application-base": "1.22.1"
   },
   "devDependencies": {
     "@rushstack/eslint-config": "4.5.2",

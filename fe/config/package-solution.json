@@ -36,7 +36,13 @@
         "title": "cep Feature",
         "description": "The feature that activates elements of the cep solution.",
         "id": "0949aa91-dc93-4fb7-91a5-42d94abdef66",
-        "version": "1.0.0.0"
+        "version": "1.0.0.0",
+        "assets": {
+          "elementManifests": [
+            "elements.xml",
+            "ClientSideInstance.xml"
+          ]
+        }
       }
     ]
   },

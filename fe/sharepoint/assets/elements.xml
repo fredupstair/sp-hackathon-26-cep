@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+    <CustomAction
+        Title="CepBar"
+        Location="ClientSideExtension.ApplicationCustomizer"
+        ClientSideComponentId="76600779-f064-4aac-8d2f-6800cc00ac06"
+        ClientSideComponentProperties="{&quot;testMessage&quot;:&quot;Test message&quot;}">
+    </CustomAction>
+</Elements>

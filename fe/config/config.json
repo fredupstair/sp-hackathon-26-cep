@@ -9,10 +9,19 @@
           "manifest": "./src/webparts/cepOptin/CepOptinWebPart.manifest.json"
         }
       ]
+    },
+    "cep-bar-application-customizer": {
+      "components": [
+        {
+          "entrypoint": "./lib/extensions/cepBar/CepBarApplicationCustomizer.js",
+          "manifest": "./src/extensions/cepBar/CepBarApplicationCustomizer.manifest.json"
+        }
+      ]
     }
   },
   "externals": {},
   "localizedResources": {
-    "CepOptinWebPartStrings": "lib/webparts/cepOptin/loc/{locale}.js"
+    "CepOptinWebPartStrings": "lib/webparts/cepOptin/loc/{locale}.js",
+    "CepBarApplicationCustomizerStrings": "lib/extensions/cepBar/loc/{locale}.js"
   }
 }
