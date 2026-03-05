@@ -124,7 +124,8 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
   private _renderNotConfigured(): React.ReactElement {
     return (
       <MessageBar messageBarType={MessageBarType.warning} isMultiline>
-        <strong>Web part non configurata.</strong> Apri il pannello proprietà (icona a matita) e inserisci l&apos;URL della Function App.
+        <strong>Web part non configurata.</strong>{' '}
+        Le Tenant Properties di SharePoint non sono state impostate.
       </MessageBar>
     );
   }
