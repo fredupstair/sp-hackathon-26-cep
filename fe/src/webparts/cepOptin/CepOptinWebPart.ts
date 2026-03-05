@@ -56,12 +56,12 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
 
       if (!this._functionAppBaseUrl || !this._functionAppClientId) {
         console.warn(
-          '[CepOptin] Tenant Properties non trovate. ' +
-          'Eseguire deploy/set-tenant-properties.ps1 per impostarle.'
+          '[CepOptin] Tenant Properties not found. ' +
+          'Run deploy/set-tenant-properties.ps1 to set them.'
         );
       }
     } catch (e) {
-      console.error('[CepOptin] Errore nel recupero delle Tenant Properties:', e);
+      console.error('[CepOptin] Error retrieving Tenant Properties:', e);
     }
   }
 
@@ -122,8 +122,8 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
   }
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
-    // La configurazione proviene dalle Tenant Properties di SharePoint.
-    // Usare deploy/set-tenant-properties.ps1 per impostare i valori.
+    // Configuration comes from SharePoint Tenant Properties.
+    // Use deploy/set-tenant-properties.ps1 to set values.
     return { pages: [] };
   }
 }

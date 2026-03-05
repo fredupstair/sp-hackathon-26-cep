@@ -16,13 +16,13 @@
   "supportsThemeVariants": true,
 
   "preconfiguredEntries": [{
-    "groupId": "5c03119e-3074-46fd-976b-c60198311f70", // Advanced
-    "group": { "default": "Advanced" },
-    "title": { "default": "cepLeaderboard" },
-    "description": { "default": "cepLeaderboard description" },
-    "officeFabricIconFontName": "Page",
+    "groupId": "a5e2e3d8-1234-4c5a-b678-9abcdef01234",
+    "group": { "default": "Copilot Engagement Program" },
+    "title": { "default": "CEP Leaderboard" },
+    "description": { "default": "Monthly leaderboard with podium, rankings and filter by Department/Team." },
+    "officeFabricIconFontName": "Trophy2",
     "properties": {
-      "description": "cepLeaderboard"
+      "description": "CEP Leaderboard"
     }
   }]
 }
