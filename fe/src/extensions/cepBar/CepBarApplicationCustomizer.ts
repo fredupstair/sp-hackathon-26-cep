@@ -25,14 +25,13 @@ export default class CepBarApplicationCustomizer
   public onInit(): Promise<void> {
     Log.info(LOG_SOURCE, `Initialized ${strings.Title}`);
 
-    let message: string = this.properties.testMessage;
-    if (!message) {
-      message = '(No properties were provided.)';
-    }
-
-    Dialog.alert(`Hello from ${strings.Title}:\n\n${message}`).catch(() => {
-      /* handle error */
-    });
+    // let message: string = this.properties.testMessage;
+    // if (!message) {
+    //   message = '(No properties were provided.)';
+    // }
+    // Dialog.alert(`Hello from ${strings.Title}:\n\n${message}`).catch(() => {
+    //   /* handle error */
+    // });
 
     return Promise.resolve();
   }

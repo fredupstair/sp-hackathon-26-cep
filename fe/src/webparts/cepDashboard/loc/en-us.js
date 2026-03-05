@@ -12,6 +12,8 @@ define([], function() {
     // Loading / errors
     "Loading": "Loading...",
     "LoadError": "Error loading data: {0}",
+    "NotConfiguredTitle": "Web part not configured",
+    "NotConfiguredMessage": "The Function App URL and Client ID have not been set. Run deploy/set-tenant-properties.ps1 to configure them.",
     "NotEnrolledTitle": "You are not enrolled",
     "NotEnrolledMessage": "Join the Copilot Engagement Program to see your dashboard.",
     "JoinProgram": "Enroll now",
