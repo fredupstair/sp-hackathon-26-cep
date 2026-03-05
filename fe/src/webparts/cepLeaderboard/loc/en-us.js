@@ -1,16 +1,44 @@
 define([], function() {
   return {
-    "PropertyPaneDescription": "Description",
-    "BasicGroupName": "Group Name",
-    "DescriptionFieldLabel": "Description Field",
-    "AppLocalEnvironmentSharePoint": "The app is running on your local environment as SharePoint web part",
-    "AppLocalEnvironmentTeams": "The app is running on your local environment as Microsoft Teams app",
-    "AppLocalEnvironmentOffice": "The app is running on your local environment in office.com",
-    "AppLocalEnvironmentOutlook": "The app is running on your local environment in Outlook",
-    "AppSharePointEnvironment": "The app is running on SharePoint page",
-    "AppTeamsTabEnvironment": "The app is running in Microsoft Teams",
-    "AppOfficeEnvironment": "The app is running in office.com",
-    "AppOutlookEnvironment": "The app is running in Outlook",
-    "UnknownEnvironment": "The app is running in an unknown environment"
+    // Property Pane
+    "PropertyPaneDescription": "Configure the CEP Leaderboard web part",
+    "BasicGroupName": "Settings",
+
+    // Header
+    "WebPartTitle": "CEP Leaderboard",
+    "CurrentMonth": "Current month",
+
+    // Loading / errors
+    "Loading": "Loading leaderboard...",
+    "LoadError": "Error loading leaderboard: {0}",
+    "Retry": "Retry",
+
+    // Filter tabs
+    "FilterGlobal": "Global",
+    "FilterDepartment": "Department",
+    "FilterTeam": "Team",
+
+    // Podium
+    "PodiumTitle": "Top 3 this month",
+    "PodiumFirstPlace": "1st place",
+    "PodiumSecondPlace": "2nd place",
+    "PodiumThirdPlace": "3rd place",
+    "NoDataForPodium": "Not enough data for the podium yet.",
+
+    // Leaderboard table
+    "ColumnRank": "Rank",
+    "ColumnUser": "User",
+    "ColumnDepartment": "Department",
+    "ColumnPoints": "Points",
+    "ColumnLevel": "Level",
+    "YouLabel": "You",
+    "SearchPlaceholder": "Search by name...",
+    "NoResults": "No results found.",
+    "LoadMore": "Load more",
+
+    // Aggregate stats
+    "StatsAvgPoints": "Avg. points",
+    "StatsTotalUsers": "Participants",
+    "StatsActiveUsers": "Active users"
   }
 });

@@ -20,6 +20,14 @@ import {
 import styles from './CepOptin.module.scss';
 import type { ICepOptinProps } from './ICepOptinProps';
 import type { IUserSummary } from '../../../services/CepApiModels';
+import * as strings from 'CepOptinWebPartStrings';
+
+// Helper to format strings with placeholders like {0}, {1}
+const formatString = (template: string, ...args: (string | number)[]): string => {
+  return template.replace(/{(\d+)}/g, (match, index) => {
+    return typeof args[index] !== 'undefined' ? String(args[index]) : match;
+  });
+};
 
 type LoadingState = 'idle' | 'loading' | 'loaded' | 'error';
 
@@ -80,7 +88,7 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
       const summary = await apiClient.getMeSummary();
       this.setState({ loadingState: 'loaded', userSummary: summary });
     } catch (e) {
-      this.setState({ loadingState: 'error', errorMessage: `Errore nel caricamento: ${(e as Error).message}` });
+      this.setState({ loadingState: 'error', errorMessage: formatString(strings.LoadError, (e as Error).message) });
     }
   }
 
@@ -94,9 +102,9 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
     try {
       await apiClient.join({ department, team, isEngagementNudgesEnabled: enableNudges });
       const summary = await apiClient.getMeSummary();
-      this.setState({ submitting: false, userSummary: summary, successMessage: 'Iscrizione completata! Benvenuto nel Copilot Engagement Program.' });
+      this.setState({ submitting: false, userSummary: summary, successMessage: strings.JoinSuccess });
     } catch (e) {
-      this.setState({ submitting: false, errorMessage: `Errore durante l'iscrizione: ${(e as Error).message}` });
+      this.setState({ submitting: false, errorMessage: formatString(strings.JoinError, (e as Error).message) });
     }
   };
 
@@ -106,9 +114,9 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
     this.setState({ submitting: true, showLeaveDialog: false, errorMessage: '', successMessage: '' });
     try {
       await apiClient.leave();
-      this.setState({ submitting: false, userSummary: undefined, successMessage: 'Iscrizione annullata. I tuoi dati rimarranno disponibili per 90 giorni.' });
+      this.setState({ submitting: false, userSummary: undefined, successMessage: strings.LeaveSuccess });
     } catch (e) {
-      this.setState({ submitting: false, errorMessage: `Errore durante l'annullamento: ${(e as Error).message}` });
+      this.setState({ submitting: false, errorMessage: formatString(strings.LeaveError, (e as Error).message) });
     }
   };
 
@@ -124,8 +132,8 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
   private _renderNotConfigured(): React.ReactElement {
     return (
       <MessageBar messageBarType={MessageBarType.warning} isMultiline>
-        <strong>Web part non configurata.</strong>{' '}
-        Le Tenant Properties di SharePoint non sono state impostate.
+        <strong>{strings.NotConfiguredTitle}</strong>{' '}
+        {strings.NotConfiguredMessage}
       </MessageBar>
     );
   }
@@ -133,7 +141,7 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
   private _renderLoading(): React.ReactElement {
     return (
       <Stack className={styles.container} horizontalAlign="center" tokens={{ padding: 24 }}>
-        <Spinner size={SpinnerSize.large} label="Caricamento..." />
+        <Spinner size={SpinnerSize.large} label={strings.Loading} />
       </Stack>
     );
   }
@@ -148,25 +156,24 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
         {/* Header */}
         <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 10 }}>
           <Icon iconName="Trophy2" className={styles.headerIcon} />
-          <Text variant="xLarge" className={styles.title}>Copilot Engagement Program</Text>
+          <Text variant="xLarge" className={styles.title}>{strings.WebPartTitle}</Text>
         </Stack>
         <Text variant="medium" className={styles.subtitle}>
-          Benvenuto/a, <strong>{userDisplayName}</strong>! Iscriviti al programma per tracciare il tuo utilizzo di Copilot, guadagnare punti e scalare la classifica.
+          {formatString(strings.WelcomeMessage, userDisplayName)}
         </Text>
 
         <Separator />
 
         {/* Transparency */}
         <Stack className={styles.transparencyBox} tokens={{ childrenGap: 8 }}>
-          <Text variant="mediumPlus"><Icon iconName="Shield" /> Cosa raccogliamo</Text>
+          <Text variant="mediumPlus"><Icon iconName="Shield" /> {strings.TransparencyTitle}</Text>
           <ul className={styles.transparencyList}>
-            <li>Numero di prompt inviati a Copilot (nessun contenuto)</li>
-            <li>App utilizzata (Word, Excel, Outlook, Teams, ecc.)</li>
-            <li>Data giornaliera dell&apos;attività (aggregata, non per singola interazione)</li>
+            <li>{strings.TransparencyItem1}</li>
+            <li>{strings.TransparencyItem2}</li>
+            <li>{strings.TransparencyItem3}</li>
           </ul>
           <Text variant="small" className={styles.note}>
-            Non vengono salvati: testi dei prompt, risposte, allegati, menzioni o qualsiasi contenuto personale.
-            Il tracciamento avviene una volta al giorno. Puoi annullare l&apos;iscrizione in qualsiasi momento.
+            {strings.TransparencyNote}
           </Text>
         </Stack>
 
@@ -175,27 +182,27 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
         {/* Form fields */}
         <Stack tokens={{ childrenGap: 12 }}>
           <TextField
-            label="Dipartimento"
-            placeholder="es. IT, Marketing, Finance"
+            label={strings.DepartmentLabel}
+            placeholder={strings.DepartmentPlaceholder}
             value={department}
             onChange={(_e, v) => this.setState({ department: v || '' })}
           />
           <TextField
-            label="Team"
-            placeholder="es. Team Cloud, Team Vendite Nord"
+            label={strings.TeamLabel}
+            placeholder={strings.TeamPlaceholder}
             value={team}
             onChange={(_e, v) => this.setState({ team: v || '' })}
           />
           <Toggle
-            label="Notifiche di engagement su Teams"
-            onText="Attive"
-            offText="Disattivate"
+            label={strings.NudgesLabel}
+            onText={strings.NudgesOn}
+            offText={strings.NudgesOff}
             checked={enableNudges}
             onChange={(_e, checked) => this.setState({ enableNudges: !!checked })}
             inlineLabel
           />
           <Text variant="small" className={styles.note}>
-            Riceverai un messaggio su Teams se non usi Copilot per 3+ giorni consecutivi.
+            {strings.NudgesDescription}
           </Text>
         </Stack>
 
@@ -203,7 +210,7 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
 
         {/* Consent */}
         <Checkbox
-          label="Acconsento alla raccolta dei dati descritti sopra e confermo di voler partecipare al Copilot Engagement Program."
+          label={strings.ConsentLabel}
           checked={consentChecked}
           onChange={(_e, checked) => this.setState({ consentChecked: !!checked })}
           className={styles.consentCheckbox}
@@ -216,7 +223,7 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
         {/* CTA */}
         <Stack horizontal tokens={{ childrenGap: 8 }}>
           <PrimaryButton
-            text={submitting ? 'Iscrizione in corso...' : 'Iscrivimi al programma'}
+            text={submitting ? strings.JoinButtonLoading : strings.JoinButton}
             disabled={!canSubmit}
             onClick={this._handleJoin}
             iconProps={submitting ? undefined : { iconName: 'AddFriend' }}
@@ -240,7 +247,7 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
         {/* Header */}
         <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 10 }}>
           <Icon iconName="Trophy2" className={styles.headerIcon} />
-          <Text variant="xLarge" className={styles.title}>Copilot Engagement Program</Text>
+          <Text variant="xLarge" className={styles.title}>{strings.WebPartTitle}</Text>
         </Stack>
 
         {/* Status card */}
@@ -256,29 +263,29 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
           <Stack horizontal tokens={{ childrenGap: 24 }} wrap>
             <Stack className={styles.metricBox}>
               <Text variant="xxLarge" className={styles.metricValue}>{userSummary.monthlyPoints}</Text>
-              <Text variant="small" className={styles.metricLabel}>Punti questo mese</Text>
+              <Text variant="small" className={styles.metricLabel}>{strings.PointsThisMonth}</Text>
             </Stack>
             <Stack className={styles.metricBox}>
               <Text variant="xxLarge" className={styles.metricValue}>{userSummary.totalPoints}</Text>
-              <Text variant="small" className={styles.metricLabel}>Punti totali</Text>
+              <Text variant="small" className={styles.metricLabel}>{strings.TotalPoints}</Text>
             </Stack>
             {userSummary.globalRank !== undefined && (
               <Stack className={styles.metricBox}>
                 <Text variant="xxLarge" className={styles.metricValue}>#{userSummary.globalRank}</Text>
-                <Text variant="small" className={styles.metricLabel}>Classifica globale</Text>
+                <Text variant="small" className={styles.metricLabel}>{strings.GlobalRank}</Text>
               </Stack>
             )}
             {userSummary.teamRank !== undefined && (
               <Stack className={styles.metricBox}>
                 <Text variant="xxLarge" className={styles.metricValue}>#{userSummary.teamRank}</Text>
-                <Text variant="small" className={styles.metricLabel}>Classifica team</Text>
+                <Text variant="small" className={styles.metricLabel}>{strings.TeamRank}</Text>
               </Stack>
             )}
           </Stack>
 
           {userSummary.lastActivityDate && (
             <Text variant="small" className={styles.note}>
-              Ultima attività: {new Date(userSummary.lastActivityDate).toLocaleDateString('it-IT')}
+              {formatString(strings.LastActivity, new Date(userSummary.lastActivityDate).toLocaleDateString())}
             </Text>
           )}
         </Stack>
@@ -287,11 +294,11 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
 
         {/* Preferences */}
         <Stack tokens={{ childrenGap: 8 }}>
-          <Text variant="mediumPlus"><Icon iconName="Settings" /> Preferenze notifiche</Text>
+          <Text variant="mediumPlus"><Icon iconName="Settings" /> {strings.PreferencesTitle}</Text>
           <Toggle
-            label="Notifiche di engagement su Teams dopo 3+ giorni di inattività"
-            onText="Attive"
-            offText="Disattivate"
+            label={strings.NudgesToggleLabel}
+            onText={strings.NudgesOn}
+            offText={strings.NudgesOff}
             checked={userSummary.isEngagementNudgesEnabled}
             onChange={this._handleNudgeToggle}
             inlineLabel
@@ -305,7 +312,7 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
         {/* Leave */}
         <Stack>
           <DefaultButton
-            text={submitting ? 'Elaborazione...' : 'Annulla iscrizione'}
+            text={submitting ? strings.LeaveButtonLoading : strings.LeaveButton}
             iconProps={{ iconName: 'Leave' }}
             disabled={submitting}
             onClick={() => this.setState({ showLeaveDialog: true })}
@@ -319,13 +326,13 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
           onDismiss={() => this.setState({ showLeaveDialog: false })}
           dialogContentProps={{
             type: DialogType.normal,
-            title: 'Annulla iscrizione',
-            subText: 'Sei sicuro/a di voler uscire dal Copilot Engagement Program? Il tracciamento verrà interrotto e verrai rimosso/a dalla classifica. I tuoi dati verranno conservati per 90 giorni.',
+            title: strings.LeaveDialogTitle,
+            subText: strings.LeaveDialogMessage,
           }}
         >
           <DialogFooter>
-            <PrimaryButton text="Sì, annulla iscrizione" onClick={this._handleLeave} />
-            <DefaultButton text="Annulla" onClick={() => this.setState({ showLeaveDialog: false })} />
+            <PrimaryButton text={strings.LeaveDialogConfirm} onClick={this._handleLeave} />
+            <DefaultButton text={strings.LeaveDialogCancel} onClick={() => this.setState({ showLeaveDialog: false })} />
           </DialogFooter>
         </Dialog>
       </Stack>
@@ -353,7 +360,7 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
         <div className={rootClass}>
           <MessageBar messageBarType={MessageBarType.error} isMultiline>
             {this.state.errorMessage}
-            <DefaultButton text="Riprova" onClick={() => this._loadEnrollmentStatus()} style={{ marginLeft: 8 }} />
+            <DefaultButton text={strings.Retry} onClick={() => this._loadEnrollmentStatus()} style={{ marginLeft: 8 }} />
           </MessageBar>
         </div>
       );
