@@ -14,7 +14,7 @@
     "solutionShortDescription": "cep description",
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
-    "componentType": "extension",
-    "extensionType": "ApplicationCustomizer"
+    "componentType": "webpart",
+    "componentName": "cepLeaderboard"
   }
 }
