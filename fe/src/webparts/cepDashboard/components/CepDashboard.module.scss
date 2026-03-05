@@ -1,34 +1,395 @@
 @import '~@fluentui/react/dist/sass/References.scss';
 
+// ─── Variables ────────────────────────────────────────────────────────────────
+$bronze-color: #cd7f32;
+$silver-color: #9e9e9e;
+$gold-color: #f9a825;
+$card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+$card-radius: 8px;
+
+@mixin card-base {
+  background: var(--white, #ffffff);
+  border-radius: $card-radius;
+  box-shadow: $card-shadow;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+// ─── Container ────────────────────────────────────────────────────────────────
 .cepDashboard {
   overflow: hidden;
-  padding: 1em;
-  color: "[theme:bodyText, default: #323130]";
+  padding: 16px;
   color: var(--bodyText);
+  max-width: 920px;
+
   &.teams {
     font-family: $ms-font-family-fallbacks;
   }
 }
 
-.welcome {
-  text-align: center;
+// ─── Shared card ──────────────────────────────────────────────────────────────
+.card {
+  @include card-base;
 }
 
-.welcomeImage {
-  width: 100%;
-  max-width: 420px;
+// ─── Header ───────────────────────────────────────────────────────────────────
+.headerCard {
+  @include card-base;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.links {
-  a {
-    text-decoration: none;
-    color: "[theme:link, default:#03787c]";
-    color: var(--link); // note: CSS Custom Properties support is limited to modern browsers only
+.headerInfo {
+  flex: 1;
+  min-width: 0;
+}
 
-    &:hover {
-      text-decoration: underline;
-      color: "[theme:linkHovered, default: #014446]";
-      color: var(--linkHovered); // note: CSS Custom Properties support is limited to modern browsers only
+.displayName {
+  font-size: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.headerMeta {
+  font-size: 13px;
+  color: var(--neutralSecondary, #605e5c);
+}
+
+// ─── Level pill ───────────────────────────────────────────────────────────────
+.levelPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #fff;
+}
+
+.bronze { background: $bronze-color; }
+.silver { background: $silver-color; }
+.gold   { background: $gold-color; color: #3d2b00; }
+
+// ─── Month picker ─────────────────────────────────────────────────────────────
+.monthPicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 500;
+
+  .monthLabel {
+    min-width: 130px;
+    text-align: center;
+    text-transform: capitalize;
+  }
+
+  .monthBtn {
+    background: none;
+    border: 1px solid var(--neutralTertiaryAlt, #c8c6c4);
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+
+    &:hover:not(:disabled) {
+      background: var(--neutralLighter, #f3f2f1);
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
     }
   }
+}
+
+// ─── Stats row ────────────────────────────────────────────────────────────────
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.statCard {
+  @include card-base;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statLabel {
+  font-size: 11px;
+  color: var(--neutralSecondary, #605e5c);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 600;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.statSubValue {
+  font-size: 13px;
+  color: var(--neutralSecondary, #605e5c);
+}
+
+.levelProgress {
+  margin-top: 8px;
+}
+
+.progressTrack {
+  height: 6px;
+  background: var(--neutralLighter, #f3f2f1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 4px 0;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.progressBronze { background: $bronze-color; }
+.progressSilver { background: $silver-color; }
+.progressGold   { background: $gold-color; }
+
+// ─── App usage chart ──────────────────────────────────────────────────────────
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.appBarList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.appBarRow {
+  display: grid;
+  grid-template-columns: 110px 1fr 80px;
+  align-items: center;
+  gap: 10px;
+}
+
+.appBarLabel {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appBarTrack {
+  height: 16px;
+  background: var(--neutralLighter, #f3f2f1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.appBarFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  min-width: 4px;
+}
+
+.appWord       { background: #2b579a; }
+.appExcel      { background: #217346; }
+.appPowerPoint { background: #b7472a; }
+.appOutlook    { background: #0078d4; }
+.appTeams      { background: #6264a7; }
+.appOneNote    { background: #7719aa; }
+.appLoop       { background: #008272; }
+.appM365Chat   { background: #0f6cbd; }
+.appOther      { background: #9e9e9e; }
+
+.appBarCount {
+  font-size: 12px;
+  color: var(--neutralSecondary, #605e5c);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.emptyState {
+  text-align: center;
+  color: var(--neutralTertiary, #a19f9d);
+  padding: 24px 0;
+  font-size: 14px;
+}
+
+// ─── Badges ───────────────────────────────────────────────────────────────────
+.badgesGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.badgeItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 88px;
+  gap: 4px;
+}
+
+.badgeIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--themeLighter, #deecf9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.badgeName {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.badgeDate {
+  font-size: 10px;
+  color: var(--neutralSecondary, #605e5c);
+}
+
+// ─── Mini Leaderboard ─────────────────────────────────────────────────────────
+.leaderboardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.leaderboardTitle {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.leaderboardSeeAll {
+  font-size: 13px;
+  color: var(--link, #03787c);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.leaderboardTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lbRow {
+  td {
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--neutralLighter, #f3f2f1);
+    font-size: 13px;
+    vertical-align: middle;
+  }
+
+  &:last-child td {
+    border-bottom: none;
+  }
+}
+
+.lbRowCurrentUser {
+  td {
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--neutralLighter, #f3f2f1);
+    font-size: 13px;
+    font-weight: 600;
+    vertical-align: middle;
+    background: var(--themeLighterAlt, #eff6fc);
+  }
+
+  &:last-child td {
+    border-bottom: none;
+  }
+}
+
+.lbSeparator {
+  td {
+    padding: 2px 6px;
+    text-align: center;
+    color: var(--neutralTertiary, #a19f9d);
+    font-size: 14px;
+    letter-spacing: 2px;
+    border-bottom: none;
+  }
+}
+
+.lbRankCell  { width: 36px; text-align: center; font-weight: 700; color: var(--neutralSecondary, #605e5c); }
+.lbNameCell  { }
+.lbLevelCell { width: 90px; }
+.lbPointsCell { text-align: right; font-weight: 600; white-space: nowrap; }
+
+// ─── Not enrolled banner ──────────────────────────────────────────────────────
+.notEnrolledBanner {
+  @include card-base;
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.notEnrolledIcon {
+  font-size: 52px;
+  margin-bottom: 16px;
+  line-height: 1;
+}
+
+.notEnrolledTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.notEnrolledMessage {
+  font-size: 14px;
+  color: var(--neutralSecondary, #605e5c);
+  margin-bottom: 24px;
+}
+
+// ─── Other user header ────────────────────────────────────────────────────────
+.otherUserHeader {
+  @include card-base;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }

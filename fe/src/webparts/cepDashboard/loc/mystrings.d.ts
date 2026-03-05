@@ -11,6 +11,8 @@ declare interface ICepDashboardWebPartStrings {
   // Loading / errors
   Loading: string;
   LoadError: string;
+  NotConfiguredTitle: string;
+  NotConfiguredMessage: string;
   NotEnrolledTitle: string;
   NotEnrolledMessage: string;
   JoinProgram: string;
