@@ -1,23 +1,21 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
-import {
-  type IPropertyPaneConfiguration,
-  PropertyPaneTextField,
-} from '@microsoft/sp-property-pane';
+import { type IPropertyPaneConfiguration } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
-import { AadHttpClient } from '@microsoft/sp-http';
+import { AadHttpClient, SPHttpClient } from '@microsoft/sp-http';
 
 import CepOptin from './components/CepOptin';
 import { ICepOptinProps } from './components/ICepOptinProps';
 import { CepApiClient } from '../../services/CepApiClient';
 
-export interface ICepOptinWebPartProps {
-  functionAppBaseUrl: string;
-  /** Client ID (appId) of the CEP-Backend app registration – used to build the AAD resource URI */
-  functionAppClientId: string;
-}
+// Tenant Properties keys (Storage Entities) – set via deploy/set-tenant-properties.ps1
+const TENANT_KEY_BASE_URL   = 'CEP_FunctionAppBaseUrl';
+const TENANT_KEY_CLIENT_ID  = 'CEP_FunctionAppClientId';
+
+// No user-editable properties – config comes from SharePoint Tenant Properties
+export type ICepOptinWebPartProps = Record<string, never>;
 
 export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebPartProps> {
 
@@ -25,14 +23,51 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
   private _aadClient: AadHttpClient | undefined;
   private _apiClient: CepApiClient | undefined;
 
+  /** Resolved from SharePoint Tenant Properties on init */
+  private _functionAppBaseUrl: string = '';
+  private _functionAppClientId: string = '';
+
   protected async onInit(): Promise<void> {
     await super.onInit();
+    await this._loadTenantProperties();
     await this._initApiClient();
   }
 
+  /** Reads CEP configuration from SharePoint Tenant Properties (Storage Entities). */
+  private async _loadTenantProperties(): Promise<void> {
+    const siteAbsUrl = this.context.pageContext.site.absoluteUrl;
+    try {
+      const [baseUrlResp, clientIdResp] = await Promise.all([
+        this.context.spHttpClient.get(
+          `${siteAbsUrl}/_api/web/GetStorageEntity('${TENANT_KEY_BASE_URL}')`,
+          SPHttpClient.configurations.v1
+        ),
+        this.context.spHttpClient.get(
+          `${siteAbsUrl}/_api/web/GetStorageEntity('${TENANT_KEY_CLIENT_ID}')`,
+          SPHttpClient.configurations.v1
+        ),
+      ]);
+
+      const baseUrlData   = await baseUrlResp.json();
+      const clientIdData  = await clientIdResp.json();
+
+      this._functionAppBaseUrl  = (baseUrlData.Value  as string | null)?.trim() ?? '';
+      this._functionAppClientId = (clientIdData.Value as string | null)?.trim() ?? '';
+
+      if (!this._functionAppBaseUrl || !this._functionAppClientId) {
+        console.warn(
+          '[CepOptin] Tenant Properties non trovate. ' +
+          'Eseguire deploy/set-tenant-properties.ps1 per impostarle.'
+        );
+      }
+    } catch (e) {
+      console.error('[CepOptin] Errore nel recupero delle Tenant Properties:', e);
+    }
+  }
+
   private async _initApiClient(): Promise<void> {
-    const baseUrl = this.properties.functionAppBaseUrl?.trim();
-    const clientId = this.properties.functionAppClientId?.trim();
+    const baseUrl  = this._functionAppBaseUrl;
+    const clientId = this._functionAppClientId;
     if (!baseUrl || !clientId) return;
     try {
       // The resource URI for AAD token acquisition MUST be the App ID URI (api://<clientId>)
@@ -55,7 +90,7 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
     const element: React.ReactElement<ICepOptinProps> = React.createElement(
       CepOptin,
       {
-        functionAppBaseUrl: this.properties.functionAppBaseUrl || '',
+        functionAppBaseUrl: this._functionAppBaseUrl,
         apiClient: this._apiClient,
         userDisplayName: this.context.pageContext.user.displayName,
         userEmail: this.context.pageContext.user.email,
@@ -82,53 +117,14 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
     ReactDom.unmountComponentAtNode(this.domElement);
   }
 
-  protected async onPropertyPaneFieldChanged(propertyPath: string): Promise<void> {
-    if (propertyPath === 'functionAppBaseUrl' || propertyPath === 'functionAppClientId') {
-      this._aadClient = undefined;
-      this._apiClient = undefined;
-      await this._initApiClient();
-      this.render();
-    }
-  }
-
   protected get dataVersion(): Version {
     return Version.parse('1.0');
   }
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
-    return {
-      pages: [
-        {
-          header: { description: 'Configura la connessione al backend CEP' },
-          groups: [
-            {
-              groupName: 'Backend Azure Functions',
-              groupFields: [
-                PropertyPaneTextField('functionAppBaseUrl', {
-                  label: 'Function App Base URL',
-                  placeholder: 'https://<nome-app>.azurewebsites.net',
-                  description: "URL base della Function App, senza trailing slash.",
-                  onGetErrorMessage: (value: string) => {
-                    if (!value) return 'Campo obbligatorio';
-                    try { new URL(value); return ''; } catch { return 'URL non valido'; }
-                  },
-                }),
-                PropertyPaneTextField('functionAppClientId', {
-                  label: 'App Registration Client ID',
-                  placeholder: '00000000-0000-0000-0000-000000000000',
-                  description: "Client ID (appId) dell'app registration CEP-Backend in Entra ID.",
-                  onGetErrorMessage: (value: string) => {
-                    if (!value) return 'Campo obbligatorio';
-                    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
-                      ? '' : 'Deve essere un GUID valido';
-                  },
-                }),
-              ],
-            },
-          ],
-        },
-      ],
-    };
+    // La configurazione proviene dalle Tenant Properties di SharePoint.
+    // Usare deploy/set-tenant-properties.ps1 per impostare i valori.
+    return { pages: [] };
   }
 }
 
