@@ -17,11 +17,29 @@
           "manifest": "./src/extensions/cepBar/CepBarApplicationCustomizer.manifest.json"
         }
       ]
+    },
+    "cep-dashboard-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/cepDashboard/CepDashboardWebPart.js",
+          "manifest": "./src/webparts/cepDashboard/CepDashboardWebPart.manifest.json"
+        }
+      ]
+    },
+    "cep-leaderboard-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/cepLeaderboard/CepLeaderboardWebPart.js",
+          "manifest": "./src/webparts/cepLeaderboard/CepLeaderboardWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {},
   "localizedResources": {
     "CepOptinWebPartStrings": "lib/webparts/cepOptin/loc/{locale}.js",
-    "CepBarApplicationCustomizerStrings": "lib/extensions/cepBar/loc/{locale}.js"
+    "CepBarApplicationCustomizerStrings": "lib/extensions/cepBar/loc/{locale}.js",
+    "CepDashboardWebPartStrings": "lib/webparts/cepDashboard/loc/{locale}.js",
+    "CepLeaderboardWebPartStrings": "lib/webparts/cepLeaderboard/loc/{locale}.js"
   }
 }
