@@ -1,3 +1,6 @@
+using System.IO;
+using System.Text.Json;
+using CepFunctions.Models;
 using CepFunctions.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +21,8 @@ namespace CepFunctions.Functions;
 /// GET /api/me/summary?month=YYYY-MM
 /// GET /api/me/usage?from=YYYY-MM-DD&amp;to=YYYY-MM-DD
 /// GET /api/me/badges
+/// POST /api/me/wins
+/// GET /api/me/suggestion
 /// </summary>
 public class MeApi
 {
@@ -44,7 +49,8 @@ public class MeApi
         var user = await _sp.GetUserByAadIdAsync(aadUserId, ct);
         if (user is null) return new NotFoundObjectResult("User not enrolled.");
 
-        var month = req.Query["month"].FirstOrDefault() ?? DateTime.UtcNow.ToString("yyyy-MM");
+        var now = DateTime.UtcNow;
+        var month = req.Query["month"].FirstOrDefault() ?? now.ToString("yyyy-MM");
 
         // Fetch the user's global rank for the month
         var globalLb = await _sp.GetLeaderboardAsync(month, "Global", 1, int.MaxValue, ct);
@@ -58,6 +64,19 @@ public class MeApi
         var teamEntry = string.IsNullOrEmpty(user.Team) ? null
             : (await _sp.GetLeaderboardAsync(month, $"Team:{user.Team}", 1, int.MaxValue, ct))
               .FirstOrDefault(e => e.AadUserId == aadUserId);
+
+        // Compute recent active days (last 2 months, excludes Win entries) for client-side streak calculation
+        var currMonthKey = now.ToString("yyyy-MM");
+        var prevMonthKey = now.AddMonths(-1).ToString("yyyy-MM");
+        var currLogs = await _sp.GetActivityLogsForUserMonthAsync(aadUserId, currMonthKey, ct);
+        var prevLogs = await _sp.GetActivityLogsForUserMonthAsync(aadUserId, prevMonthKey, ct);
+        var recentActiveDays = currLogs.Values.Concat(prevLogs.Values)
+            .Where(l => !l.IsWin && l.PromptCount > 0)
+            .Select(l => l.UsageDate.ToString("yyyy-MM-dd"))
+            .Distinct()
+            .OrderByDescending(d => d)
+            .Take(60)
+            .ToArray();
 
         return new OkObjectResult(new
         {
@@ -77,6 +96,7 @@ public class MeApi
             departmentRank = deptEntry?.Rank,
             teamRank = teamEntry?.Rank,
             lastActivityDate = user.LastActivityDate,
+            recentActiveDays,
         });
     }
 
@@ -152,6 +172,140 @@ public class MeApi
             earnedDate = b.EarnedDate,
             monthKey = b.MonthKey,
         }));
+    }
+
+    // ------------------------------------------------------------------
+    // Static data for suggestion engine
+    // ------------------------------------------------------------------
+
+    private static readonly string[] _suggestableApps =
+        ["Word", "Excel", "PowerPoint", "Outlook", "Teams", "OneNote", "Loop", "M365Chat"];
+
+    private static readonly Dictionary<string, (string Label, string Text)> _suggestionPool = new()
+    {
+        ["Word"]       = ("Word",               "Draft your next document with Copilot in Word — just describe what you need and let it write the first version!"),
+        ["Excel"]      = ("Excel",              "Ask Copilot in Excel to analyse your data or build a formula — save hours on manual work!"),
+        ["PowerPoint"] = ("PowerPoint",         "Create a whole presentation from a single prompt with Copilot in PowerPoint!"),
+        ["Outlook"]    = ("Outlook",            "Summarise long email threads in seconds with Copilot in Outlook!"),
+        ["Teams"]      = ("Teams",              "Catch up on missed meetings: ask Copilot in Teams to summarise the last transcript!"),
+        ["OneNote"]    = ("OneNote",            "Turn scattered notes into tidy action items with Copilot in OneNote!"),
+        ["Loop"]       = ("Loop",               "Brainstorm in real-time with Copilot in Loop — great for async collaboration!"),
+        ["M365Chat"]   = ("Microsoft 365 Chat", "Ask Copilot Chat a question about any of your M365 files — it searches across all your content!"),
+    };
+
+    private static readonly JsonSerializerOptions _jsonOpts = new() { PropertyNameCaseInsensitive = true };
+
+    private record WinRequest(string AppKey, string? Note, bool IsShared);
+
+    // ------------------------------------------------------------------
+    // POST /api/me/wins
+    // ------------------------------------------------------------------
+
+    [Function("MePostWin")]
+    public async Task<IActionResult> PostWinAsync(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "me/wins")] HttpRequest req,
+        CancellationToken ct)
+    {
+        var aadUserId = GetCallerId(req);
+        if (aadUserId is null) return Unauthorized();
+
+        var user = await _sp.GetUserByAadIdAsync(aadUserId, ct);
+        if (user is null) return new NotFoundObjectResult("User not enrolled.");
+
+        using var reader = new StreamReader(req.Body);
+        var body = await reader.ReadToEndAsync();
+        WinRequest? winReq;
+        try { winReq = JsonSerializer.Deserialize<WinRequest>(body, _jsonOpts); }
+        catch { return new BadRequestObjectResult("Invalid request body."); }
+        if (winReq is null || string.IsNullOrWhiteSpace(winReq.AppKey))
+            return new BadRequestObjectResult("appKey is required.");
+
+        var now = DateTime.UtcNow;
+        var today = DateOnly.FromDateTime(now);
+        var monthKey = now.ToString("yyyy-MM");
+
+        var logs = await _sp.GetActivityLogsForUserMonthAsync(aadUserId, monthKey, ct);
+        logs.TryGetValue(("Win", today), out var winToday);
+        var todayCount = winToday?.PromptCount ?? 0;
+
+        const int MaxWinsPerDay = 10;
+        const int PointsPerWin = 10;
+
+        if (todayCount >= MaxWinsPerDay)
+            return new ObjectResult(new { error = "Daily win limit reached.", todayWinCount = todayCount })
+                   { StatusCode = 429 };
+
+        if (winToday is null)
+        {
+            winToday = new CepActivityLog
+            {
+                AadUserId = aadUserId,
+                UserEmail = user.Email,
+                UsageDate = now.Date,
+                AppKey = "Win",
+                MonthKey = monthKey,
+            };
+        }
+
+        winToday.PromptCount += 1;
+        winToday.PointsEarned += PointsPerWin;
+        winToday.IsWin = true;
+        winToday.WinNote = winReq.Note ?? "";
+        winToday.IsShared = winReq.IsShared;
+
+        await _sp.UpsertActivityLogAsync(winToday, ct);
+
+        user.MonthlyPoints += PointsPerWin;
+        user.TotalPoints += PointsPerWin;
+        await _sp.UpsertUserAsync(user, ct);
+
+        return new OkObjectResult(new
+        {
+            pointsAdded = PointsPerWin,
+            totalMonthlyPoints = user.MonthlyPoints,
+            todayWinCount = winToday.PromptCount,
+        });
+    }
+
+    // ------------------------------------------------------------------
+    // GET /api/me/suggestion
+    // ------------------------------------------------------------------
+
+    [Function("MeSuggestion")]
+    public async Task<IActionResult> GetSuggestionAsync(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "me/suggestion")] HttpRequest req,
+        CancellationToken ct)
+    {
+        var aadUserId = GetCallerId(req);
+        if (aadUserId is null) return Unauthorized();
+
+        var user = await _sp.GetUserByAadIdAsync(aadUserId, ct);
+        if (user is null) return new NotFoundObjectResult("User not enrolled.");
+
+        var monthKey = DateTime.UtcNow.ToString("yyyy-MM");
+        var logs = await _sp.GetActivityLogsForUserMonthAsync(aadUserId, monthKey, ct);
+
+        var usageByApp = logs.Values
+            .Where(l => !l.IsWin)
+            .GroupBy(l => l.AppKey)
+            .ToDictionary(g => g.Key, g => g.Sum(l => l.PromptCount));
+
+        // Pick the suggestable app with the fewest prompts this month; random tiebreak
+        var picked = _suggestableApps
+            .Select(k => (appKey: k, count: usageByApp.TryGetValue(k, out var c) ? c : 0))
+            .OrderBy(x => x.count)
+            .ThenBy(_ => Guid.NewGuid())
+            .First();
+
+        if (!_suggestionPool.TryGetValue(picked.appKey, out var suggestion))
+            return new NoContentResult();
+
+        return new OkObjectResult(new
+        {
+            appKey = picked.appKey,
+            appLabel = suggestion.Label,
+            text = suggestion.Text,
+        });
     }
 
     // ------------------------------------------------------------------

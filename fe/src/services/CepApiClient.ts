@@ -8,6 +8,9 @@ import {
   LeaderboardScope,
   ICepConfig,
   ICepSyncState,
+  ICepWinRequest,
+  ICepWinResponse,
+  ICepSuggestion,
 } from './CepApiModels';
 
 export class CepApiError extends Error {
@@ -127,6 +130,39 @@ export class CepApiClient {
     );
     await this._assertOk(response);
     return response.json() as Promise<ILeaderboardPage>;
+  }
+
+  // ─── Bar: Win ──────────────────────────────────────────────────────────────
+
+  /**
+   * Records a manual "Copilot Win" for the calling user.
+   * Aggregated per day in CEP_ActivityLog (AppKey = "Win"); max 10 wins/day.
+   * Returns 429 CepApiError when the daily limit is reached.
+   */
+  public async postWin(data: ICepWinRequest): Promise<ICepWinResponse> {
+    const response = await this._client.post(
+      `${this._baseUrl}/api/me/wins`,
+      AadHttpClient.configurations.v1,
+      {
+        body: JSON.stringify(data),
+        headers: { ...this._defaultHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+    await this._assertOk(response);
+    return response.json() as Promise<ICepWinResponse>;
+  }
+
+  // ─── Bar: Suggestion ───────────────────────────────────────────────────────
+
+  /** Returns a contextual Copilot suggestion based on the user's least-used apps. */
+  public async getSuggestion(): Promise<ICepSuggestion> {
+    const response = await this._client.get(
+      `${this._baseUrl}/api/me/suggestion`,
+      AadHttpClient.configurations.v1,
+      { headers: this._defaultHeaders }
+    );
+    await this._assertOk(response);
+    return response.json() as Promise<ICepSuggestion>;
   }
 
   // ─── Admin ─────────────────────────────────────────────────────────────────

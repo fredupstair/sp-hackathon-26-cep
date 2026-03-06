@@ -133,6 +133,7 @@
             <CHOICE>Loop</CHOICE>
             <CHOICE>M365Chat</CHOICE>
             <CHOICE>Other</CHOICE>
+            <CHOICE>Win</CHOICE>
           </CHOICES>
         </Field>
 
@@ -150,7 +151,22 @@
                Name="CEP_Log_MonthKey"      DisplayName="Month Key"
                Type="Text"                  Group="CEP Columns"
                Indexed="TRUE"               MaxLength="10" />
+        <Field ID="{A1B2C3D4-0002-0002-0002-000000000008}"
+               Name="CEP_Log_IsWin"         DisplayName="Is Win"
+               Type="Boolean"               Group="CEP Columns">
+          <Default>0</Default>
+        </Field>
 
+        <Field ID="{A1B2C3D4-0002-0002-0002-000000000009}"
+               Name="CEP_Log_WinNote"       DisplayName="Win Note"
+               Type="Text"                  Group="CEP Columns"
+               MaxLength="140" />
+
+        <Field ID="{A1B2C3D4-0002-0002-0002-000000000010}"
+               Name="CEP_Log_IsShared"      DisplayName="Is Shared"
+               Type="Boolean"               Group="CEP Columns">
+          <Default>0</Default>
+        </Field>
         <!-- ── CEP_Leaderboard ────────────────────────────────── -->
         <Field ID="{A1B2C3D4-0003-0003-0003-000000000001}"
                Name="CEP_LB_UserEmail"      DisplayName="User Email"
@@ -428,6 +444,9 @@
             <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000005}" Name="CEP_Log_PromptCount"  DisplayName="Prompt Count" />
             <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000006}" Name="CEP_Log_PointsEarned" DisplayName="Points Earned" />
             <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000007}" Name="CEP_Log_MonthKey"     DisplayName="Month Key"     Required="true" />
+            <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000008}" Name="CEP_Log_IsWin"        DisplayName="Is Win" />
+            <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000009}" Name="CEP_Log_WinNote"      DisplayName="Win Note" />
+            <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000010}" Name="CEP_Log_IsShared"     DisplayName="Is Shared" />
           </pnp:FieldRefs>
           <pnp:Views>
             <View Name="All Activity" DisplayName="All Activity" DefaultView="TRUE">
@@ -443,6 +462,9 @@
                 <FieldRef Name="CEP_Log_PromptCount" />
                 <FieldRef Name="CEP_Log_PointsEarned" />
                 <FieldRef Name="CEP_Log_MonthKey" />
+                <FieldRef Name="CEP_Log_IsWin" />
+                <FieldRef Name="CEP_Log_WinNote" />
+                <FieldRef Name="CEP_Log_IsShared" />
               </ViewFields>
               <RowLimit Paged="TRUE">100</RowLimit>
             </View>
