@@ -4,48 +4,85 @@ declare interface ICepOptinWebPartStrings {
   FunctionAppGroupName: string;
   FunctionAppBaseUrlLabel: string;
   FunctionAppBaseUrlDescription: string;
-  
-  // Component UI
-  WebPartTitle: string;
-  WelcomeMessage: string;
-  NotConfiguredTitle: string;
-  NotConfiguredMessage: string;
+
+  // General
   Loading: string;
   Retry: string;
-  
-  // Transparency section
-  TransparencyTitle: string;
-  TransparencyItem1: string;
-  TransparencyItem2: string;
-  TransparencyItem3: string;
-  TransparencyNote: string;
-  
-  // Form fields
+  BackButton: string;
+  ContinueButton: string;
+
+  // Not-configured banner
+  NotConfiguredTitle: string;
+  NotConfiguredMessage: string;
+
+  // Setup prompt (edit mode, empty welcome text)
+  SetupTitle: string;
+  SetupDescription: string;
+  SetupButton: string;
+
+  // WelcomeStep
+  ProgramTitle: string;
+  HelloGreeting: string;
+  FeatureTrack: string;
+  FeaturePoints: string;
+  FeatureLevels: string;
+  FeatureLeaderboard: string;
+  GetStarted: string;
+
+  // RulesStep
+  HowItWorksTitle: string;
+  RuleUseTitle: string;
+  RuleUseBody: string;
+  RuleEarnTitle: string;
+  RuleEarnBody: string;
+  RuleLevelTitle: string;
+  RuleLevelBody: string;
+  PrivacyTitle: string;
+  PrivacyItem1: string;
+  PrivacyItem2: string;
+  PrivacyItem3: string;
+  PrivacyItem4: string;
+  PrivacyItem5: string;
+  PrivacyNote: string;
+
+  // PreferencesStep
+  ProfileTitle: string;
+  ProfileSubtitle: string;
   DepartmentLabel: string;
   DepartmentPlaceholder: string;
   TeamLabel: string;
   TeamPlaceholder: string;
+  NotificationsTitle: string;
   NudgesLabel: string;
   NudgesOn: string;
   NudgesOff: string;
-  NudgesDescription: string;
-  
-  // Consent
+  NudgesNote: string;
+
+  // ConsentStep
+  AlmostInTitle: string;
+  AlmostInSubtitle: string;
+  EnrollmentSummaryTitle: string;
+  NotificationsEnabled: string;
+  NotificationsDisabled: string;
+  DataCollectionTitle: string;
+  DataItem1: string;
+  DataItem2: string;
+  DataItem3: string;
+  DataNote: string;
   ConsentLabel: string;
-  
-  // Actions
   JoinButton: string;
   JoinButtonLoading: string;
+
+  // Actions / outcomes
   JoinSuccess: string;
   LeaveButton: string;
   LeaveButtonLoading: string;
   LeaveSuccess: string;
-  
+
   // Errors
-  LoadError: string;
   JoinError: string;
   LeaveError: string;
-  
+
   // Enrolled view
   PointsThisMonth: string;
   TotalPoints: string;
@@ -54,12 +91,28 @@ declare interface ICepOptinWebPartStrings {
   LastActivity: string;
   PreferencesTitle: string;
   NudgesToggleLabel: string;
-  
+
   // Leave dialog
   LeaveDialogTitle: string;
   LeaveDialogMessage: string;
   LeaveDialogConfirm: string;
   LeaveDialogCancel: string;
+
+  // WelcomeTextEditor (property pane)
+  GeneratorTitle: string;
+  OrgNameLabel: string;
+  OrgNameDescription: string;
+  OrgNamePlaceholder: string;
+  OrgNameRequired: string;
+  ToneLabel: string;
+  GenerateButton: string;
+  GeneratingButton: string;
+  GenerationFailed: string;
+  FallbackWarning: string;
+  WelcomeTextLabel: string;
+  WelcomeTextDescription: string;
+  WelcomeTextPlaceholder: string;
+  ClearWelcomeText: string;
 }
 
 declare module 'CepOptinWebPartStrings' {

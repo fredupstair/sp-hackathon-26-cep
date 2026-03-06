@@ -1,3 +1,4 @@
+import { DisplayMode } from '@microsoft/sp-core-library';
 import { CepApiClient } from '../../../services/CepApiClient';
 
 export interface ICepOptinProps {
@@ -11,4 +12,10 @@ export interface ICepOptinProps {
   userAadId: string;
   isDarkTheme: boolean;
   hasTeamsContext: boolean;
+  /** Welcome text shown on Step 1 of the enrollment wizard (configured by the page editor) */
+  welcomeText: string;
+  /** SPFx display mode — used to show the editor-only setup card when welcomeText is empty */
+  displayMode: DisplayMode;
+  /** Opens the SPFx property pane so editors can configure the webpart */
+  onConfigureClick: () => void;
 }
