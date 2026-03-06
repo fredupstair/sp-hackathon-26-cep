@@ -34,35 +34,39 @@ const APP_CLASS: Record<string, string> = {
 const fmt = (tpl: string, ...args: (string | number)[]): string =>
   tpl.replace(/{(\d+)}/g, (m, i) => (args[i] !== undefined ? String(args[i]) : m));
 
+const ALL_APP_KEYS = Object.keys(APP_LABEL);
+
 export const AppUsageChart: React.FC<IAppUsageChartProps> = ({ usage }) => {
-  const sorted = [...(usage.breakdown ?? [])].sort((a, b) => b.promptCount - a.promptCount);
-  const maxCount = sorted.length > 0 ? sorted[0].promptCount : 1;
+  const breakdownMap: Record<string, number> = {};
+  (usage.breakdown ?? []).forEach((e) => { breakdownMap[e.appKey] = e.promptCount; });
+
+  const allEntries = ALL_APP_KEYS
+    .map((appKey) => ({ appKey, promptCount: breakdownMap[appKey] ?? 0 }))
+    .sort((a, b) => b.promptCount - a.promptCount);
+
+  const maxCount = allEntries[0].promptCount > 0 ? allEntries[0].promptCount : 1;
 
   return (
     <div className={styles.card}>
       <div className={styles.sectionTitle}>{strings.UsageBreakdownTitle}</div>
-      {sorted.length === 0 ? (
-        <div className={styles.emptyState}>{strings.NoUsage}</div>
-      ) : (
-        <div className={styles.appBarList}>
-          {sorted.map((entry) => (
-            <div key={entry.appKey} className={styles.appBarRow}>
-              <div className={styles.appBarLabel}>
-                {APP_LABEL[entry.appKey] ?? entry.appKey}
-              </div>
-              <div className={styles.appBarTrack}>
-                <div
-                  className={`${styles.appBarFill} ${APP_CLASS[entry.appKey] ?? styles.appOther}`}
-                  style={{ width: `${(entry.promptCount / maxCount) * 100}%` }}
-                />
-              </div>
-              <div className={styles.appBarCount}>
-                {fmt(strings.PromptCount, entry.promptCount)}
-              </div>
+      <div className={styles.appBarList}>
+        {allEntries.map((entry) => (
+          <div key={entry.appKey} className={styles.appBarRow}>
+            <div className={styles.appBarLabel}>
+              {APP_LABEL[entry.appKey] ?? entry.appKey}
             </div>
-          ))}
-        </div>
-      )}
+            <div className={styles.appBarTrack}>
+              <div
+                className={`${styles.appBarFill} ${APP_CLASS[entry.appKey] ?? styles.appOther}`}
+                style={{ width: `${(entry.promptCount / maxCount) * 100}%` }}
+              />
+            </div>
+            <div className={styles.appBarCount}>
+              {fmt(strings.PromptCount, entry.promptCount)}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

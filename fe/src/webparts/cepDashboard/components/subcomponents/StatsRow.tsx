@@ -43,28 +43,6 @@ export const StatsRow: React.FC<IStatsRowProps> = ({
 
   return (
     <div className={styles.statsRow}>
-      {/* ── Points ── */}
-      <div className={styles.statCard}>
-        <div className={styles.statLabel}>{strings.PointsThisMonth}</div>
-        <div className={styles.statValue}>{monthlyPoints.toLocaleString()}</div>
-        <div className={styles.statSubValue}>
-          {strings.TotalPoints}: {totalPoints.toLocaleString()}
-        </div>
-      </div>
-
-      {/* ── Ranks ── */}
-      <div className={styles.statCard}>
-        <div className={styles.statLabel}>{strings.GlobalRank}</div>
-        <div className={styles.statValue}>
-          {globalRank !== undefined ? `#${globalRank}` : '–'}
-        </div>
-        {teamRank !== undefined && (
-          <div className={styles.statSubValue}>
-            {strings.TeamRank}: #{teamRank}
-          </div>
-        )}
-      </div>
-
       {/* ── Level progress ── */}
       <div className={styles.statCard}>
         <div className={styles.statLabel}>{strings.Level}</div>
@@ -86,6 +64,28 @@ export const StatsRow: React.FC<IStatsRowProps> = ({
             <div className={styles.statSubValue}>🏆 Max level reached!</div>
           )}
         </div>
+      </div>
+
+      {/* ── Points ── */}
+      <div className={styles.statCard}>
+        <div className={styles.statLabel}>{strings.PointsThisMonth}</div>
+        <div className={styles.statValue}>{monthlyPoints.toLocaleString()}</div>
+        <div className={styles.statSubValue}>
+          {strings.TotalPoints}: {totalPoints.toLocaleString()}
+        </div>
+      </div>
+
+      {/* ── Ranks ── */}
+      <div className={styles.statCard}>
+        <div className={styles.statLabel}>{strings.GlobalRank}</div>
+        <div className={styles.statValue}>
+          {globalRank !== undefined ? `#${globalRank}` : '–'}
+        </div>
+        {teamRank !== undefined && (
+          <div className={styles.statSubValue}>
+            {strings.TeamRank}: #{teamRank}
+          </div>
+        )}
       </div>
     </div>
   );
