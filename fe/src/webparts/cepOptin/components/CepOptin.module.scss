@@ -1,5 +1,7 @@
 @import '~@fluentui/react/dist/sass/References.scss';
 
+// ─── Root ────────────────────────────────────────────────────────────────────
+
 .cepOptin {
   overflow: hidden;
   padding: 16px;
@@ -12,27 +14,164 @@
 }
 
 .container {
-  max-width: 640px;
+  max-width: 680px;
 }
 
-.enrollForm {
-  display: block; // explicit declaration ensures sass typings are generated
+// ─── Wizard wrapper ───────────────────────────────────────────────────────────
+
+.wizardContainer {
+  max-width: 680px;
 }
 
-.headerIcon {
-  font-size: 32px;
+// ─── Step indicator (dot progression) ────────────────────────────────────────
+
+.stepIndicator {
+  padding: 8px 0 16px;
+}
+
+.stepDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: "[theme:neutralLight, default: #edebe9]";
+  background: var(--neutralLight);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.stepDotActive {
+  background: "[theme:themePrimary, default: #0078d4]";
+  background: var(--themePrimary);
+  transform: scale(1.3);
+}
+
+.stepDotDone {
+  background: "[theme:themeSecondary, default: #2b88d8]";
+  background: var(--themeSecondary);
+}
+
+// ─── Step container (shared by all steps) ────────────────────────────────────
+
+.stepContainer {
+  max-width: 680px;
+  padding: 8px 0;
+}
+
+.stepTitle {
+  font-weight: 600;
+}
+
+.stepSubtitle {
+  color: "[theme:bodySubtext, default: #605e5c]";
+  color: var(--bodySubtext);
+}
+
+// ─── Welcome step ─────────────────────────────────────────────────────────────
+
+.heroIconWrapper {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: "[theme:themeLighter, default: #deecf9]";
+  background: var(--themeLighter);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroIcon {
+  font-size: 36px;
   color: "[theme:themePrimary, default: #0078d4]";
   color: var(--themePrimary);
 }
 
-.title {
-  font-weight: 600;
+.heroTitle {
+  font-weight: 700;
+  text-align: center;
 }
 
-.subtitle {
+.heroGreeting {
   color: "[theme:bodySubtext, default: #605e5c]";
   color: var(--bodySubtext);
+  text-align: center;
 }
+
+.welcomeTextBox {
+  background: "[theme:neutralLighter, default: #f3f2f1]";
+  background: var(--neutralLighter);
+  border-radius: 6px;
+  padding: 16px 20px;
+  border-left: 4px solid "[theme:themePrimary, default: #0078d4]";
+  border-left-color: var(--themePrimary);
+}
+
+.welcomeText {
+  line-height: 1.6;
+  text-align: justify;
+}
+
+.featurePill {
+  background: "[theme:neutralLighter, default: #f3f2f1]";
+  background: var(--neutralLighter);
+  border-radius: 20px;
+  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.featurePillIcon {
+  color: "[theme:themePrimary, default: #0078d4]";
+  color: var(--themePrimary);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.ctaButton {
+  margin-top: 8px;
+  align-self: center;
+  min-width: 160px;
+}
+
+// ─── Rules step ───────────────────────────────────────────────────────────────
+
+.ruleCard {
+  flex: 1 1 160px;
+  min-width: 140px;
+  max-width: 220px;
+  background: "[theme:neutralLighter, default: #f3f2f1]";
+  background: var(--neutralLighter);
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid "[theme:neutralLight, default: #edebe9]";
+  border-color: var(--neutralLight);
+}
+
+// ─── Preferences step ─────────────────────────────────────────────────────────
+
+.notificationsBox {
+  background: "[theme:neutralLighter, default: #f3f2f1]";
+  background: var(--neutralLighter);
+  border-radius: 6px;
+  padding: 14px 16px;
+  border: 1px solid "[theme:neutralLight, default: #edebe9]";
+  border-color: var(--neutralLight);
+}
+
+.notifIcon {
+  color: "[theme:themePrimary, default: #0078d4]";
+  color: var(--themePrimary);
+  font-size: 18px;
+}
+
+// ─── Consent step ─────────────────────────────────────────────────────────────
+
+.summaryBox {
+  background: "[theme:neutralLighter, default: #f3f2f1]";
+  background: var(--neutralLighter);
+  border-radius: 6px;
+  padding: 14px 16px;
+}
+
+// ─── Shared transparency/info box ─────────────────────────────────────────────
 
 .transparencyBox {
   background: "[theme:neutralLighter, default: #f3f2f1]";
@@ -64,10 +203,27 @@
   }
 }
 
+// ─── Enrolled / dashboard view ────────────────────────────────────────────────
+
+.headerIcon {
+  font-size: 32px;
+  color: "[theme:themePrimary, default: #0078d4]";
+  color: var(--themePrimary);
+}
+
+.title {
+  font-weight: 600;
+}
+
+.subtitle {
+  color: "[theme:bodySubtext, default: #605e5c]";
+  color: var(--bodySubtext);
+}
+
 .statusCard {
   background: "[theme:neutralLighter, default: #f3f2f1]";
   background: var(--neutralLighter);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 16px;
   border: 1px solid "[theme:neutralLight, default: #edebe9]";
   border-color: var(--neutralLight);
@@ -97,4 +253,10 @@
   color: var(--errorText);
   border-color: "[theme:errorText, default: #a4262c]";
   border-color: var(--errorText);
+}
+
+// ─── Legacy class (kept for SCSS typings compatibility) ───────────────────────
+
+.enrollForm {
+  display: block;
 }

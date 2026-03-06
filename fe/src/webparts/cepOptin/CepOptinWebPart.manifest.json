@@ -22,7 +22,8 @@
     "description": { "default": "Enroll users in the Copilot Engagement Program to track their Copilot usage and earn points." },
     "officeFabricIconFontName": "AddFriend",
     "properties": {
-      "description": "CEP Opt-in"
+      "welcomeText": "",
+      "organizationName": ""
     }
   }]
 }

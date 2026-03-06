@@ -1,36 +1,58 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
-import { Version } from '@microsoft/sp-core-library';
-import { type IPropertyPaneConfiguration } from '@microsoft/sp-property-pane';
+import { Version, DisplayMode } from '@microsoft/sp-core-library';
+import {
+  IPropertyPaneConfiguration,
+  IPropertyPaneCustomFieldProps,
+} from '@microsoft/sp-property-pane';
+// PropertyPaneCustomField is excluded from public typings but available at runtime
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-explicit-any
+const { PropertyPaneCustomField } = require('@microsoft/sp-property-pane') as {
+  PropertyPaneCustomField: (props: IPropertyPaneCustomFieldProps) => any;
+};
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
-import { AadHttpClient, SPHttpClient } from '@microsoft/sp-http';
+import { AadHttpClient, MSGraphClientV3, SPHttpClient } from '@microsoft/sp-http';
 
 import CepOptin from './components/CepOptin';
 import { ICepOptinProps } from './components/ICepOptinProps';
 import { CepApiClient } from '../../services/CepApiClient';
+import { WelcomeTextEditor } from './components/WelcomeTextEditor';
 
 // Tenant Properties keys (Storage Entities) – set via deploy/set-tenant-properties.ps1
-const TENANT_KEY_BASE_URL   = 'CEP_FunctionAppBaseUrl';
-const TENANT_KEY_CLIENT_ID  = 'CEP_FunctionAppClientId';
+const TENANT_KEY_BASE_URL  = 'CEP_FunctionAppBaseUrl';
+const TENANT_KEY_CLIENT_ID = 'CEP_FunctionAppClientId';
 
-// No user-editable properties – config comes from SharePoint Tenant Properties
-export type ICepOptinWebPartProps = Record<string, never>;
+export interface ICepOptinWebPartProps {
+  /** Welcome text shown on the first step of the enrollment wizard */
+  welcomeText: string;
+  /** Organisation name used for AI text generation (not shown to end users) */
+  organizationName: string;
+}
 
 export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebPartProps> {
 
   private _isDarkTheme: boolean = false;
   private _aadClient: AadHttpClient | undefined;
   private _apiClient: CepApiClient | undefined;
+  private _graphClient: MSGraphClientV3 | undefined;
 
   /** Resolved from SharePoint Tenant Properties on init */
   private _functionAppBaseUrl: string = '';
   private _functionAppClientId: string = '';
 
+  /** DOM node used by the custom property pane field */
+  private _welcomeEditorContainer: HTMLElement | undefined;
+
   protected async onInit(): Promise<void> {
     await super.onInit();
     await this._loadTenantProperties();
     await this._initApiClient();
+    try {
+      this._graphClient = await this.context.msGraphClientFactory.getClient('3');
+    } catch (e) {
+      console.warn('[CepOptin] MSGraphClientV3 not available:', e);
+    }
   }
 
   /** Reads CEP configuration from SharePoint Tenant Properties (Storage Entities). */
@@ -48,8 +70,8 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
         ),
       ]);
 
-      const baseUrlData   = await baseUrlResp.json();
-      const clientIdData  = await clientIdResp.json();
+      const baseUrlData  = await baseUrlResp.json();
+      const clientIdData = await clientIdResp.json();
 
       this._functionAppBaseUrl  = (baseUrlData.Value  as string | null)?.trim() ?? '';
       this._functionAppClientId = (clientIdData.Value as string | null)?.trim() ?? '';
@@ -70,8 +92,6 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
     const clientId = this._functionAppClientId;
     if (!baseUrl || !clientId) return;
     try {
-      // The resource URI for AAD token acquisition MUST be the App ID URI (api://<clientId>)
-      // NOT the Function App URL – the approved grant is scoped to the App ID URI.
       const aadResourceUri = `api://${clientId}`;
       this._aadClient = await this.context.aadHttpClientFactory.getClient(aadResourceUri);
       this._apiClient = new CepApiClient(
@@ -91,12 +111,15 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
       CepOptin,
       {
         functionAppBaseUrl: this._functionAppBaseUrl,
-        apiClient: this._apiClient,
-        userDisplayName: this.context.pageContext.user.displayName,
-        userEmail: this.context.pageContext.user.email,
-        userAadId: this.context.pageContext.aadInfo?.userId?.toString() ?? '',
-        isDarkTheme: this._isDarkTheme,
-        hasTeamsContext: !!this.context.sdks.microsoftTeams,
+        apiClient:          this._apiClient,
+        userDisplayName:    this.context.pageContext.user.displayName,
+        userEmail:          this.context.pageContext.user.email,
+        userAadId:          this.context.pageContext.aadInfo?.userId?.toString() ?? '',
+        isDarkTheme:        this._isDarkTheme,
+        hasTeamsContext:    !!this.context.sdks.microsoftTeams,
+        welcomeText:        this.properties.welcomeText ?? '',
+        displayMode:        this.displayMode,
+        onConfigureClick:   () => this.context.propertyPane.open(),
       }
     );
     ReactDom.render(element, this.domElement);
@@ -107,13 +130,16 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
     this._isDarkTheme = !!currentTheme.isInverted;
     const { semanticColors } = currentTheme;
     if (semanticColors) {
-      this.domElement.style.setProperty('--bodyText', semanticColors.bodyText || null);
-      this.domElement.style.setProperty('--link', semanticColors.link || null);
+      this.domElement.style.setProperty('--bodyText',    semanticColors.bodyText    || null);
+      this.domElement.style.setProperty('--link',        semanticColors.link        || null);
       this.domElement.style.setProperty('--linkHovered', semanticColors.linkHovered || null);
     }
   }
 
   protected onDispose(): void {
+    if (this._welcomeEditorContainer) {
+      ReactDom.unmountComponentAtNode(this._welcomeEditorContainer);
+    }
     ReactDom.unmountComponentAtNode(this.domElement);
   }
 
@@ -122,9 +148,45 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
   }
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
-    // Configuration comes from SharePoint Tenant Properties.
-    // Use deploy/set-tenant-properties.ps1 to set values.
-    return { pages: [] };
+    return {
+      pages: [
+        {
+          header: { description: 'Configure the Copilot Engagement Program opt-in experience.' },
+          groups: [
+            {
+              groupName: '✨ Welcome Text (AI-assisted)',
+              groupFields: [
+                PropertyPaneCustomField({
+                  key: 'welcomeTextGenerator',
+                  onRender: (elem: HTMLElement) => {
+                    this._welcomeEditorContainer = elem;
+                    ReactDom.render(
+                      React.createElement(WelcomeTextEditor, {
+                        graphClient:      this._graphClient,
+                        welcomeText:      this.properties.welcomeText      ?? '',
+                        organizationName: this.properties.organizationName ?? '',
+                        onPropertiesChange: (changes) => {
+                          if (changes.welcomeText      !== undefined) this.properties.welcomeText      = changes.welcomeText;
+                          if (changes.organizationName !== undefined) this.properties.organizationName = changes.organizationName;
+                          // Re-render the webpart to reflect updated welcome text
+                          this.render();
+                        },
+                      }),
+                      elem
+                    );
+                  },
+                  onDispose: (elem: HTMLElement) => {
+                    ReactDom.unmountComponentAtNode(elem);
+                  },
+                }),
+              ],
+            },
+          ],
+        },
+      ],
+    };
   }
 }
+
+
 
