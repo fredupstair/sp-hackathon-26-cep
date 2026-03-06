@@ -3,7 +3,6 @@ import {
   Stack, Text, PrimaryButton, DefaultButton,
   Icon, Separator,
 } from '@fluentui/react';
-import * as strings from 'CepOptinWebPartStrings';
 import styles from '../CepOptin.module.scss';
 
 export interface IRulesStepProps {

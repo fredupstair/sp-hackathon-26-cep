@@ -61,7 +61,14 @@ public class MeApi
 
         return new OkObjectResult(new
         {
+            userId = user.AadUserId,
             displayName = user.DisplayName,
+            email = user.Email,
+            department = user.Department,
+            team = user.Team,
+            enrollmentDate = user.EnrollmentDate,
+            isActive = user.IsActive,
+            isEngagementNudgesEnabled = user.IsEngagementNudgesEnabled,
             currentLevel = user.CurrentLevel,
             totalPoints = user.TotalPoints,
             monthlyPoints = user.MonthlyPoints,
@@ -87,13 +94,21 @@ public class MeApi
         var user = await _sp.GetUserByAadIdAsync(aadUserId, ct);
         if (user is null) return new NotFoundObjectResult("User not enrolled.");
 
-        // Default to current month if no range specified
+        // Accept ?from=YYYY-MM-DD&to=YYYY-MM-DD; derive month from the from-date.
+        // Fall back to the current month when parameters are missing.
         var now = DateTime.UtcNow;
-        var month = req.Query["month"].FirstOrDefault() ?? now.ToString("yyyy-MM");
+        var fromStr = req.Query["from"].FirstOrDefault();
+        var toStr   = req.Query["to"].FirstOrDefault();
+
+        DateTime fromDate = DateTime.TryParse(fromStr, out var fd) ? fd : new DateTime(now.Year, now.Month, 1);
+        DateTime toDate   = DateTime.TryParse(toStr,   out var td) ? td : new DateTime(now.Year, now.Month,
+            DateTime.DaysInMonth(now.Year, now.Month));
+
+        var month = fromDate.ToString("yyyy-MM");
         var logs = await _sp.GetActivityLogsForUserMonthAsync(aadUserId, month, ct);
 
-        // Return breakdown by app
-        var byApp = logs.Values
+        // Return breakdown by app + totals
+        var breakdown = logs.Values
             .GroupBy(l => l.AppKey)
             .Select(g => new
             {
@@ -101,9 +116,17 @@ public class MeApi
                 promptCount = g.Sum(l => l.PromptCount),
                 pointsEarned = g.Sum(l => l.PointsEarned),
             })
-            .OrderByDescending(x => x.promptCount);
+            .OrderByDescending(x => x.promptCount)
+            .ToList();
 
-        return new OkObjectResult(new { month, breakdown = byApp });
+        return new OkObjectResult(new
+        {
+            from = fromDate.ToString("yyyy-MM-dd"),
+            to   = toDate.ToString("yyyy-MM-dd"),
+            breakdown,
+            totalPrompts = breakdown.Sum(x => x.promptCount),
+            totalPoints  = breakdown.Sum(x => x.pointsEarned),
+        });
     }
 
     // ------------------------------------------------------------------
