@@ -1,37 +1,150 @@
+import * as React from 'react';
+import * as ReactDom from 'react-dom';
 import { Log } from '@microsoft/sp-core-library';
 import {
-  BaseApplicationCustomizer
+  BaseApplicationCustomizer,
+  PlaceholderContent,
+  PlaceholderName,
 } from '@microsoft/sp-application-base';
+import { AadHttpClient, SPHttpClient } from '@microsoft/sp-http';
 
 import * as strings from 'CepBarApplicationCustomizerStrings';
+import { CepApiClient } from '../../services/CepApiClient';
+import { CepBar } from './components/CepBar';
 
 const LOG_SOURCE: string = 'CepBarApplicationCustomizer';
 
+// Keys must match what deploy/set-tenant-properties.ps1 sets
+const TENANT_KEY_BASE_URL  = 'CEP_FunctionAppBaseUrl';
+const TENANT_KEY_CLIENT_ID = 'CEP_FunctionAppClientId';
+
 /**
- * If your command set uses the ClientSideComponentProperties JSON input,
- * it will be deserialized into the BaseExtension.properties object.
- * You can define an interface to describe it.
+ * Properties set via the Custom Action registration (clientSideComponentProperties JSON).
+ * See deploy/deploy-azure.ps1 for the registration command.
  */
 export interface ICepBarApplicationCustomizerProperties {
-  // This is an example; replace with your own property
-  testMessage: string;
+  /** Absolute URL of the page hosting the CEP Dashboard web part. */
+  dashboardPageUrl: string;
+  /** Absolute URL of the page hosting the CEP Opt-in web part. */
+  optinPageUrl: string;
 }
 
 /** A Custom Action which can be run during execution of a Client Side Application */
 export default class CepBarApplicationCustomizer
   extends BaseApplicationCustomizer<ICepBarApplicationCustomizerProperties> {
 
-  public onInit(): Promise<void> {
+  private _bottomPlaceholder: PlaceholderContent | undefined;
+  private _apiClient: CepApiClient | undefined;
+  private _functionAppBaseUrl: string = '';
+  private _functionAppClientId: string = '';
+  private _silverThreshold: number = 500;
+  private _goldThreshold: number = 1500;
+
+  public async onInit(): Promise<void> {
     Log.info(LOG_SOURCE, `Initialized ${strings.Title}`);
-
-    // let message: string = this.properties.testMessage;
-    // if (!message) {
-    //   message = '(No properties were provided.)';
-    // }
-    // Dialog.alert(`Hello from ${strings.Title}:\n\n${message}`).catch(() => {
-    //   /* handle error */
-    // });
-
+    await this._loadTenantProperties();
+    await this._initApiClient();
+    this.context.placeholderProvider.changedEvent.add(this, this._renderBar);
+    this._renderBar();
     return Promise.resolve();
   }
+
+  protected onDispose(): void {
+    if (this._bottomPlaceholder?.domElement) {
+      // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
+      ReactDom.unmountComponentAtNode(this._bottomPlaceholder.domElement);
+    }
+  }
+
+  // ── Tenant Properties ──────────────────────────────────────────────────────
+
+  private async _loadTenantProperties(): Promise<void> {
+    const siteAbsUrl = this.context.pageContext.site.absoluteUrl;
+    try {
+      const [baseUrlResp, clientIdResp] = await Promise.all([
+        this.context.spHttpClient.get(
+          `${siteAbsUrl}/_api/web/GetStorageEntity('${TENANT_KEY_BASE_URL}')`,
+          SPHttpClient.configurations.v1
+        ),
+        this.context.spHttpClient.get(
+          `${siteAbsUrl}/_api/web/GetStorageEntity('${TENANT_KEY_CLIENT_ID}')`,
+          SPHttpClient.configurations.v1
+        ),
+      ]);
+
+      const baseUrlData  = await baseUrlResp.json();
+      const clientIdData = await clientIdResp.json();
+
+      this._functionAppBaseUrl  = (baseUrlData.Value  as string | null)?.trim() ?? '';
+      this._functionAppClientId = (clientIdData.Value as string | null)?.trim() ?? '';
+
+      if (!this._functionAppBaseUrl || !this._functionAppClientId) {
+        Log.warn(LOG_SOURCE,
+          'Tenant Properties CEP_FunctionAppBaseUrl / CEP_FunctionAppClientId not found. ' +
+          'Run deploy/set-tenant-properties.ps1.');
+      }
+    } catch (e) {
+      Log.error(LOG_SOURCE, e as Error);
+    }
+  }
+
+  // ── AAD client ─────────────────────────────────────────────────────────────
+
+  private async _initApiClient(): Promise<void> {
+    const baseUrl  = this._functionAppBaseUrl;
+    const clientId = this._functionAppClientId;
+    if (!baseUrl || !clientId) return;
+
+    try {
+      const aadResourceUri = `api://${clientId}`;
+      const aadClient: AadHttpClient =
+        await this.context.aadHttpClientFactory.getClient(aadResourceUri);
+
+      this._apiClient = new CepApiClient(
+        aadClient,
+        baseUrl,
+        this.context.pageContext.aadInfo?.userId?.toString() ??
+          this.context.pageContext.user.email,
+        this.context.pageContext.user.email,
+        this.context.pageContext.user.displayName
+      );
+    } catch (e) {
+      Log.error(LOG_SOURCE, e as Error);
+    }
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
+  private _renderBar = (): void => {
+    if (!this._bottomPlaceholder) {
+      this._bottomPlaceholder = this.context.placeholderProvider.tryCreateContent(
+        PlaceholderName.Bottom,
+        { onDispose: this._onDisposePlaceholder }
+      );
+    }
+
+    if (!this._bottomPlaceholder) {
+      Log.warn(LOG_SOURCE, 'Bottom placeholder not available.');
+      return;
+    }
+
+    const element = React.createElement(CepBar, {
+      apiClient:         this._apiClient,
+      dashboardPageUrl:  this.properties.dashboardPageUrl  ?? '',
+      optinPageUrl:      this.properties.optinPageUrl      ?? '',
+      silverThreshold:   this._silverThreshold,
+      goldThreshold:     this._goldThreshold,
+    });
+
+    // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
+    ReactDom.render(element, this._bottomPlaceholder.domElement);
+  };
+
+  private _onDisposePlaceholder = (): void => {
+    if (this._bottomPlaceholder?.domElement) {
+      // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
+      ReactDom.unmountComponentAtNode(this._bottomPlaceholder.domElement);
+    }
+    this._bottomPlaceholder = undefined;
+  };
 }

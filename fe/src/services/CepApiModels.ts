@@ -33,6 +33,8 @@ export interface IUserSummary {
   teamRank?: number;
   departmentRank?: number;
   month: string;                    // YYYY-MM the summary refers to
+  /** YYYY-MM-DD dates in last 60 days where real Copilot activity (non-win) occurred. Used by the bar to compute streak client-side. */
+  recentActiveDays: string[];
 }
 
 export interface IAppUsageBreakdown {
@@ -79,6 +81,28 @@ export interface ILeaderboardPage {
   totalEntries: number;
   entries: ILeaderboardEntry[];
   currentUserEntry?: ILeaderboardEntry;
+}
+
+// ─── Win ─────────────────────────────────────────────────────────────────────
+
+export interface ICepWinRequest {
+  appKey: string;
+  note?: string;
+  isShared: boolean;
+}
+
+export interface ICepWinResponse {
+  pointsAdded: number;
+  totalMonthlyPoints: number;
+  todayWinCount: number;
+}
+
+// ─── Suggestion ───────────────────────────────────────────────────────────────
+
+export interface ICepSuggestion {
+  appKey: string;
+  appLabel: string;
+  text: string;
 }
 
 // ─── Admin ───────────────────────────────────────────────────────────────────
