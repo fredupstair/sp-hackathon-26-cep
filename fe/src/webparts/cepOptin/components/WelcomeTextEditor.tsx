@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {
-  Stack, Text, TextField,
+  Stack, TextField,
   PrimaryButton, DefaultButton, Spinner, SpinnerSize,
   MessageBar, MessageBarType, Label, Separator,
 } from '@fluentui/react';

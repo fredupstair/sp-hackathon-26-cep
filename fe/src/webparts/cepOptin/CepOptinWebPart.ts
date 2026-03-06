@@ -1,14 +1,15 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
-import { Version, DisplayMode } from '@microsoft/sp-core-library';
+import { Version } from '@microsoft/sp-core-library';
 import {
   IPropertyPaneConfiguration,
   IPropertyPaneCustomFieldProps,
+  IPropertyPaneField,
 } from '@microsoft/sp-property-pane';
 // PropertyPaneCustomField is excluded from public typings but available at runtime
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { PropertyPaneCustomField } = require('@microsoft/sp-property-pane') as {
-  PropertyPaneCustomField: (props: IPropertyPaneCustomFieldProps) => any;
+  PropertyPaneCustomField: (props: IPropertyPaneCustomFieldProps) => IPropertyPaneField<unknown>;
 };
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
@@ -122,6 +123,7 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
         onConfigureClick:   () => this.context.propertyPane.open(),
       }
     );
+    // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
     ReactDom.render(element, this.domElement);
   }
 
@@ -138,8 +140,10 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
 
   protected onDispose(): void {
     if (this._welcomeEditorContainer) {
+      // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
       ReactDom.unmountComponentAtNode(this._welcomeEditorContainer);
     }
+    // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
     ReactDom.unmountComponentAtNode(this.domElement);
   }
 
@@ -160,6 +164,7 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
                   key: 'welcomeTextGenerator',
                   onRender: (elem: HTMLElement) => {
                     this._welcomeEditorContainer = elem;
+                    // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
                     ReactDom.render(
                       React.createElement(WelcomeTextEditor, {
                         graphClient:      this._graphClient,
@@ -176,6 +181,7 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
                     );
                   },
                   onDispose: (elem: HTMLElement) => {
+                    // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
                     ReactDom.unmountComponentAtNode(elem);
                   },
                 }),
