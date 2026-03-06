@@ -11,18 +11,6 @@ interface IDashboardHeaderProps {
   onNextMonth: () => void;
 }
 
-const LEVEL_ICON: Record<string, string> = {
-  Bronze: '🥉',
-  Silver: '🥈',
-  Gold: '🥇',
-};
-
-const LEVEL_CLASS: Record<string, string> = {
-  Bronze: styles.bronze,
-  Silver: styles.silver,
-  Gold: styles.gold,
-};
-
 function formatMonthLabel(month: string): string {
   const [year, m] = month.split('-').map(Number);
   return new Date(year, m - 1, 1).toLocaleDateString(undefined, {
@@ -41,9 +29,10 @@ export const DashboardHeader: React.FC<IDashboardHeaderProps> = ({
   <div className={styles.headerCard}>
     <Persona
       text={summary.displayName}
-      size={PersonaSize.size48}
+      size={PersonaSize.size72}
       secondaryText={summary.email}
       hidePersonaDetails
+      imageUrl={`/_layouts/15/userphoto.aspx?AccountName=${encodeURIComponent(summary.email)}&Size=L`}
     />
     <div className={styles.headerInfo}>
       <div className={styles.displayName}>{summary.displayName}</div>
@@ -52,10 +41,6 @@ export const DashboardHeader: React.FC<IDashboardHeaderProps> = ({
         {summary.team ? ` · ${summary.team}` : ''}
       </div>
     </div>
-
-    <span className={`${styles.levelPill} ${LEVEL_CLASS[summary.currentLevel] ?? ''}`}>
-      {LEVEL_ICON[summary.currentLevel]} {summary.currentLevel}
-    </span>
 
     <div className={styles.monthPicker}>
       <button className={styles.monthBtn} onClick={onPrevMonth} title="Previous month">

@@ -15,36 +15,48 @@ const BADGE_EMOJI: Record<string, string> = {
   ConsistencyKing: '🔥',
 };
 
-const fmt = (tpl: string, ...args: (string | number)[]): string =>
-  tpl.replace(/{(\d+)}/g, (m, i) => (args[i] !== undefined ? String(args[i]) : m));
+export const BadgeList: React.FC<IBadgeListProps> = ({ badges }) => {
+  const sorted = [...badges].sort(
+    (a, b) => new Date(b.earnedDate).getTime() - new Date(a.earnedDate).getTime()
+  );
 
-export const BadgeList: React.FC<IBadgeListProps> = ({ badges }) => (
-  <div className={styles.card}>
-    <div className={styles.sectionTitle}>{strings.BadgesTitle}</div>
-    {badges.length === 0 ? (
-      <div className={styles.emptyState}>{strings.NoBadgesYet}</div>
-    ) : (
-      <div className={styles.badgesGrid}>
-        {badges.map((badge) => (
-          <div
-            key={badge.badgeKey}
-            className={styles.badgeItem}
-            title={badge.description}
-          >
-            <div className={styles.badgeIcon}>
-              {badge.iconUrl ? (
-                <img src={badge.iconUrl} alt={badge.badgeName} />
-              ) : (
-                <span>{BADGE_EMOJI[badge.badgeKey] ?? '🏅'}</span>
-              )}
+  return (
+    <div className={styles.card}>
+      <div className={styles.sectionTitle}>{strings.BadgesTitle}</div>
+      {sorted.length === 0 ? (
+        <div className={styles.emptyState}>{strings.NoBadgesYet}</div>
+      ) : (
+        <div className={styles.badgeTimeline}>
+          {sorted.map((badge, index) => (
+            <div key={badge.badgeKey} className={styles.badgeTimelineItem}>
+              <div className={styles.badgeTimelineDate}>
+                {new Date(badge.earnedDate).toLocaleDateString(undefined, {
+                  day: '2-digit', month: 'short', year: 'numeric',
+                })}
+              </div>
+              <div className={styles.badgeTimelineDotCol}>
+                <div className={styles.badgeTimelineDot} />
+                {index < sorted.length - 1 && (
+                  <div className={styles.badgeTimelineLine} />
+                )}
+              </div>
+              <div className={styles.badgeTimelineContent}>
+                <div className={styles.badgeTimelineIcon}>
+                  {badge.iconUrl ? (
+                    <img src={badge.iconUrl} alt={badge.badgeName} />
+                  ) : (
+                    <span>{BADGE_EMOJI[badge.badgeKey] ?? '🏅'}</span>
+                  )}
+                </div>
+                <div>
+                  <div className={styles.badgeName}>{badge.badgeName}</div>
+                  <div className={styles.badgeDate}>{badge.description}</div>
+                </div>
+              </div>
             </div>
-            <div className={styles.badgeName}>{badge.badgeName}</div>
-            <div className={styles.badgeDate}>
-              {fmt(strings.BadgeEarnedOn, new Date(badge.earnedDate).toLocaleDateString())}
-            </div>
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-);
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
