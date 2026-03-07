@@ -1,8 +1,10 @@
 namespace CepFunctions.Models;
 
 /// <summary>
-/// Daily usage aggregate stored in CEP_ActivityLog.
-/// One row = one user + one day + one app.
+/// Usage row stored in CEP_ActivityLog.
+/// 
+/// Graph-sourced entries: one row = one user + one day + one app (aggregated).
+/// Win entries: one row per individual Copilot Win reported by the user.
 /// </summary>
 public class CepActivityLog
 {
@@ -14,7 +16,7 @@ public class CepActivityLog
     /// <summary>Date-only reference day (UTC).</summary>
     public DateTime UsageDate { get; set; }
 
-    /// <summary>Normalised app key: Word / Excel / PowerPoint / Outlook / Teams / OneNote / Loop / M365Chat / Other.</summary>
+    /// <summary>Normalised app key: Word / Excel / PowerPoint / Outlook / Teams / OneNote / Loop / M365Chat / Other / Win.</summary>
     public string AppKey { get; set; } = "";
 
     public int PromptCount { get; set; }
@@ -26,26 +28,39 @@ public class CepActivityLog
     /// <summary>True for manual "Copilot Win" entries (AppKey = "Win").</summary>
     public bool IsWin { get; set; } = false;
 
-    /// <summary>User note recorded with a Win (stored on the daily aggregate row).</summary>
+    /// <summary>User note recorded with a Win (each win row keeps its own note).</summary>
     public string WinNote { get; set; } = "";
 
     /// <summary>Whether the user opted to share this win anonymously as a community tip.</summary>
     public bool IsShared { get; set; } = false;
 
-    public Dictionary<string, object?> ToSpFields() => new()
+    /// <summary>For Win rows: the Copilot app this win relates to (e.g. "Word", "Teams").</summary>
+    public string WinAppKey { get; set; } = "";
+
+    public Dictionary<string, object?> ToSpFields()
     {
-        ["Title"] = $"{AadUserId}_{MonthKey}_{AppKey}",
-        ["CEP_Log_AadUserId"] = AadUserId,
-        ["CEP_Log_UserEmail"] = UserEmail,
-        ["CEP_Log_UsageDate"] = UsageDate.ToString("yyyy-MM-dd"),
-        ["CEP_Log_AppKey"] = AppKey,
-        ["CEP_Log_PromptCount"] = PromptCount,
-        ["CEP_Log_PointsEarned"] = PointsEarned,
-        ["CEP_Log_MonthKey"] = MonthKey,
-        ["CEP_Log_IsWin"] = IsWin,
-        ["CEP_Log_WinNote"] = WinNote,
-        ["CEP_Log_IsShared"] = IsShared,
-    };
+        // Win rows get a unique Title so each win is stored separately.
+        // Graph-aggregate rows keep the dedup key (user + month + app).
+        var title = IsWin
+            ? $"{AadUserId}_{MonthKey}_Win_{UsageDate:yyyyMMddHHmmss}_{Guid.NewGuid().ToString("N")[..8]}"
+            : $"{AadUserId}_{MonthKey}_{AppKey}";
+
+        return new()
+        {
+            ["Title"] = title,
+            ["CEP_Log_AadUserId"] = AadUserId,
+            ["CEP_Log_UserEmail"] = UserEmail,
+            ["CEP_Log_UsageDate"] = UsageDate.ToString("yyyy-MM-dd"),
+            ["CEP_Log_AppKey"] = AppKey,
+            ["CEP_Log_PromptCount"] = PromptCount,
+            ["CEP_Log_PointsEarned"] = PointsEarned,
+            ["CEP_Log_MonthKey"] = MonthKey,
+            ["CEP_Log_IsWin"] = IsWin,
+            ["CEP_Log_WinNote"] = WinNote,
+            ["CEP_Log_IsShared"] = IsShared,
+            ["CEP_Log_WinAppKey"] = WinAppKey,
+        };
+    }
 
     public static CepActivityLog FromSpFields(string spItemId, Dictionary<string, object?> f) => new()
     {
@@ -60,6 +75,7 @@ public class CepActivityLog
         IsWin = f.Bool("CEP_Log_IsWin"),
         WinNote = f.Str("CEP_Log_WinNote"),
         IsShared = f.Bool("CEP_Log_IsShared"),
+        WinAppKey = f.Str("CEP_Log_WinAppKey"),
     };
 
     /// <summary>

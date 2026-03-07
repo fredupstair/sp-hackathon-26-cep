@@ -167,6 +167,11 @@
                Type="Boolean"               Group="CEP Columns">
           <Default>0</Default>
         </Field>
+
+        <Field ID="{A1B2C3D4-0002-0002-0002-000000000011}"
+               Name="CEP_Log_WinAppKey"     DisplayName="Win App Key"
+               Type="Text"                  Group="CEP Columns"
+               MaxLength="50" />
         <!-- ── CEP_Leaderboard ────────────────────────────────── -->
         <Field ID="{A1B2C3D4-0003-0003-0003-000000000001}"
                Name="CEP_LB_UserEmail"      DisplayName="User Email"
@@ -274,47 +279,23 @@
                Type="Text"                  Group="CEP Columns"
                MaxLength="10" />
 
-        <!-- ── CEP_Config ──────────────────────────────────────── -->
+        <!-- ── CEP_Config (key-value with category) ─────────── -->
         <Field ID="{A1B2C3D4-0005-0005-0005-000000000001}"
-               Name="CEP_Cfg_SyncFrequency" DisplayName="Sync Frequency"
+               Name="CEP_Cfg_Value"          DisplayName="Value"
                Type="Text"                  Group="CEP Columns"
-               MaxLength="50" />
+               MaxLength="255" />
 
-        <Field ID="{A1B2C3D4-0005-0005-0005-000000000002}"
-               Name="CEP_Cfg_PointsPerPrompt" DisplayName="Points Per Prompt"
-               Type="Number"                Group="CEP Columns"
-               Decimals="0"                 Min="1" />
-
-        <Field ID="{A1B2C3D4-0005-0005-0005-000000000003}"
-               Name="CEP_Cfg_LevelThresholdSilver" DisplayName="Level Threshold Silver"
-               Type="Number"                Group="CEP Columns"
-               Decimals="0"                 Min="0" />
-
-        <Field ID="{A1B2C3D4-0005-0005-0005-000000000004}"
-               Name="CEP_Cfg_LevelThresholdGold" DisplayName="Level Threshold Gold"
-               Type="Number"                Group="CEP Columns"
-               Decimals="0"                 Min="0" />
-
-        <Field ID="{A1B2C3D4-0005-0005-0005-000000000005}"
-               Name="CEP_Cfg_InactivityDaysForNudge" DisplayName="Inactivity Days For Nudge"
-               Type="Number"                Group="CEP Columns"
-               Decimals="0"                 Min="1" />
-
-        <Field ID="{A1B2C3D4-0005-0005-0005-000000000006}"
-               Name="CEP_Cfg_LeaderboardRefreshNotifEnabled" DisplayName="Leaderboard Refresh Notification Enabled"
-               Type="Boolean"               Group="CEP Columns">
-          <Default>1</Default>
+        <Field ID="{A1B2C3D4-0005-0005-0005-000000000011}"
+               Name="CEP_Cfg_Category"       DisplayName="Category"
+               Type="Choice"                Group="CEP Columns"
+               Format="Dropdown"            Indexed="TRUE">
+          <CHOICES>
+            <CHOICE>sync</CHOICE>
+            <CHOICE>scoring</CHOICE>
+            <CHOICE>general</CHOICE>
+            <CHOICE>badges</CHOICE>
+          </CHOICES>
         </Field>
-
-        <Field ID="{A1B2C3D4-0005-0005-0005-000000000007}"
-               Name="CEP_Cfg_MaxUsersPerIngestionBatch" DisplayName="Max Users Per Ingestion Batch"
-               Type="Number"                Group="CEP Columns"
-               Decimals="0"                 Min="1" />
-
-        <Field ID="{A1B2C3D4-0005-0005-0005-000000000008}"
-               Name="CEP_Cfg_TimeZone"      DisplayName="Time Zone"
-               Type="Text"                  Group="CEP Columns"
-               MaxLength="100" />
 
         <!-- ── CEP_SyncState ───────────────────────────────────── -->
         <Field ID="{A1B2C3D4-0006-0006-0006-000000000001}"
@@ -447,6 +428,7 @@
             <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000008}" Name="CEP_Log_IsWin"        DisplayName="Is Win" />
             <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000009}" Name="CEP_Log_WinNote"      DisplayName="Win Note" />
             <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000010}" Name="CEP_Log_IsShared"     DisplayName="Is Shared" />
+            <pnp:FieldRef ID="{A1B2C3D4-0002-0002-0002-000000000011}" Name="CEP_Log_WinAppKey"    DisplayName="Win App Key" />
           </pnp:FieldRefs>
           <pnp:Views>
             <View Name="All Activity" DisplayName="All Activity" DefaultView="TRUE">
@@ -465,6 +447,7 @@
                 <FieldRef Name="CEP_Log_IsWin" />
                 <FieldRef Name="CEP_Log_WinNote" />
                 <FieldRef Name="CEP_Log_IsShared" />
+                <FieldRef Name="CEP_Log_WinAppKey" />
               </ViewFields>
               <RowLimit Paged="TRUE">100</RowLimit>
             </View>
@@ -552,54 +535,156 @@
           </pnp:Views>
         </pnp:ListInstance>
 
-        <!-- ── 5. CEP_Config ──────────────────────────────────── -->
+        <!-- ── 5. CEP_Config (key-value with category) ─────── -->
         <pnp:ListInstance
           Title="CEP_Config"
           Url="Lists/CEP_Config"
           TemplateType="100"
-          Description="Copilot Engagement Program – runtime configuration (admin-editable)">
+          Description="Copilot Engagement Program – runtime configuration (key-value, admin-editable)">
           <pnp:ContentTypeBindings>
             <pnp:ContentTypeBinding ContentTypeID="0x01" Default="true" />
           </pnp:ContentTypeBindings>
           <pnp:FieldRefs>
-            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000001}" Name="CEP_Cfg_SyncFrequency"                      DisplayName="Sync Frequency" />
-            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000002}" Name="CEP_Cfg_PointsPerPrompt"                    DisplayName="Points Per Prompt" />
-            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000003}" Name="CEP_Cfg_LevelThresholdSilver"               DisplayName="Level Threshold Silver" />
-            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000004}" Name="CEP_Cfg_LevelThresholdGold"                 DisplayName="Level Threshold Gold" />
-            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000005}" Name="CEP_Cfg_InactivityDaysForNudge"             DisplayName="Inactivity Days For Nudge" />
-            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000006}" Name="CEP_Cfg_LeaderboardRefreshNotifEnabled"     DisplayName="Leaderboard Refresh Notification Enabled" />
-            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000007}" Name="CEP_Cfg_MaxUsersPerIngestionBatch"          DisplayName="Max Users Per Ingestion Batch" />
-            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000008}" Name="CEP_Cfg_TimeZone"                           DisplayName="Time Zone" />
+            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000001}" Name="CEP_Cfg_Value"         DisplayName="Value" />
+            <pnp:FieldRef ID="{A1B2C3D4-0005-0005-0005-000000000011}" Name="CEP_Cfg_Category"      DisplayName="Category" />
           </pnp:FieldRefs>
           <pnp:Views>
             <View Name="Configuration" DisplayName="Configuration" DefaultView="TRUE">
-              <Query><OrderBy><FieldRef Name="Title" Ascending="TRUE"/></OrderBy></Query>
+              <Query>
+                <OrderBy><FieldRef Name="CEP_Cfg_Category" Ascending="TRUE"/></OrderBy>
+              </Query>
               <ViewFields>
                 <FieldRef Name="LinkTitle" />
-                <FieldRef Name="CEP_Cfg_SyncFrequency" />
-                <FieldRef Name="CEP_Cfg_PointsPerPrompt" />
-                <FieldRef Name="CEP_Cfg_LevelThresholdSilver" />
-                <FieldRef Name="CEP_Cfg_LevelThresholdGold" />
-                <FieldRef Name="CEP_Cfg_InactivityDaysForNudge" />
-                <FieldRef Name="CEP_Cfg_LeaderboardRefreshNotifEnabled" />
-                <FieldRef Name="CEP_Cfg_MaxUsersPerIngestionBatch" />
-                <FieldRef Name="CEP_Cfg_TimeZone" />
+                <FieldRef Name="CEP_Cfg_Value" />
+                <FieldRef Name="CEP_Cfg_Category" />
               </ViewFields>
-              <RowLimit Paged="FALSE">30</RowLimit>
+              <RowLimit Paged="FALSE">100</RowLimit>
             </View>
           </pnp:Views>
           <pnp:DataRows>
-            <!-- Default configuration record -->
+            <!-- ── Sync ── -->
             <pnp:DataRow>
-              <pnp:DataValue FieldName="Title">Default</pnp:DataValue>
-              <pnp:DataValue FieldName="CEP_Cfg_SyncFrequency">daily</pnp:DataValue>
-              <pnp:DataValue FieldName="CEP_Cfg_PointsPerPrompt">1</pnp:DataValue>
-              <pnp:DataValue FieldName="CEP_Cfg_LevelThresholdSilver">500</pnp:DataValue>
-              <pnp:DataValue FieldName="CEP_Cfg_LevelThresholdGold">1500</pnp:DataValue>
-              <pnp:DataValue FieldName="CEP_Cfg_InactivityDaysForNudge">3</pnp:DataValue>
-              <pnp:DataValue FieldName="CEP_Cfg_LeaderboardRefreshNotifEnabled">1</pnp:DataValue>
-              <pnp:DataValue FieldName="CEP_Cfg_MaxUsersPerIngestionBatch">50</pnp:DataValue>
-              <pnp:DataValue FieldName="CEP_Cfg_TimeZone">UTC</pnp:DataValue>
+              <pnp:DataValue FieldName="Title">SyncIntervalMinutes</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">60</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">sync</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">MaxUsersPerIngestionBatch</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">50</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">sync</pnp:DataValue>
+            </pnp:DataRow>
+            <!-- ── Scoring ── -->
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">PointsPerPrompt</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">1</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">scoring</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">PointsPerWin</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">10</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">scoring</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">MaxWinsPerDay</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">10</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">scoring</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">LevelThresholdSilver</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">500</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">scoring</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">LevelThresholdGold</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">1500</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">scoring</pnp:DataValue>
+            </pnp:DataRow>
+            <!-- ── General ── -->
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">InactivityDaysForNudge</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">3</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">general</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">LeaderboardRefreshNotificationEnabled</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">True</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">general</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">TimeZone</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">UTC</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">general</pnp:DataValue>
+            </pnp:DataRow>
+            <!-- ── Badges ── -->
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Badge_FirstSteps_Name</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">First Steps</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">badges</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Badge_FirstSteps_Description</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">Executed your first Copilot prompt after enrollment.</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">badges</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Badge_CrossAppExplorer_Name</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">Cross-App Explorer</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">badges</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Badge_CrossAppExplorer_Description</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">Used 3+ Copilot apps in a single week.</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">badges</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Badge_CrossAppExplorer_Threshold</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">3</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">badges</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Badge_WeeklyWarrior_Name</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">Weekly Warrior</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">badges</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Badge_WeeklyWarrior_Description</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">50+ prompts in a single week.</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">badges</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Badge_WeeklyWarrior_Threshold</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">50</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">badges</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Badge_ConsistencyKing_Name</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">Consistency King</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">badges</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Badge_ConsistencyKing_Description</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">Active for 7 consecutive days.</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">badges</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Badge_ConsistencyKing_Threshold</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">7</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">badges</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Badge_MonthlyMaster_Name</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">Monthly Master</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">badges</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Badge_MonthlyMaster_Description</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">Top 10 in the monthly leaderboard.</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">badges</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Badge_MonthlyMaster_Threshold</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">10</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">badges</pnp:DataValue>
             </pnp:DataRow>
           </pnp:DataRows>
         </pnp:ListInstance>

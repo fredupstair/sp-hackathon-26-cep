@@ -10,13 +10,14 @@ namespace CepFunctions.Functions;
 
 /// <summary>
 /// Timer-triggered orchestrator.
-/// Schedule: every day at 03:00 UTC (configurable via CRON in host.json / env).
+/// Schedule: fires every minute. Each invocation reads CEP_Config.SyncIntervalMinutes
+/// and CEP_SyncState.LastSuccessfulRunUtc to decide whether a full sync is due.
+/// This way, changing the interval from SharePoint takes effect within one minute.
 /// 
-/// Responsibilities:
-/// 1. Load CEP_Config and active users.
+/// When a sync IS due:
+/// 1. Load active users.
 /// 2. Enqueue one IngestMessage per user → Queue Worker fan-out.
-/// 3. After ingest window (same run, after a delay or in a separate scheduled run),
-///    rebuild leaderboards and send refresh notifications.
+/// 3. Rebuild leaderboards and send refresh notifications.
 /// 4. Write run result to CEP_SyncState.
 /// </summary>
 public class OrchestratorTimer
@@ -45,9 +46,36 @@ public class OrchestratorTimer
     }
 
     [Function("OrchestratorTimer")]
-    public Task RunAsync(
-        [TimerTrigger("0 0 3 * * *")] TimerInfo timer,
-        CancellationToken ct) => RunSyncAsync(ct);
+    public async Task RunAsync(
+        [TimerTrigger("0 */1 * * * *")] TimerInfo timer,
+        CancellationToken ct)
+    {
+        // Every minute: read config + sync state to decide if a full sync is due.
+        var config = await _sp.GetConfigAsync(ct);
+        var state = await _sp.GetSyncStateAsync(ct);
+        var now = DateTime.UtcNow;
+
+        var minutesSinceLast = state.LastSuccessfulRunUtc.HasValue
+            ? (now - state.LastSuccessfulRunUtc.Value).TotalMinutes
+            : double.MaxValue; // never ran → force run
+
+        if (minutesSinceLast < config.SyncIntervalMinutes)
+        {
+            _log.LogDebug("Sync not due yet ({Elapsed:F0} min < {Interval} min). Skipping.",
+                minutesSinceLast, config.SyncIntervalMinutes);
+            return;
+        }
+
+        // Guard against overlapping runs
+        if (state.LastRunStatus == "Running")
+        {
+            _log.LogWarning("Previous sync is still running (correlation {CorrId}). Skipping.",
+                state.LastRunCorrelationId);
+            return;
+        }
+
+        await RunSyncAsync(ct);
+    }
 
     /// <summary>Core sync logic – callable from the timer trigger or from the admin HTTP endpoint.</summary>
     public async Task<(int Enqueued, string Status)> RunSyncAsync(CancellationToken ct)
@@ -128,7 +156,7 @@ public class OrchestratorTimer
 
         // MonthlyMaster badge
         var global = await _sp.GetLeaderboardAsync(monthKey, "Global", 1, 10, ct);
-        foreach (var (user, badge) in _badges.EvaluateMonthlyMaster(global, users, monthKey, runTime))
+        foreach (var (user, badge) in _badges.EvaluateMonthlyMaster(global, users, monthKey, runTime, config))
         {
             var awarded = await _sp.TryAwardBadgeAsync(badge, ct);
             if (awarded)

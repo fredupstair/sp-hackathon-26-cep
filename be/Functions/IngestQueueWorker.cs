@@ -125,7 +125,7 @@ public class IngestQueueWorker
         }
 
         string oldLevel = user.CurrentLevel;
-        var allMonthLogs = existingLogs.Values;
+        var allMonthLogs = await _sp.GetAllActivityLogsForUserMonthAsync(msg.AadUserId, monthKey, ct);
         (user.TotalPoints, user.MonthlyPoints) = _points.RecalculatePoints(user, allMonthLogs);
         user.CurrentLevel = _points.ComputeLevel(user.MonthlyPoints, config);
 

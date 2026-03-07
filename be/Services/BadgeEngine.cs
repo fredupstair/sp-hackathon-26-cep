@@ -11,6 +11,7 @@ public class BadgeEngine
     /// <summary>
     /// Returns zero or more new badges based on current activity logs and user state.
     /// Already-awarded badges must be filtered by the caller using TryAwardBadgeAsync.
+    /// Badge metadata (names, descriptions, thresholds) are driven by CepConfig.
     /// </summary>
     public IEnumerable<CepBadge> EvaluateBadges(
         CepUser user,
@@ -28,43 +29,48 @@ public class BadgeEngine
         // ------------------------------------------------------------------
         if (!awarded.Contains(CepBadge.Keys.FirstSteps) && logs.Sum(l => l.PromptCount) > 0)
         {
-            yield return NewBadge(user, CepBadge.Keys.FirstSteps, "First Steps",
-                "Executed your first Copilot prompt after enrollment.", now, "");
+            var def = cfg.GetBadge(CepBadge.Keys.FirstSteps);
+            yield return NewBadge(user, def.Key, def.Name, def.Description, now, "");
         }
 
         // ------------------------------------------------------------------
-        // CrossAppExplorer – 3+ distinct apps in any calendar week
+        // CrossAppExplorer – N+ distinct apps in any calendar week
         // ------------------------------------------------------------------
         if (!awarded.Contains(CepBadge.Keys.CrossAppExplorer))
         {
+            var def = cfg.GetBadge(CepBadge.Keys.CrossAppExplorer);
+            var threshold = def.Threshold > 0 ? def.Threshold : 3;
             var qualifies = logs
+                .Where(l => !l.IsWin)
                 .GroupBy(l => IsoWeekKey(l.UsageDate))
-                .Any(g => g.Select(l => l.AppKey).Distinct().Count() >= 3);
+                .Any(g => g.Select(l => l.AppKey).Distinct().Count() >= threshold);
 
             if (qualifies)
-                yield return NewBadge(user, CepBadge.Keys.CrossAppExplorer, "Cross-App Explorer",
-                    "Used 3 or more Copilot apps in a single week.", now, monthKey);
+                yield return NewBadge(user, def.Key, def.Name, def.Description, now, monthKey);
         }
 
         // ------------------------------------------------------------------
-        // WeeklyWarrior – 50+ prompts in any calendar week
+        // WeeklyWarrior – N+ prompts in any calendar week
         // ------------------------------------------------------------------
         if (!awarded.Contains(CepBadge.Keys.WeeklyWarrior))
         {
+            var def = cfg.GetBadge(CepBadge.Keys.WeeklyWarrior);
+            var threshold = def.Threshold > 0 ? def.Threshold : 50;
             var qualifies = logs
                 .GroupBy(l => IsoWeekKey(l.UsageDate))
-                .Any(g => g.Sum(l => l.PromptCount) >= 50);
+                .Any(g => g.Sum(l => l.PromptCount) >= threshold);
 
             if (qualifies)
-                yield return NewBadge(user, CepBadge.Keys.WeeklyWarrior, "Weekly Warrior",
-                    "Completed 50 or more prompts in a single week.", now, monthKey);
+                yield return NewBadge(user, def.Key, def.Name, def.Description, now, monthKey);
         }
 
         // ------------------------------------------------------------------
-        // ConsistencyKing – 7 consecutive active days (any 7-day window)
+        // ConsistencyKing – N consecutive active days (any N-day window)
         // ------------------------------------------------------------------
         if (!awarded.Contains(CepBadge.Keys.ConsistencyKing))
         {
+            var def = cfg.GetBadge(CepBadge.Keys.ConsistencyKing);
+            var threshold = def.Threshold > 0 ? def.Threshold : 7;
             var activeDays = logs
                 .Where(l => l.PromptCount > 0)
                 .Select(l => DateOnly.FromDateTime(l.UsageDate.Date))
@@ -72,27 +78,28 @@ public class BadgeEngine
                 .OrderBy(d => d)
                 .ToList();
 
-            if (HasConsecutiveDays(activeDays, 7))
-                yield return NewBadge(user, CepBadge.Keys.ConsistencyKing, "Consistency King",
-                    "Active for 7 consecutive days.", now, monthKey);
+            if (HasConsecutiveDays(activeDays, threshold))
+                yield return NewBadge(user, def.Key, def.Name, def.Description, now, monthKey);
         }
 
-        // Note: MonthlyMaster (Top 10 this month) is awarded after leaderboard calculation,
+        // Note: MonthlyMaster (Top N this month) is awarded after leaderboard calculation,
         // not here. See OrchestratorTimer.
     }
 
-    /// <summary>Awards MonthlyMaster badge to users in top 10 of the global leaderboard.</summary>
+    /// <summary>Awards MonthlyMaster badge to users in top N of the global leaderboard.</summary>
     public IEnumerable<(CepUser User, CepBadge Badge)> EvaluateMonthlyMaster(
         List<CepLeaderboardEntry> globalLeaderboard,
         IEnumerable<CepUser> allUsers,
         string monthKey,
-        DateTime now)
+        DateTime now,
+        CepConfig cfg)
     {
-        var top10 = globalLeaderboard.Where(e => e.Rank <= 10).Select(e => e.AadUserId).ToHashSet();
-        foreach (var user in allUsers.Where(u => top10.Contains(u.AadUserId)))
+        var def = cfg.GetBadge(CepBadge.Keys.MonthlyMaster);
+        var threshold = def.Threshold > 0 ? def.Threshold : 10;
+        var topN = globalLeaderboard.Where(e => e.Rank <= threshold).Select(e => e.AadUserId).ToHashSet();
+        foreach (var user in allUsers.Where(u => topN.Contains(u.AadUserId)))
         {
-            yield return (user, NewBadge(user, CepBadge.Keys.MonthlyMaster, "Monthly Master",
-                "Ranked in the Top 10 of the monthly leaderboard.", now, monthKey));
+            yield return (user, NewBadge(user, def.Key, def.Name, def.Description, now, monthKey));
         }
     }
 

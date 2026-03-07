@@ -65,13 +65,24 @@ public class SharePointClient
 
     public async Task UpsertConfigAsync(CepConfig config, CancellationToken ct = default)
     {
-        // Config is a single row now - upsert the whole row
+        // Key-value model: each row identified by Title (the config key).
+        // Load existing rows, build a lookup by Title, then upsert each config row.
         var existing = await GetAllItemsAsync(_listConfig, ct: ct);
-        var first = existing.FirstOrDefault();
+        var lookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in existing)
+        {
+            var fields = ExtractFields(item);
+            var title = fields.Str("Title");
+            var id = item.TryGetValue("id", out var v) ? v?.ToString() ?? "" : "";
+            if (!string.IsNullOrEmpty(title) && !string.IsNullOrEmpty(id))
+                lookup[title] = id;
+        }
+
         foreach (var row in config.ToSpRows())
         {
-            if (first is not null && first.TryGetValue("id", out var spid))
-                await PatchItemAsync(_listConfig, spid?.ToString() ?? "", row, ct);
+            var key = row["Title"]?.ToString() ?? "";
+            if (lookup.TryGetValue(key, out var spItemId))
+                await PatchItemAsync(_listConfig, spItemId, row, ct);
             else
                 await CreateItemAsync(_listConfig, row, ct);
         }
@@ -159,10 +170,22 @@ public class SharePointClient
     // ------------------------------------------------------------------
 
     /// <summary>
-    /// Returns existing aggregates for a user in the given month.
-    /// Key = (AppKey, UsageDate.Date).
+    /// Returns existing Graph-sourced aggregates (non-Win) for a user in the given month.
+    /// Key = (AppKey, UsageDate.Date). Win entries are excluded (they have individual rows).
     /// </summary>
     public async Task<Dictionary<(string AppKey, DateOnly Date), CepActivityLog>> GetActivityLogsForUserMonthAsync(
+        string aadUserId, string monthKey, CancellationToken ct = default)
+    {
+        var all = await GetAllActivityLogsForUserMonthAsync(aadUserId, monthKey, ct);
+        return all
+            .Where(l => !l.IsWin)
+            .ToDictionary(l => (l.AppKey, l.UsageDate != default ? DateOnly.FromDateTime(l.UsageDate) : DateOnly.MinValue));
+    }
+
+    /// <summary>
+    /// Returns ALL activity log rows for a user in the given month (including individual Win rows).
+    /// </summary>
+    public async Task<List<CepActivityLog>> GetAllActivityLogsForUserMonthAsync(
         string aadUserId, string monthKey, CancellationToken ct = default)
     {
         var filter = $"fields/CEP_Log_AadUserId eq '{aadUserId}' and fields/CEP_Log_MonthKey eq '{monthKey}'";
@@ -173,7 +196,18 @@ public class SharePointClient
                 var id = i.TryGetValue("id", out var v) ? v?.ToString() ?? "" : "";
                 return CepActivityLog.FromSpFields(id, ExtractFields(i));
             })
-            .ToDictionary(l => (l.AppKey, l.UsageDate != default ? DateOnly.FromDateTime(l.UsageDate) : DateOnly.MinValue));
+            .ToList();
+    }
+
+    /// <summary>Counts how many Win rows exist for this user on a specific day.</summary>
+    public async Task<int> CountWinsForUserDayAsync(
+        string aadUserId, DateOnly day, CancellationToken ct = default)
+    {
+        var monthKey = $"{day.Year:D4}-{day.Month:D2}";
+        var dayStr = day.ToString("yyyy-MM-dd");
+        var filter = $"fields/CEP_Log_AadUserId eq '{aadUserId}' and fields/CEP_Log_MonthKey eq '{monthKey}' and fields/CEP_Log_IsWin eq 1 and fields/CEP_Log_UsageDate eq '{dayStr}'";
+        var items = await GetAllItemsAsync(_listActivityLog, filter, ct);
+        return items.Count;
     }
 
     public async Task UpsertActivityLogAsync(CepActivityLog log, CancellationToken ct = default)

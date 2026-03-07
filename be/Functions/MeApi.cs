@@ -34,7 +34,6 @@ public class MeApi
         _sp = sp;
         _log = log;
     }
-
     // ------------------------------------------------------------------
     // GET /api/me/summary?month=YYYY-MM
     // ------------------------------------------------------------------
@@ -68,9 +67,9 @@ public class MeApi
         // Compute recent active days (last 2 months, excludes Win entries) for client-side streak calculation
         var currMonthKey = now.ToString("yyyy-MM");
         var prevMonthKey = now.AddMonths(-1).ToString("yyyy-MM");
-        var currLogs = await _sp.GetActivityLogsForUserMonthAsync(aadUserId, currMonthKey, ct);
-        var prevLogs = await _sp.GetActivityLogsForUserMonthAsync(aadUserId, prevMonthKey, ct);
-        var recentActiveDays = currLogs.Values.Concat(prevLogs.Values)
+        var currLogs = await _sp.GetAllActivityLogsForUserMonthAsync(aadUserId, currMonthKey, ct);
+        var prevLogs = await _sp.GetAllActivityLogsForUserMonthAsync(aadUserId, prevMonthKey, ct);
+        var recentActiveDays = currLogs.Concat(prevLogs)
             .Where(l => !l.IsWin && l.PromptCount > 0)
             .Select(l => l.UsageDate.ToString("yyyy-MM-dd"))
             .Distinct()
@@ -125,10 +124,10 @@ public class MeApi
             DateTime.DaysInMonth(now.Year, now.Month));
 
         var month = fromDate.ToString("yyyy-MM");
-        var logs = await _sp.GetActivityLogsForUserMonthAsync(aadUserId, month, ct);
+        var logs = await _sp.GetAllActivityLogsForUserMonthAsync(aadUserId, month, ct);
 
         // Return breakdown by app + totals
-        var breakdown = logs.Values
+        var breakdown = logs
             .GroupBy(l => l.AppKey)
             .Select(g => new
             {
@@ -220,50 +219,45 @@ public class MeApi
         if (winReq is null || string.IsNullOrWhiteSpace(winReq.AppKey))
             return new BadRequestObjectResult("appKey is required.");
 
+        var config = await _sp.GetConfigAsync(ct);
         var now = DateTime.UtcNow;
         var today = DateOnly.FromDateTime(now);
         var monthKey = now.ToString("yyyy-MM");
 
-        var logs = await _sp.GetActivityLogsForUserMonthAsync(aadUserId, monthKey, ct);
-        logs.TryGetValue(("Win", today), out var winToday);
-        var todayCount = winToday?.PromptCount ?? 0;
+        // Rate limit: count individual win rows for today
+        var todayCount = await _sp.CountWinsForUserDayAsync(aadUserId, today, ct);
 
-        const int MaxWinsPerDay = 10;
-        const int PointsPerWin = 10;
-
-        if (todayCount >= MaxWinsPerDay)
+        if (todayCount >= config.MaxWinsPerDay)
             return new ObjectResult(new { error = "Daily win limit reached.", todayWinCount = todayCount })
                    { StatusCode = 429 };
 
-        if (winToday is null)
+        // Each win → its own row (preserves note, app context, and future metadata)
+        var winLog = new CepActivityLog
         {
-            winToday = new CepActivityLog
-            {
-                AadUserId = aadUserId,
-                UserEmail = user.Email,
-                UsageDate = now.Date,
-                AppKey = "Win",
-                MonthKey = monthKey,
-            };
-        }
+            AadUserId = aadUserId,
+            UserEmail = user.Email,
+            UsageDate = now,
+            AppKey = "Win",
+            PromptCount = 1,
+            PointsEarned = config.PointsPerWin,
+            MonthKey = monthKey,
+            IsWin = true,
+            WinNote = winReq.Note ?? "",
+            IsShared = winReq.IsShared,
+            WinAppKey = winReq.AppKey,
+        };
 
-        winToday.PromptCount += 1;
-        winToday.PointsEarned += PointsPerWin;
-        winToday.IsWin = true;
-        winToday.WinNote = winReq.Note ?? "";
-        winToday.IsShared = winReq.IsShared;
+        await _sp.UpsertActivityLogAsync(winLog, ct);
 
-        await _sp.UpsertActivityLogAsync(winToday, ct);
-
-        user.MonthlyPoints += PointsPerWin;
-        user.TotalPoints += PointsPerWin;
+        user.MonthlyPoints += config.PointsPerWin;
+        user.TotalPoints += config.PointsPerWin;
         await _sp.UpsertUserAsync(user, ct);
 
         return new OkObjectResult(new
         {
-            pointsAdded = PointsPerWin,
+            pointsAdded = config.PointsPerWin,
             totalMonthlyPoints = user.MonthlyPoints,
-            todayWinCount = winToday.PromptCount,
+            todayWinCount = todayCount + 1,
         });
     }
 
@@ -283,9 +277,9 @@ public class MeApi
         if (user is null) return new NotFoundObjectResult("User not enrolled.");
 
         var monthKey = DateTime.UtcNow.ToString("yyyy-MM");
-        var logs = await _sp.GetActivityLogsForUserMonthAsync(aadUserId, monthKey, ct);
+        var logs = await _sp.GetAllActivityLogsForUserMonthAsync(aadUserId, monthKey, ct);
 
-        var usageByApp = logs.Values
+        var usageByApp = logs
             .Where(l => !l.IsWin)
             .GroupBy(l => l.AppKey)
             .ToDictionary(g => g.Key, g => g.Sum(l => l.PromptCount));
