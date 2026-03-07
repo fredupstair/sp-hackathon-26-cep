@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {
   Stack, Text,
-  PrimaryButton, DefaultButton, Spinner, SpinnerSize,
+  PrimaryButton, DefaultButton, IconButton,
   MessageBar, MessageBarType, TextField, Label,
 } from '@fluentui/react';
 import { MSGraphClientV3 } from '@microsoft/sp-http';
@@ -82,8 +82,6 @@ export const InlineWelcomeEditor: React.FC<IInlineWelcomeEditorProps> = ({
     setTimeout(autoResize, 0);
   };
 
-  const hasResult = !!generatedText || generating;
-
   return (
     <Stack className={styles.inlineEditor} tokens={{ childrenGap: 20 }}>
 
@@ -91,17 +89,18 @@ export const InlineWelcomeEditor: React.FC<IInlineWelcomeEditorProps> = ({
       <Stack horizontal verticalAlign="start" horizontalAlign="space-between">
         <Stack tokens={{ childrenGap: 4 }}>
           <Text variant="large" className={styles.inlineEditorTitle}>
-            ✨ {strings.InlineEditorTitle}
+            {strings.InlineEditorTitle}
           </Text>
           <Text className={styles.inlineEditorSubtitle}>
             Enter your organisation name, choose a style and click ✨ to generate your welcome text. You can edit it freely before saving.
           </Text>
         </Stack>
-        {hasExistingText && onDiscard && (
-          <DefaultButton
-            text={strings.InlineEditorDiscard}
+        {onDiscard && (
+          <IconButton
             iconProps={{ iconName: 'Cancel' }}
             onClick={onDiscard}
+            title={strings.InlineEditorDiscard}
+            ariaLabel={strings.InlineEditorDiscard}
           />
         )}
       </Stack>
@@ -133,18 +132,6 @@ export const InlineWelcomeEditor: React.FC<IInlineWelcomeEditorProps> = ({
             aria-label="Prompt"
             aria-readonly="true"
           />
-          <button
-            className={styles.promptSendButton}
-            onClick={() => handleGenerate().catch(console.error)}
-            disabled={generating || !orgName.trim()}
-            aria-label={strings.GenerateButton}
-            title={strings.GenerateButton}
-          >
-            {generating
-              ? <Spinner size={SpinnerSize.xSmall} />
-              : <span>✨</span>
-            }
-          </button>
         </div>
       </Stack>
 
@@ -169,6 +156,14 @@ export const InlineWelcomeEditor: React.FC<IInlineWelcomeEditorProps> = ({
         </div>
       </Stack>
 
+      {/* ── Generate button ─────────────────────────────────────────────── */}
+      <PrimaryButton
+        text={generating ? strings.GeneratingButton : `✨ ${strings.GenerateButton}`}
+        onClick={() => handleGenerate().catch(console.error)}
+        disabled={generating || !orgName.trim() || !promptText.trim()}
+        styles={{ root: { width: '100%' } }}
+      />
+
       {/* ── Error / fallback messages ──────────────────────────────────── */}
       {errorMessage && (
         <MessageBar messageBarType={MessageBarType.error} onDismiss={() => setError('')}>
@@ -181,41 +176,37 @@ export const InlineWelcomeEditor: React.FC<IInlineWelcomeEditorProps> = ({
         </MessageBar>
       )}
 
-      {/* ── Generated / editable text ──────────────────────────────────── */}
-      {hasResult && (
-        <>
-          <div className={styles.inlineEditorDivider} />
-          <TextField
-            label={strings.WelcomeTextLabel}
-            description={strings.WelcomeTextDescription}
-            multiline
-            rows={5}
-            value={generatedText}
-            onChange={(_e, v) => setGenText(v ?? '')}
-            placeholder={strings.WelcomeTextPlaceholder}
-            styles={{
-              fieldGroup: { borderRadius: 8, overflow: 'hidden' },
-              field: { lineHeight: '1.6', padding: '10px 12px' },
-            }}
+      {/* ── Welcome text ────────────────────────────────────────────────── */}
+      <div className={styles.inlineEditorDivider} />
+      <TextField
+        label={strings.WelcomeTextLabel}
+        description={strings.WelcomeTextDescription}
+        multiline
+        rows={5}
+        value={generatedText}
+        onChange={(_e, v) => setGenText(v ?? '')}
+        placeholder={strings.WelcomeTextPlaceholder}
+        styles={{
+          fieldGroup: { borderRadius: 8, overflow: 'hidden' },
+          field: { lineHeight: '1.6', padding: '10px 12px' },
+        }}
+      />
+      <Stack horizontal horizontalAlign="space-between" verticalAlign="center">
+        <Text className={styles.aiBadge}>✨ {strings.AiWelcomeBadge}</Text>
+        <Stack horizontal tokens={{ childrenGap: 8 }}>
+          <DefaultButton
+            text={strings.ClearWelcomeText}
+            iconProps={{ iconName: 'Delete' }}
+            onClick={() => setGenText('')}
+            styles={{ root: { color: 'var(--red, #a4262c)', borderColor: 'var(--red, #a4262c)' } }}
           />
-          <Stack horizontal horizontalAlign="space-between" verticalAlign="center">
-            <Text className={styles.aiBadge}>✨ {strings.AiWelcomeBadge}</Text>
-            <Stack horizontal tokens={{ childrenGap: 8 }}>
-              <DefaultButton
-                text={strings.ClearWelcomeText}
-                iconProps={{ iconName: 'Delete' }}
-                onClick={() => setGenText('')}
-                styles={{ root: { color: 'var(--red, #a4262c)', borderColor: 'var(--red, #a4262c)' } }}
-              />
-              <PrimaryButton
-                text={strings.InlineEditorSave}
-                iconProps={{ iconName: 'Save' }}
-                onClick={() => onSave(generatedText, orgName)}
-              />
-            </Stack>
-          </Stack>
-        </>
-      )}
+          <PrimaryButton
+            text={strings.InlineEditorSave}
+            iconProps={{ iconName: 'Save' }}
+            onClick={() => onSave(generatedText, orgName)}
+          />
+        </Stack>
+      </Stack>
 
     </Stack>
   );

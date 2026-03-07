@@ -483,7 +483,7 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
           onWelcomeTextSave(text, orgName);
           this.setState({ editingWelcome: false });
         }}
-        onDiscard={welcomeText?.trim() ? () => this.setState({ editingWelcome: false }) : undefined}
+        onDiscard={() => this.setState({ editingWelcome: false })}
       />
     );
   }
