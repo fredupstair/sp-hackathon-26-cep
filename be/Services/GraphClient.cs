@@ -162,6 +162,9 @@ public class GraphClient
             ["previewText"] = new Dictionary<string, string> { ["content"] = previewText }
         };
 
+        if (!string.IsNullOrEmpty(teamsAppId))
+            bodyDict["teamsAppId"] = teamsAppId;
+
         if (templateParameters is { Count: > 0 })
         {
             bodyDict["templateParameters"] = templateParameters
@@ -180,6 +183,8 @@ public class GraphClient
         return ((int)resp.StatusCode, respBody);
     }
 
+    // ------------------------------------------------------------------
+    // Diagnostics
     // ------------------------------------------------------------------
     // Internals
     // ------------------------------------------------------------------

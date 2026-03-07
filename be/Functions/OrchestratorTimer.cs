@@ -166,11 +166,22 @@ public class OrchestratorTimer
         // Leaderboard refresh notifications
         if (config.LeaderboardRefreshNotificationEnabled)
         {
+            _log.LogInformation("[{CorrId}] LeaderboardRefreshNotification enabled – checking {Count} users for month {Month}",
+                corrId, users.Count, monthKey);
+
             foreach (var user in users)
             {
-                if (user.LastLeaderboardNotifiedMonth == monthKey) continue;
+                if (user.LastLeaderboardNotifiedMonth == monthKey)
+                {
+                    _log.LogInformation("[{CorrId}] User {Upn} already notified for {Month}, skipping",
+                        corrId, user.UserPrincipalName, monthKey);
+                    continue;
+                }
 
                 var rank = global.FirstOrDefault(e => e.AadUserId == user.AadUserId)?.Rank ?? 0;
+                _log.LogInformation("[{CorrId}] Sending leaderboard notification to {Upn} (rank={Rank}, month={Month})",
+                    corrId, user.UserPrincipalName, rank, monthKey);
+
                 await _notifier.SendLeaderboardUpdateAsync(user, rank, monthKey, config, ct);
 
                 user.LastLeaderboardNotifiedMonth = monthKey;
