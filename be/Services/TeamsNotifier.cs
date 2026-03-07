@@ -25,25 +25,28 @@ public class TeamsNotifier
     // Welcome
     // ------------------------------------------------------------------
 
-    public Task SendWelcomeAsync(CepUser user, CancellationToken ct = default) =>
+    public Task SendWelcomeAsync(CepUser user, CepConfig cfg, CancellationToken ct = default) =>
         TrySendAsync(user.UserPrincipalName, "cepWelcome",
-            $"Welcome to the Copilot Engagement Program! Start earning points by using Copilot. 🚀", ct);
+            "Welcome to the Copilot Engagement Program! Start earning points by using Copilot. \U0001F680",
+            null, cfg.NotificationUrlDashboard, ct);
 
     // ------------------------------------------------------------------
     // Level Up
     // ------------------------------------------------------------------
 
-    public Task SendLevelUpAsync(CepUser user, string newLevel, CancellationToken ct = default) =>
+    public Task SendLevelUpAsync(CepUser user, string newLevel, CepConfig cfg, CancellationToken ct = default) =>
         TrySendAsync(user.UserPrincipalName, "cepLevelUp",
-            $"Congratulations {user.DisplayName}! You reached {newLevel} level. Keep it up! 🏆", ct);
+            $"Congratulations {user.DisplayName}! You reached {newLevel} level. Keep it up! \U0001F3C6",
+            new() { ["levelName"] = newLevel }, cfg.NotificationUrlDashboard, ct);
 
     // ------------------------------------------------------------------
     // Badge Earned
     // ------------------------------------------------------------------
 
-    public Task SendBadgeEarnedAsync(CepUser user, CepBadge badge, CancellationToken ct = default) =>
+    public Task SendBadgeEarnedAsync(CepUser user, CepBadge badge, CepConfig cfg, CancellationToken ct = default) =>
         TrySendAsync(user.UserPrincipalName, "cepBadgeEarned",
-            $"You earned the '{badge.BadgeName}' badge! {badge.Description} 🎖️", ct);
+            $"You earned the '{badge.BadgeName}' badge! {badge.Description} \U0001F396\uFE0F",
+            new() { ["badgeName"] = badge.BadgeName, ["badgeDescription"] = badge.Description }, cfg.NotificationUrlDashboard, ct);
 
     // ------------------------------------------------------------------
     // Inactivity Nudge (anti-spam: max 1 every 3 days)
@@ -63,7 +66,8 @@ public class TeamsNotifier
             return false;
 
         await TrySendAsync(user.UserPrincipalName, "cepInactivityNudge",
-            $"Hey {user.DisplayName}, we miss you! Open Copilot and earn some points. 💡", ct);
+            $"Hey {user.DisplayName}, we miss you! Open Copilot and earn some points. \U0001F4A1",
+            new() { ["userName"] = user.DisplayName }, cfg.NotificationUrlCopilotChat, ct);
         return true;
     }
 
@@ -71,15 +75,17 @@ public class TeamsNotifier
     // Leaderboard Refresh
     // ------------------------------------------------------------------
 
-    public Task SendLeaderboardUpdateAsync(CepUser user, int rank, string monthKey, CancellationToken ct = default) =>
+    public Task SendLeaderboardUpdateAsync(CepUser user, int rank, string monthKey, CepConfig cfg, CancellationToken ct = default) =>
         TrySendAsync(user.UserPrincipalName, "cepLeaderboardUpdate",
-            $"Leaderboard updated for {monthKey}. Your current global rank: #{rank}. Keep going! 📊", ct);
+            $"Leaderboard updated for {monthKey}. Your current global rank: #{rank}. Keep going! \U0001F4CA",
+            new() { ["monthKey"] = monthKey, ["rank"] = rank.ToString() }, cfg.NotificationUrlLeaderboard, ct);
 
     // ------------------------------------------------------------------
     // Internal
     // ------------------------------------------------------------------
 
-    private async Task TrySendAsync(string upn, string activityType, string preview, CancellationToken ct)
+    private async Task TrySendAsync(string upn, string activityType, string preview,
+        Dictionary<string, string>? templateParams, string? webUrl, CancellationToken ct)
     {
         if (string.IsNullOrEmpty(upn))
         {
@@ -88,7 +94,7 @@ public class TeamsNotifier
         }
         try
         {
-            await _graph.SendActivityNotificationAsync(upn, _teamsAppId, activityType, preview, ct);
+            await _graph.SendActivityNotificationAsync(upn, _teamsAppId, activityType, preview, templateParams, webUrl, ct);
             _log.LogInformation("Teams notification '{Type}' sent to {Upn}", activityType, upn);
         }
         catch (Exception ex)

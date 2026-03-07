@@ -83,7 +83,10 @@ public class EnrollmentApi
         _log.LogInformation("{Action} enrollment for {UserId}", isNew ? "New" : "Reactivated", body.AadUserId);
 
         if (isNew)
-            await _notifier.SendWelcomeAsync(user, ct);
+        {
+            var config = await _sp.GetConfigAsync(ct);
+            await _notifier.SendWelcomeAsync(user, config, ct);
+        }
 
         return new OkObjectResult(new { message = isNew ? "Enrolled successfully." : "Re-enrolled successfully.", userId = user.AadUserId });
     }

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
+  "id": "c7a2d6e1-8f34-4b9a-a1d5-3e7c9b0f2a84",
+  "alias": "CepWelcomeWebPart",
+  "componentType": "WebPart",
+
+  // The "*" signifies that the version should be taken from the package.json
+  "version": "*",
+  "manifestVersion": 2,
+
+  // If true, the component can only be installed on sites where Custom Script is allowed.
+  // Components that allow authors to embed arbitrary script code should set this to true.
+  // https://support.office.com/en-us/article/Turn-scripting-capabilities-on-or-off-1f2c515f-5d7e-448a-9fd7-835da935584f
+  "requiresCustomScript": false,
+  "supportedHosts": ["SharePointWebPart", "TeamsPersonalApp", "TeamsTab", "SharePointFullPage"],
+  "supportsThemeVariants": true,
+
+  "preconfiguredEntries": [{
+    "groupId": "a5e2e3d8-1234-4c5a-b678-9abcdef01234",
+    "group": { "default": "Copilot Engagement Program" },
+    "title": { "default": "CEP Welcome" },
+    "description": { "default": "Copilot Engagement Program — enrollment wizard for new users, personal dashboard for enrolled users." },
+    "officeFabricIconFontName": "Trophy2",
+    "properties": {
+      "welcomeText": "",
+      "organizationName": ""
+    }
+  }]
+}

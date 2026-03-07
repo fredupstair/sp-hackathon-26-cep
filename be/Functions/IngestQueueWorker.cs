@@ -145,14 +145,14 @@ public class IngestQueueWorker
         {
             var awarded = await _sp.TryAwardBadgeAsync(badge, ct);
             if (awarded)
-                await _notifier.SendBadgeEarnedAsync(user, badge, ct);
+                await _notifier.SendBadgeEarnedAsync(user, badge, config, ct);
         }
 
         // ------------------------------------------------------------------
         // 6. Level-up notification (send only if level increased)
         // ------------------------------------------------------------------
         if (user.CurrentLevel != oldLevel)
-            await _notifier.SendLevelUpAsync(user, user.CurrentLevel, ct);
+            await _notifier.SendLevelUpAsync(user, user.CurrentLevel, config, ct);
 
         // ------------------------------------------------------------------
         // 7. Persist updated user

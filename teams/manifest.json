@@ -1,0 +1,76 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.25/MicrosoftTeams.schema.json",
+  "version": "1.1.0",
+  "manifestVersion": "1.25",
+  "id": "1336459f-9891-4da1-8f8f-300a2368c01b",
+  "name": {
+    "short": "Copilot Engagement",
+    "full": "Copilot Engagement Program"
+  },
+  "developer": {
+    "name": "Federico Porceddu",
+    "websiteUrl": "https://www.federicoporceddu.com/",
+    "privacyUrl": "https://www.federicoporceddu.com/",
+    "termsOfUseUrl": "https://www.federicoporceddu.com/"
+  },
+  "description": {
+    "short": "Gamify your Copilot usage – earn points, badges, and climb the leaderboard!",
+    "full": "The Copilot Engagement Program tracks your Microsoft 365 Copilot usage (opt-in), awards points for every prompt, assigns levels (Bronze/Silver/Gold), unlocks badges, and publishes a monthly leaderboard. Stay motivated with Teams notifications for milestones, badge achievements, and leaderboard updates."
+  },
+  "icons": {
+    "outline": "outline.png",
+    "color": "color.png"
+  },
+  "accentColor": "#a8ad09",
+  "staticTabs": [
+    {
+      "entityId": "97157f2f-9951-4348-9ec3-50de45528d87",
+      "name": "Home",
+      "contentUrl": "https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/SitePages/CePWelcome.aspx",
+      "websiteUrl": "https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/_layouts/15/embed.aspx?source=https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/SitePages/CePWelcome.aspx",
+      "scopes": [
+        "personal"
+      ],
+      "context": [
+        "personalTab"
+      ]
+    }
+  ],
+  "validDomains": [
+    "federicoporceddumvp.sharepoint.com",
+    "func-cephackathon.azurewebsites.net"
+  ],
+  "webApplicationInfo": {
+    "id": "0cb84638-30db-4bbd-936f-54a599840aec",
+    "resource": "api://0cb84638-30db-4bbd-936f-54a599840aec"
+  },
+  "activities": {
+    "activityTypes": [
+      {
+        "type": "cepWelcome",
+        "description": "Welcome to the Copilot Engagement Program",
+        "templateText": "{actor} welcomed you to the Copilot Engagement Program! Start earning points by using Copilot. 🚀"
+      },
+      {
+        "type": "cepLevelUp",
+        "description": "You reached a new level",
+        "templateText": "Congratulations! You reached the {levelName} level. Keep it up! 🏆"
+      },
+      {
+        "type": "cepBadgeEarned",
+        "description": "You earned a new badge",
+        "templateText": "You earned the '{badgeName}' badge! {badgeDescription} 🎖️"
+      },
+      {
+        "type": "cepInactivityNudge",
+        "description": "We miss you! Come back and use Copilot",
+        "templateText": "Hey {userName}, we miss you! Open Copilot, improve productivity and earn some points. 💡"
+      },
+      {
+        "type": "cepLeaderboardUpdate",
+        "description": "Leaderboard has been updated",
+        "templateText": "Leaderboard updated for {monthKey}. Your current global rank: #{rank}. Keep going! 📊"
+      }
+    ]
+  }
+}

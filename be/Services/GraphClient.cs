@@ -106,35 +106,78 @@ public class GraphClient
 
     /// <summary>
     /// Sends a Teams activity notification to a single user.
-    /// activityType should match the Teams app manifest, or use "systemDefault".
+    /// activityType must match one declared in the Teams app manifest.
+    /// templateParameters fills placeholders in the manifest's templateText.
     /// </summary>
     public async Task SendActivityNotificationAsync(
         string upn,
         string teamsAppId,
         string activityType,
         string previewText,
+        Dictionary<string, string>? templateParameters = null,
+        string? webUrl = null,
+        CancellationToken ct = default)
+    {
+        var (status, body) = await SendActivityNotificationRawAsync(upn, teamsAppId, activityType, previewText, templateParameters, webUrl, ct);
+        if (status >= 300)
+        {
+            _log.LogWarning("Teams notification '{Type}' failed for {Upn}: {Status} – {Body}",
+                activityType, upn, status, body);
+        }
+    }
+
+    /// <summary>
+    /// Sends a Teams activity notification and returns the raw HTTP status code and response body.
+    /// Used by diagnostics / test endpoints.
+    /// </summary>
+    public async Task<(int StatusCode, string Body)> SendActivityNotificationRawAsync(
+        string upn,
+        string teamsAppId,
+        string activityType,
+        string previewText,
+        Dictionary<string, string>? templateParameters = null,
+        string? webUrl = null,
         CancellationToken ct = default)
     {
         var token = await GetTokenAsync();
         var url = $"{GraphBase}/users/{Uri.EscapeDataString(upn)}/teamwork/sendActivityNotification";
 
-        var body = new
+        // Build the JSON payload manually to control property names (e.g. @odata.type)
+        // Graph requires webUrl when topic.source is "text" – must be a valid Teams deep link
+        var effectiveWebUrl = !string.IsNullOrEmpty(webUrl) && webUrl.StartsWith("https://teams.microsoft.com/l/", StringComparison.OrdinalIgnoreCase)
+            ? webUrl
+            : $"https://teams.microsoft.com/l/entity/{Uri.EscapeDataString(teamsAppId)}/index";
+
+        var topicDict = new Dictionary<string, string>
         {
-            topic = new { source = "entityUrl", value = $"https://teams.microsoft.com/l/app/{teamsAppId}" },
-            activityType,
-            previewText = new { content = previewText },
-            recipient = new { @odata_type = "#microsoft.graph.aadUserNotificationRecipient", userId = upn }
+            ["source"] = "text",
+            ["value"] = "Copilot Engagement Program",
+            ["webUrl"] = effectiveWebUrl
         };
 
-        var payload = JsonSerializer.Serialize(body, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var bodyDict = new Dictionary<string, object>
+        {
+            ["topic"] = topicDict,
+            ["activityType"] = activityType,
+            ["previewText"] = new Dictionary<string, string> { ["content"] = previewText }
+        };
+
+        if (templateParameters is { Count: > 0 })
+        {
+            bodyDict["templateParameters"] = templateParameters
+                .Select(kv => new Dictionary<string, string> { ["name"] = kv.Key, ["value"] = kv.Value })
+                .ToList();
+        }
+
+        var payload = JsonSerializer.Serialize(bodyDict);
 
         using var req = new HttpRequestMessage(HttpMethod.Post, url);
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         req.Content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
 
         var resp = await SendWithRetryAsync(req, ct);
-        if (!resp.IsSuccessStatusCode)
-            _log.LogWarning("Teams notification failed for {Upn}: {Status}", upn, resp.StatusCode);
+        var respBody = await resp.Content.ReadAsStringAsync(ct);
+        return ((int)resp.StatusCode, respBody);
     }
 
     // ------------------------------------------------------------------

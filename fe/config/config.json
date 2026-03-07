@@ -2,27 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
   "version": "2.0",
   "bundles": {
-    "cep-optin-web-part": {
-      "components": [
-        {
-          "entrypoint": "./lib/webparts/cepOptin/CepOptinWebPart.js",
-          "manifest": "./src/webparts/cepOptin/CepOptinWebPart.manifest.json"
-        }
-      ]
-    },
     "cep-bar-application-customizer": {
       "components": [
         {
           "entrypoint": "./lib/extensions/cepBar/CepBarApplicationCustomizer.js",
           "manifest": "./src/extensions/cepBar/CepBarApplicationCustomizer.manifest.json"
-        }
-      ]
-    },
-    "cep-dashboard-web-part": {
-      "components": [
-        {
-          "entrypoint": "./lib/webparts/cepDashboard/CepDashboardWebPart.js",
-          "manifest": "./src/webparts/cepDashboard/CepDashboardWebPart.manifest.json"
         }
       ]
     },
@@ -33,13 +17,20 @@
           "manifest": "./src/webparts/cepLeaderboard/CepLeaderboardWebPart.manifest.json"
         }
       ]
+    },
+    "cep-welcome-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/cepWelcome/CepWelcomeWebPart.js",
+          "manifest": "./src/webparts/cepWelcome/CepWelcomeWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {},
   "localizedResources": {
-    "CepOptinWebPartStrings": "lib/webparts/cepOptin/loc/{locale}.js",
     "CepBarApplicationCustomizerStrings": "lib/extensions/cepBar/loc/{locale}.js",
-    "CepDashboardWebPartStrings": "lib/webparts/cepDashboard/loc/{locale}.js",
-    "CepLeaderboardWebPartStrings": "lib/webparts/cepLeaderboard/loc/{locale}.js"
+    "CepLeaderboardWebPartStrings": "lib/webparts/cepLeaderboard/loc/{locale}.js",
+    "CepWelcomeWebPartStrings": "lib/webparts/cepWelcome/loc/{locale}.js"
   }
 }

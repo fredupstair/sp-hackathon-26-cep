@@ -4,6 +4,7 @@ using CepFunctions.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace CepFunctions.Functions;
@@ -20,12 +21,18 @@ public class AdminApi
 {
     private readonly SharePointClient _sp;
     private readonly OrchestratorTimer _orchestrator;
+    private readonly TeamsNotifier _notifier;
+    private readonly GraphClient _graph;
+    private readonly string _teamsAppId;
     private readonly ILogger<AdminApi> _log;
 
-    public AdminApi(SharePointClient sp, OrchestratorTimer orchestrator, ILogger<AdminApi> log)
+    public AdminApi(SharePointClient sp, OrchestratorTimer orchestrator, TeamsNotifier notifier, GraphClient graph, IConfiguration cfg, ILogger<AdminApi> log)
     {
         _sp = sp;
         _orchestrator = orchestrator;
+        _notifier = notifier;
+        _graph = graph;
+        _teamsAppId = cfg["TeamsAppId"] ?? "";
         _log = log;
     }
 
@@ -100,4 +107,100 @@ public class AdminApi
             activeUsers = users.Count,
         });
     }
+
+    // ------------------------------------------------------------------
+    // POST /api/ops/test-notification  – send a test Teams notification
+    // Body: { "upn": "user@contoso.com", "type": "cepWelcome" }
+    // type is optional, defaults to cepWelcome
+    // ------------------------------------------------------------------
+    [Function("AdminTestNotification")]
+    public async Task<IActionResult> TestNotificationAsync(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "ops/test-notification")] HttpRequest req,
+        CancellationToken ct)
+    {
+        TestNotificationRequest? body;
+        try
+        {
+            body = await JsonSerializer.DeserializeAsync<TestNotificationRequest>(req.Body,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, ct);
+        }
+        catch
+        {
+            return new BadRequestObjectResult("Invalid JSON body.");
+        }
+
+        if (body is null || string.IsNullOrEmpty(body.Upn))
+            return new BadRequestObjectResult("upn is required.");
+
+        var config = await _sp.GetConfigAsync(ct);
+        var user = new CepUser
+        {
+            UserPrincipalName = body.Upn,
+            DisplayName = body.Upn.Split('@')[0],
+        };
+
+        var type = body.Type?.ToLowerInvariant() ?? "cepwelcome";
+
+        // Build notification params based on type
+        string activityType;
+        string preview;
+        Dictionary<string, string>? templateParams;
+        string? webUrl;
+
+        switch (type)
+        {
+            case "cepwelcome":
+                activityType = "cepWelcome";
+                preview = "Welcome to CEP! 🚀";
+                templateParams = null;
+                webUrl = config.NotificationUrlDashboard;
+                break;
+            case "ceplevelup":
+                activityType = "cepLevelUp";
+                preview = "You reached Gold level! 🏆";
+                templateParams = new() { ["levelName"] = "Gold" };
+                webUrl = config.NotificationUrlDashboard;
+                break;
+            case "cepbadgeearned":
+                activityType = "cepBadgeEarned";
+                preview = "You earned 'Test Badge'! 🎖️";
+                templateParams = new() { ["badgeName"] = "Test Badge", ["badgeDescription"] = "Test badge notification" };
+                webUrl = config.NotificationUrlDashboard;
+                break;
+            case "cepinactivitynudge":
+                activityType = "cepInactivityNudge";
+                preview = "Hey, we miss you! 💡";
+                templateParams = new() { ["userName"] = user.DisplayName };
+                webUrl = config.NotificationUrlCopilotChat;
+                break;
+            case "cepleaderboardupdate":
+                activityType = "cepLeaderboardUpdate";
+                preview = "Leaderboard updated! 📊";
+                templateParams = new() { ["monthKey"] = DateTime.UtcNow.ToString("yyyy-MM"), ["rank"] = "1" };
+                webUrl = config.NotificationUrlLeaderboard;
+                break;
+            default:
+                return new BadRequestObjectResult($"Unknown type '{body.Type}'. Use: cepWelcome, cepLevelUp, cepBadgeEarned, cepInactivityNudge, cepLeaderboardUpdate");
+        }
+
+        var teamsAppId = _teamsAppId;
+
+        // Call GraphClient directly to get the raw response
+        var (statusCode, responseBody) = await _graph.SendActivityNotificationRawAsync(
+            body.Upn, teamsAppId, activityType, preview, templateParams, webUrl, ct);
+
+        _log.LogInformation("Test notification '{Type}' to {Upn}: HTTP {Status}", type, body.Upn, statusCode);
+
+        return new OkObjectResult(new
+        {
+            type = activityType,
+            upn = body.Upn,
+            graphStatusCode = statusCode,
+            graphResponse = responseBody,
+            webUrl,
+            teamsAppId
+        });
+    }
+
+    private record TestNotificationRequest(string? Upn, string? Type);
 }

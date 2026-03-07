@@ -28,6 +28,11 @@ public class CepConfig
     public bool LeaderboardRefreshNotificationEnabled { get; set; } = true;
     public string TimeZone { get; set; } = "UTC";
 
+    // ── Notification URLs ─────────────────────────────────────
+    public string NotificationUrlDashboard { get; set; } = "";
+    public string NotificationUrlCopilotChat { get; set; } = "https://m365.cloud.microsoft/chat";
+    public string NotificationUrlLeaderboard { get; set; } = "";
+
     // ── Badges ────────────────────────────────────────────────
     public List<BadgeDefinition> BadgeDefinitions { get; set; } =
     [
@@ -77,6 +82,11 @@ public class CepConfig
             cfg.LeaderboardRefreshNotificationEnabled = bool.TryParse(lrne, out var lrneV) && lrneV;
         if (map.TryGetValue("TimeZone", out var tz) && !string.IsNullOrEmpty(tz)) cfg.TimeZone = tz;
 
+        // Notification URLs
+        if (map.TryGetValue("NotificationUrlDashboard", out var nud) && !string.IsNullOrEmpty(nud)) cfg.NotificationUrlDashboard = nud;
+        if (map.TryGetValue("NotificationUrlCopilotChat", out var nuc) && !string.IsNullOrEmpty(nuc)) cfg.NotificationUrlCopilotChat = nuc;
+        if (map.TryGetValue("NotificationUrlLeaderboard", out var nul) && !string.IsNullOrEmpty(nul)) cfg.NotificationUrlLeaderboard = nul;
+
         // Badges – override defaults from key-value rows
         var badges = new List<BadgeDefinition>(cfg.BadgeDefinitions);
         for (int i = 0; i < badges.Count; i++)
@@ -109,6 +119,10 @@ public class CepConfig
             ("InactivityDaysForNudge", InactivityDaysForNudge.ToString(), "general"),
             ("LeaderboardRefreshNotificationEnabled", LeaderboardRefreshNotificationEnabled.ToString(), "general"),
             ("TimeZone", TimeZone, "general"),
+            // Notification URLs
+            ("NotificationUrlDashboard", NotificationUrlDashboard, "notifications"),
+            ("NotificationUrlCopilotChat", NotificationUrlCopilotChat, "notifications"),
+            ("NotificationUrlLeaderboard", NotificationUrlLeaderboard, "notifications"),
         };
 
         // Badges

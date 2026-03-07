@@ -615,6 +615,22 @@
               <pnp:DataValue FieldName="CEP_Cfg_Value">UTC</pnp:DataValue>
               <pnp:DataValue FieldName="CEP_Cfg_Category">general</pnp:DataValue>
             </pnp:DataRow>
+            <!-- ── Notification URLs ── -->
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">NotificationUrlDashboard</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/SitePages/CePWelcome.aspx</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">notifications</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">NotificationUrlCopilotChat</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">https://m365.cloud.microsoft/chat</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">notifications</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">NotificationUrlLeaderboard</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/SitePages/CePLeaderBoard.aspx</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">notifications</pnp:DataValue>
+            </pnp:DataRow>
             <!-- ── Badges ── -->
             <pnp:DataRow>
               <pnp:DataValue FieldName="Title">Badge_FirstSteps_Name</pnp:DataValue>

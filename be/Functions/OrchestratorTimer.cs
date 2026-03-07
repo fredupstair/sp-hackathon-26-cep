@@ -160,7 +160,7 @@ public class OrchestratorTimer
         {
             var awarded = await _sp.TryAwardBadgeAsync(badge, ct);
             if (awarded)
-                await _notifier.SendBadgeEarnedAsync(user, badge, ct);
+                await _notifier.SendBadgeEarnedAsync(user, badge, config, ct);
         }
 
         // Leaderboard refresh notifications
@@ -171,7 +171,7 @@ public class OrchestratorTimer
                 if (user.LastLeaderboardNotifiedMonth == monthKey) continue;
 
                 var rank = global.FirstOrDefault(e => e.AadUserId == user.AadUserId)?.Rank ?? 0;
-                await _notifier.SendLeaderboardUpdateAsync(user, rank, monthKey, ct);
+                await _notifier.SendLeaderboardUpdateAsync(user, rank, monthKey, config, ct);
 
                 user.LastLeaderboardNotifiedMonth = monthKey;
                 await _sp.UpsertUserAsync(user, ct);
