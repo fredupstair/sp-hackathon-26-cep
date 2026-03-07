@@ -12,6 +12,8 @@ import * as strings from 'CepOptinWebPartStrings';
 import styles from './CepOptin.module.scss';
 import type { ICepOptinProps } from './ICepOptinProps';
 import type { IUserSummary } from '../../../services/CepApiModels';
+import { CopilotChatService } from '../../../services/CopilotChatService';
+import { InlineWelcomeEditor } from './InlineWelcomeEditor';
 import { WelcomeStep }     from './steps/WelcomeStep';
 import { RulesStep }       from './steps/RulesStep';
 import { PreferencesStep } from './steps/PreferencesStep';
@@ -38,6 +40,10 @@ interface ICepOptinState {
   // action state
   submitting:      boolean;
   showLeaveDialog: boolean;
+  // AI personalised welcome
+  aiWelcomeText:    string;
+  aiWelcomeLoading: boolean;
+  editingWelcome:   boolean;
 }
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
@@ -68,16 +74,23 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
       consentChecked:  false,
       submitting:      false,
       showLeaveDialog: false,
+      aiWelcomeText:    '',
+      aiWelcomeLoading: false,
+      editingWelcome:   props.displayMode === DisplayMode.Edit && !props.welcomeText?.trim(),
     };
   }
 
   public componentDidMount(): void {
     this._loadEnrollmentStatus().catch(console.error);
+    this._generatePersonalizedWelcome().catch(console.error);
   }
 
   public componentDidUpdate(prevProps: ICepOptinProps): void {
     if (prevProps.apiClient !== this.props.apiClient) {
       this._loadEnrollmentStatus().catch(console.error);
+    }
+    if (prevProps.graphClient !== this.props.graphClient && this.props.graphClient) {
+      this._generatePersonalizedWelcome().catch(console.error);
     }
   }
 
@@ -98,6 +111,40 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
         loadingState: 'error',
         errorMessage: `Error loading enrollment status: ${(e as Error).message}`,
       });
+    }
+  }
+
+  /** Generates an AI-personalised welcome text for the current user. Silent on failure. */
+  private async _generatePersonalizedWelcome(): Promise<void> {
+    const { graphClient, organizationName, userDisplayName, displayMode } = this.props;
+    // Do not run in edit mode — this is for end-users, not the page editor
+    if (displayMode === DisplayMode.Edit) return;
+    if (!graphClient || !userDisplayName) return;
+    this.setState({ aiWelcomeLoading: true });
+    try {
+      let jobTitle = '';
+      let department = '';
+      try {
+        const me = await graphClient
+          .api('/me')
+          .version('v1.0')
+          .select('jobTitle,department')
+          .get() as { jobTitle?: string; department?: string };
+        jobTitle   = me.jobTitle   ?? '';
+        department = me.department ?? '';
+      } catch { /* ignore — continue with empty role context */ }
+
+      const service = new CopilotChatService(graphClient);
+      const { text } = await service.generatePersonalizedText(
+        userDisplayName,
+        jobTitle,
+        department,
+        organizationName
+      );
+      this.setState({ aiWelcomeText: text, aiWelcomeLoading: false });
+    } catch {
+      // Silent failure — static welcome text remains visible
+      this.setState({ aiWelcomeLoading: false });
     }
   }
 
@@ -198,6 +245,7 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
     const {
       currentStep, department, team,
       enableNudges, consentChecked, submitting, errorMessage,
+      aiWelcomeText, aiWelcomeLoading,
     } = this.state;
     const { userDisplayName, welcomeText } = this.props;
 
@@ -207,6 +255,8 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
           <WelcomeStep
             welcomeText={welcomeText}
             userName={userDisplayName}
+            aiWelcomeText={aiWelcomeText}
+            aiWelcomeLoading={aiWelcomeLoading}
             onNext={this._goNext}
           />
         );
@@ -349,61 +399,48 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
   // ─── Main render ───────────────────────────────────────────────────────────
 
   public render(): React.ReactElement<ICepOptinProps> {
-    const { functionAppBaseUrl, hasTeamsContext, welcomeText, displayMode } = this.props;
-    const { loadingState, userSummary, successMessage } = this.state;
+    const { functionAppBaseUrl, hasTeamsContext, displayMode } = this.props;
+    const { loadingState, userSummary, successMessage, editingWelcome } = this.state;
 
     const rootClass = `${styles.cepOptin} ${hasTeamsContext ? styles.teams : ''}`;
 
-    // Editor setup card — shown when welcomeText has not been configured yet
-    if (!welcomeText?.trim() && displayMode === DisplayMode.Edit) {
-      return <div className={rootClass}>{this._renderSetupPrompt()}</div>;
+    // ── Edit mode: inline AI welcome text editor ─────────────────────────────
+    if (displayMode === DisplayMode.Edit && editingWelcome) {
+      return <div className={rootClass}>{this._renderInlineEditor()}</div>;
     }
+
+    // ── Determine main content ───────────────────────────────────────────────
+    let mainContent: React.ReactElement;
 
     if (!functionAppBaseUrl) {
-      return (
-        <div className={rootClass}>
-          <MessageBar messageBarType={MessageBarType.warning} isMultiline>
-            <strong>{strings.NotConfiguredTitle}</strong>{' '}
-            SharePoint Tenant Properties have not been set.
-            Run <code>deploy/set-tenant-properties.ps1</code> to configure the backend URL.
-          </MessageBar>
-        </div>
+      mainContent = (
+        <MessageBar messageBarType={MessageBarType.warning} isMultiline>
+          <strong>{strings.NotConfiguredTitle}</strong>{' '}
+          SharePoint Tenant Properties have not been set.
+          Run <code>deploy/set-tenant-properties.ps1</code> to configure the backend URL.
+        </MessageBar>
       );
-    }
-
-    if (loadingState === 'idle' || loadingState === 'loading') {
-      return (
-        <div className={rootClass}>
-          <Stack horizontalAlign="center" tokens={{ padding: 32 }}>
-            <Spinner size={SpinnerSize.large} label="Loading…" />
-          </Stack>
-        </div>
+    } else if (loadingState === 'idle' || loadingState === 'loading') {
+      mainContent = (
+        <Stack horizontalAlign="center" tokens={{ padding: 32 }}>
+          <Spinner size={SpinnerSize.large} label="Loading…" />
+        </Stack>
       );
-    }
-
-    if (loadingState === 'error') {
-      return (
-        <div className={rootClass}>
-          <MessageBar messageBarType={MessageBarType.error} isMultiline>
-            {this.state.errorMessage}
-            <DefaultButton
-              text="Retry"
-              onClick={() => this._loadEnrollmentStatus().catch(console.error)}
-              style={{ marginLeft: 8 }}
-            />
-          </MessageBar>
-        </div>
+    } else if (loadingState === 'error') {
+      mainContent = (
+        <MessageBar messageBarType={MessageBarType.error} isMultiline>
+          {this.state.errorMessage}
+          <DefaultButton
+            text="Retry"
+            onClick={() => this._loadEnrollmentStatus().catch(console.error)}
+            style={{ marginLeft: 8 }}
+          />
+        </MessageBar>
       );
-    }
-
-    // Enrolled and active → show profile / dashboard card
-    if (userSummary?.isActive) {
-      return <div className={rootClass}>{this._renderEnrolledView()}</div>;
-    }
-
-    // Not enrolled → multi-step enrollment wizard
-    return (
-      <div className={rootClass}>
+    } else if (userSummary?.isActive) {
+      mainContent = this._renderEnrolledView();
+    } else {
+      mainContent = (
         <Stack className={styles.wizardContainer}>
           {this._renderStepIndicator()}
           {successMessage && (
@@ -416,11 +453,65 @@ export default class CepOptin extends React.Component<ICepOptinProps, ICepOptinS
           )}
           {this._renderWizard()}
         </Stack>
-      </div>
+      );
+    }
+
+    // ── In edit mode, wrap with admin bar ────────────────────────────────────
+    if (displayMode === DisplayMode.Edit) {
+      return (
+        <div className={rootClass}>
+          {this._renderAdminBar()}
+          {mainContent}
+        </div>
+      );
+    }
+
+    return <div className={rootClass}>{mainContent}</div>;
+  }
+
+  // ─── Inline AI editor (edit mode, full webpart) ────────────────────────────
+
+  private _renderInlineEditor(): React.ReactElement {
+    const { graphClient, organizationName, welcomeText, onWelcomeTextSave } = this.props;
+    return (
+      <InlineWelcomeEditor
+        graphClient={graphClient}
+        organizationName={organizationName}
+        welcomeText={welcomeText}
+        hasExistingText={!!welcomeText?.trim()}
+        onSave={(text, orgName) => {
+          onWelcomeTextSave(text, orgName);
+          this.setState({ editingWelcome: false });
+        }}
+        onDiscard={welcomeText?.trim() ? () => this.setState({ editingWelcome: false }) : undefined}
+      />
     );
   }
 
-  // ─── Setup prompt (edit mode, no welcome text configured) ─────────────────
+  // ─── Admin bar (edit mode, editor closed) ─────────────────────────────────
+
+  private _renderAdminBar(): React.ReactElement {
+    return (
+      <Stack
+        horizontal
+        verticalAlign="center"
+        horizontalAlign="space-between"
+        className={styles.adminBar}
+      >
+        <Text className={styles.adminBarLabel}>
+          <Icon iconName="Edit" style={{ marginRight: 4, fontSize: 11 }} />
+          {strings.EditModeNotice}
+        </Text>
+        <DefaultButton
+          text={`✨ ${strings.InlineEditorEditButton}`}
+          onClick={() => this.setState({ editingWelcome: true })}
+          styles={{ root: { fontSize: 12, height: 28, padding: '0 12px', minWidth: 'auto' } }}
+        />
+      </Stack>
+    );
+  }
+
+  // ─── Legacy: setup prompt (kept unused, safe to remove in future) ──────────
 
   private _renderSetupPrompt(): React.ReactElement {
     return (

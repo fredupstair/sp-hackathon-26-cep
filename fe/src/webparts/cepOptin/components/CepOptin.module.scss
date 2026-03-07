@@ -109,6 +109,46 @@
   text-align: justify;
 }
 
+// ─── AI Welcome Text ──────────────────────────────────────────────────────────
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.typingCursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: "[theme:themePrimary, default: #0078d4]";
+  background: var(--themePrimary);
+  margin-left: 3px;
+  vertical-align: text-bottom;
+  border-radius: 1px;
+  animation: blink 1s step-end infinite;
+}
+
+.aiTextReveal {
+  animation: fadeInUp 0.35s ease both;
+}
+
+.aiBadge {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 8px;
+  gap: 4px;
+  font-size: 11px;
+  color: "[theme:themePrimary, default: #0078d4]";
+  color: var(--themePrimary);
+  opacity: 0.75;
+  font-style: italic;
+}
+
 .featurePill {
   background: "[theme:neutralLighter, default: #f3f2f1]";
   background: var(--neutralLighter);
@@ -259,4 +299,231 @@
 
 .enrollForm {
   display: block;
+}
+
+// ─── Admin bar (shown in edit mode when inline editor is closed) ──────────────
+
+.adminBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: "[theme:themeLight, default: #deecf9]";
+  background: var(--themeLight);
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.adminBarLabel {
+  font-size: 12px;
+  color: "[theme:themeDark, default: #005a9e]";
+  color: var(--themeDark);
+}
+
+// ─── Inline welcome editor ────────────────────────────────────────────────────
+
+.inlineEditor {
+  padding: 24px;
+  background: "[theme:white, default: #ffffff]";
+  background: var(--white);
+  border: 1.5px solid "[theme:neutralLight, default: #edebe9]";
+  border: 1.5px solid var(--neutralLight);
+  border-radius: 8px;
+}
+
+.inlineEditorIcon {
+  font-size: 22px;
+  color: "[theme:themePrimary, default: #0078d4]";
+  color: var(--themePrimary);
+}
+
+.inlineEditorTitle {
+  font-weight: 600;
+}
+
+.inlineEditorSubtitle {
+  font-size: 13px;
+  color: "[theme:neutralSecondary, default: #605e5c]";
+  color: var(--neutralSecondary, #605e5c);
+  line-height: 1.4;
+}
+
+.inlineEditorDivider {
+  height: 1px;
+  background: "[theme:neutralLight, default: #edebe9]";
+  background: var(--neutralLight);
+}
+
+// Org name input
+.fieldLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: "[theme:neutralPrimary, default: #323130]";
+  color: var(--neutralPrimary);
+}
+
+.orgInput {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid "[theme:neutralSecondaryAlt, default: #8a8886]";
+  border: 1px solid var(--neutralSecondaryAlt, #8a8886);
+  border-radius: 4px;
+  padding: 7px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: "[theme:bodyText, default: #323130]";
+  color: var(--bodyText, #323130);
+  background: "[theme:white, default: #ffffff]";
+  background: var(--white, #ffffff);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    border-color: "[theme:themePrimary, default: #0078d4]";
+    border-color: var(--themePrimary, #0078d4);
+    box-shadow: 0 0 0 1px var(--themePrimary, #0078d4);
+  }
+
+  &::placeholder {
+    color: "[theme:neutralSecondary, default: #605e5c]";
+    color: var(--neutralSecondary, #605e5c);
+  }
+}
+
+// Prompt textarea
+.promptWrapper {
+  position: relative;
+}
+
+.promptTextarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid "[theme:neutralSecondaryAlt, default: #8a8886]";
+  border: 1px solid var(--neutralSecondaryAlt, #8a8886);
+  border-radius: 4px;
+  padding: 10px 52px 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.5;
+  color: "[theme:neutralSecondary, default: #605e5c]";
+  color: var(--neutralSecondary, #605e5c);
+  background: "[theme:neutralLighterAlt, default: #faf9f8]";
+  background: var(--neutralLighterAlt, #faf9f8);
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  cursor: default;
+
+  &::placeholder {
+    color: "[theme:neutralSecondary, default: #605e5c]";
+    color: var(--neutralSecondary, #605e5c);
+  }
+}
+
+.promptSendButton {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: "[theme:themePrimary, default: #0078d4]";
+  background: var(--themePrimary);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  transition: background 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: "[theme:themeDark, default: #005a9e]";
+    background: var(--themeDark);
+  }
+
+  &:disabled {
+    background: "[theme:neutralTertiary, default: #a19f9d]";
+    background: var(--neutralTertiary);
+    cursor: not-allowed;
+  }
+}
+
+// Style cards (Copilot-style starter prompts)
+.toneLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: "[theme:neutralSecondary, default: #605e5c]";
+  color: var(--neutralSecondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.toneGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.toneChip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid "[theme:neutralSecondaryAlt, default: #8a8886]";
+  border: 1px solid var(--neutralSecondaryAlt, #8a8886);
+  background: "[theme:white, default: #ffffff]";
+  background: var(--white);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: "[theme:themePrimary, default: #0078d4]";
+    border-color: var(--themePrimary);
+    background: "[theme:themeLighterAlt, default: #eff6fc]";
+    background: var(--themeLighterAlt);
+
+    .toneChipLabel {
+      color: "[theme:themePrimary, default: #0078d4]";
+      color: var(--themePrimary);
+    }
+  }
+}
+
+.toneChipLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: "[theme:bodyText, default: #323130]";
+  color: var(--bodyText);
+  line-height: 1.3;
+  transition: color 0.15s ease;
+}
+
+.toneChipDesc {
+  font-size: 11px;
+  color: "[theme:neutralSecondary, default: #605e5c]";
+  color: var(--neutralSecondary);
+  line-height: 1.3;
+}
+
+.toneChipSelected {
+  border-color: "[theme:themePrimary, default: #0078d4]";
+  border-color: var(--themePrimary);
+  background: "[theme:themeLight, default: #deecf9]";
+  background: var(--themeLight);
+
+  .toneChipLabel {
+    color: "[theme:themeDark, default: #005a9e]";
+    color: var(--themeDark);
+  }
+
+  .toneChipDesc {
+    color: "[theme:themePrimary, default: #0078d4]";
+    color: var(--themePrimary);
+  }
 }

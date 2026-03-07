@@ -3,14 +3,8 @@ import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
 import {
   IPropertyPaneConfiguration,
-  IPropertyPaneCustomFieldProps,
-  IPropertyPaneField,
+  PropertyPaneLabel,
 } from '@microsoft/sp-property-pane';
-// PropertyPaneCustomField is excluded from public typings but available at runtime
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { PropertyPaneCustomField } = require('@microsoft/sp-property-pane') as {
-  PropertyPaneCustomField: (props: IPropertyPaneCustomFieldProps) => IPropertyPaneField<unknown>;
-};
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { AadHttpClient, MSGraphClientV3, SPHttpClient } from '@microsoft/sp-http';
@@ -18,7 +12,6 @@ import { AadHttpClient, MSGraphClientV3, SPHttpClient } from '@microsoft/sp-http
 import CepOptin from './components/CepOptin';
 import { ICepOptinProps } from './components/ICepOptinProps';
 import { CepApiClient } from '../../services/CepApiClient';
-import { WelcomeTextEditor } from './components/WelcomeTextEditor';
 
 // Tenant Properties keys (Storage Entities) – set via deploy/set-tenant-properties.ps1
 const TENANT_KEY_BASE_URL  = 'CEP_FunctionAppBaseUrl';
@@ -121,6 +114,13 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
         welcomeText:        this.properties.welcomeText ?? '',
         displayMode:        this.displayMode,
         onConfigureClick:   () => this.context.propertyPane.open(),
+        graphClient:        this._graphClient,
+        organizationName:   this.properties.organizationName ?? '',
+        onWelcomeTextSave:  (text: string, orgName: string) => {
+          this.properties.welcomeText      = text;
+          this.properties.organizationName = orgName;
+          this.render();
+        },
       }
     );
     // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
@@ -139,10 +139,6 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
   }
 
   protected onDispose(): void {
-    if (this._welcomeEditorContainer) {
-      // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
-      ReactDom.unmountComponentAtNode(this._welcomeEditorContainer);
-    }
     // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
     ReactDom.unmountComponentAtNode(this.domElement);
   }
@@ -155,35 +151,13 @@ export default class CepOptinWebPart extends BaseClientSideWebPart<ICepOptinWebP
     return {
       pages: [
         {
-          header: { description: 'Configure the Copilot Engagement Program opt-in experience.' },
+          header: { description: 'Copilot Engagement Program — opt-in experience settings.' },
           groups: [
             {
-              groupName: '✨ Welcome Text (AI-assisted)',
+              groupName: '✨ Welcome Text',
               groupFields: [
-                PropertyPaneCustomField({
-                  key: 'welcomeTextGenerator',
-                  onRender: (elem: HTMLElement) => {
-                    this._welcomeEditorContainer = elem;
-                    // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
-                    ReactDom.render(
-                      React.createElement(WelcomeTextEditor, {
-                        graphClient:      this._graphClient,
-                        welcomeText:      this.properties.welcomeText      ?? '',
-                        organizationName: this.properties.organizationName ?? '',
-                        onPropertiesChange: (changes) => {
-                          if (changes.welcomeText      !== undefined) this.properties.welcomeText      = changes.welcomeText;
-                          if (changes.organizationName !== undefined) this.properties.organizationName = changes.organizationName;
-                          // Re-render the webpart to reflect updated welcome text
-                          this.render();
-                        },
-                      }),
-                      elem
-                    );
-                  },
-                  onDispose: (elem: HTMLElement) => {
-                    // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
-                    ReactDom.unmountComponentAtNode(elem);
-                  },
+                PropertyPaneLabel('welcomeText', {
+                  text: 'Welcome text and organisation name are managed directly on the page via the ✨ Edit welcome text button in SharePoint edit mode.',
                 }),
               ],
             },

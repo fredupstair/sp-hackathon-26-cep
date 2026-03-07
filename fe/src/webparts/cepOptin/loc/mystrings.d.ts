@@ -113,6 +113,18 @@ declare interface ICepOptinWebPartStrings {
   WelcomeTextDescription: string;
   WelcomeTextPlaceholder: string;
   ClearWelcomeText: string;
+
+  // AI personalised welcome (end-user)
+  AiWelcomeGenerating: string;
+  AiWelcomeBadge: string;
+
+  // Inline welcome editor (edit-mode, in-webpart)
+  InlineEditorTitle: string;
+  InlineEditorSave: string;
+  InlineEditorDiscard: string;
+  InlineEditorInputPlaceholder: string;
+  InlineEditorEditButton: string;
+  EditModeNotice: string;
 }
 
 declare module 'CepOptinWebPartStrings' {

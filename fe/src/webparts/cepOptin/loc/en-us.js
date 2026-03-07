@@ -113,6 +113,18 @@ define([], function() {
     "WelcomeTextLabel": "Welcome text",
     "WelcomeTextDescription": "Shown to users on the first screen of the enrollment wizard. Edit freely. Use **word** for bold.",
     "WelcomeTextPlaceholder": "Describe the programme\u2026 e.g. \u2018Join our Copilot journey and start earning points today!\u2019",
-    "ClearWelcomeText": "Clear welcome text"
+    "ClearWelcomeText": "Clear welcome text",
+
+    // AI personalised welcome (end-user)
+    "AiWelcomeGenerating": "Personalising your welcome\u2026",
+    "AiWelcomeBadge": "Personalised by AI",
+
+    // Inline welcome editor (edit-mode, in-webpart)
+    "InlineEditorTitle": "\u2728 Configure Welcome Text",
+    "InlineEditorSave": "Save",
+    "InlineEditorDiscard": "Cancel",
+    "InlineEditorInputPlaceholder": "Your organisation name\u2026",
+    "InlineEditorEditButton": "Edit welcome text",
+    "EditModeNotice": "Edit mode \u2014 welcome text preview"
   };
 });

@@ -113,7 +113,19 @@ define([], function() {
     "WelcomeTextLabel": "Testo di benvenuto",
     "WelcomeTextDescription": "Mostrato agli utenti nella prima schermata del wizard di iscrizione. Modifica liberamente. Usa **parola** per il grassetto.",
     "WelcomeTextPlaceholder": "Descrivi il programma\u2026 es. \u2018Unisciti alla nostra avventura Copilot e inizia a guadagnare punti oggi!\u2019",
-    "ClearWelcomeText": "Cancella testo di benvenuto"
+    "ClearWelcomeText": "Cancella testo di benvenuto",
+
+    // AI personalised welcome (end-user)
+    "AiWelcomeGenerating": "Personalizzazione in corso\u2026",
+    "AiWelcomeBadge": "Personalizzato da AI",
+
+    // Inline welcome editor (edit-mode, in-webpart)
+    "InlineEditorTitle": "\u2728 Configura il testo di benvenuto",
+    "InlineEditorSave": "Salva",
+    "InlineEditorDiscard": "Annulla",
+    "InlineEditorInputPlaceholder": "Nome dell\u2019organizzazione\u2026",
+    "InlineEditorEditButton": "Modifica testo di benvenuto",
+    "EditModeNotice": "Modalit\u00e0 modifica \u2014 anteprima testo di benvenuto"
   };
 });
 

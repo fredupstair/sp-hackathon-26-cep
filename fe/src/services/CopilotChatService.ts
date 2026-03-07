@@ -1,5 +1,5 @@
 import { MSGraphClientV3 } from '@microsoft/sp-http';
-import { COPILOT_SYSTEM_PROMPT } from './CopilotSystemPrompts';
+import { COPILOT_SYSTEM_PROMPT, PERSONALIZED_WELCOME_PROMPT } from './CopilotSystemPrompts';
 
 /**
  * Copilot Conversations API via Microsoft Graph (beta)
@@ -100,6 +100,52 @@ export class CopilotChatService {
       `and gain recognition for your AI-powered productivity. Whether you're drafting emails, ` +
       `analysing data, or summarising meetings — every interaction counts. ` +
       `Join a growing community of colleagues already getting more done with Copilot.`
+    );
+  }
+
+  /**
+   * Generates a short (2–3 sentence) personalised welcome for a specific end user.
+   * Uses the user's first name, job title, and department to tailor the message.
+   * Falls back to a template when the Copilot API is unavailable.
+   */
+  async generatePersonalizedText(
+    displayName: string,
+    jobTitle: string,
+    department: string,
+    organizationName: string
+  ): Promise<{ text: string; fromFallback: boolean }> {
+    try {
+      const conversationId = await this.createConversation();
+      const firstName = displayName.split(' ')[0];
+      const roleContext = [jobTitle, department].filter(Boolean).join(', ');
+      const userContext =
+        `User: ${firstName}${roleContext ? ` (${roleContext})` : ''}. ` +
+        `Organisation: "${organizationName || 'our company'}". Write the short welcome message now.`;
+      const fullPrompt = `${PERSONALIZED_WELCOME_PROMPT}\n\n${userContext}`;
+      const text = await this.sendMessage(conversationId, fullPrompt);
+      return { text, fromFallback: false };
+    } catch (err) {
+      if (this._isApiUnavailableError(err)) {
+        return {
+          text: CopilotChatService.generatePersonalizedFallbackText(displayName, jobTitle, organizationName),
+          fromFallback: true,
+        };
+      }
+      throw err;
+    }
+  }
+
+  static generatePersonalizedFallbackText(
+    displayName: string,
+    jobTitle: string,
+    organizationName: string
+  ): string {
+    const firstName = displayName.split(' ')[0];
+    const rolePhrase = jobTitle ? ` As a ${jobTitle}, you` : ' You';
+    return (
+      `Hi ${firstName}! 👋${rolePhrase} can use Copilot every day to work smarter and save hours every week. ` +
+      `Join dozens of colleagues at **${organizationName || 'your organisation'}** ` +
+      `already earning points and climbing the leaderboard — your AI journey starts now!`
     );
   }
 }

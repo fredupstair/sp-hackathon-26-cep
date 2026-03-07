@@ -17,6 +17,10 @@ function renderBoldText(text: string): React.ReactNode[] {
 export interface IWelcomeStepProps {
   welcomeText: string;
   userName: string;
+  /** AI-personalised text (replaces static welcomeText once generated) */
+  aiWelcomeText?: string;
+  /** True while the AI request is in-flight — shows a blinking cursor */
+  aiWelcomeLoading?: boolean;
   onNext: () => void;
 }
 
@@ -37,8 +41,10 @@ const FeaturePill: React.FC<IFeaturePillProps> = ({ icon, text }) => (
   </Stack>
 );
 
-export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName, onNext }) => {
+export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName, aiWelcomeText, aiWelcomeLoading, onNext }) => {
   const displayText = (welcomeText ?? '').trim();
+  // The text to render: prefer AI version once available, otherwise fall back to static
+  const bodyText = (aiWelcomeText ?? '').trim() || displayText;
 
   return (
     <Stack className={styles.stepContainer} tokens={{ childrenGap: 24 }}>
@@ -55,11 +61,28 @@ export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName
         </Text>
       </Stack>
 
-      {/* Welcome text configured by the editor */}
+      {/* Welcome text box */}
       <div className={styles.welcomeTextBox}>
-        <Text variant="medium" className={styles.welcomeText}>
-          {renderBoldText(displayText)}
+        <Text
+          variant="medium"
+          className={[
+            styles.welcomeText,
+            aiWelcomeText ? styles.aiTextReveal : '',
+          ].filter(Boolean).join(' ')}
+        >
+          {renderBoldText(bodyText)}
+          {aiWelcomeLoading && !aiWelcomeText && (
+            <span
+              className={styles.typingCursor}
+              aria-label={strings.AiWelcomeGenerating}
+            />
+          )}
         </Text>
+        {aiWelcomeText && (
+          <div className={styles.aiBadge}>
+            ✨ {strings.AiWelcomeBadge}
+          </div>
+        )}
       </div>
 
       {/* Feature bullets */}

@@ -1,4 +1,5 @@
 import { DisplayMode } from '@microsoft/sp-core-library';
+import { MSGraphClientV3 } from '@microsoft/sp-http';
 import { CepApiClient } from '../../../services/CepApiClient';
 
 export interface ICepOptinProps {
@@ -18,4 +19,10 @@ export interface ICepOptinProps {
   displayMode: DisplayMode;
   /** Opens the SPFx property pane so editors can configure the webpart */
   onConfigureClick: () => void;
+  /** MSGraph client used to fetch /me profile for AI personalisation */
+  graphClient: MSGraphClientV3 | undefined;
+  /** Organisation name passed to the personalised welcome text generator */
+  organizationName: string;
+  /** Called by the inline editor when the admin saves a generated welcome text */
+  onWelcomeTextSave: (text: string, orgName: string) => void;
 }
