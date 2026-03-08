@@ -81,6 +81,13 @@ public class MeApi
             .Take(60)
             .ToArray();
 
+        // For the current month use the live values from the user record (always up to date).
+        // For past months use the values materialised in the leaderboard entry for that month,
+        // so that the month selector shows historically correct points and level.
+        bool isCurrentMonth = month == currMonthKey;
+        int displayMonthlyPoints = isCurrentMonth ? user.MonthlyPoints : (entry?.MonthlyPoints ?? 0);
+        string displayLevel      = isCurrentMonth ? user.CurrentLevel  : (entry?.Level ?? user.CurrentLevel);
+
         return new OkObjectResult(new
         {
             userId = user.AadUserId,
@@ -91,9 +98,9 @@ public class MeApi
             enrollmentDate = user.EnrollmentDate,
             isActive = user.IsActive,
             isEngagementNudgesEnabled = user.IsEngagementNudgesEnabled,
-            currentLevel = user.CurrentLevel,
+            currentLevel = displayLevel,
             totalPoints = user.TotalPoints,
-            monthlyPoints = user.MonthlyPoints,
+            monthlyPoints = displayMonthlyPoints,
             month,
             globalRank = entry?.Rank,
             departmentRank = deptEntry?.Rank,
