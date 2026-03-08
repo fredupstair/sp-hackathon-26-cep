@@ -118,7 +118,6 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
 
   public componentDidMount(): void {
     this._loadEnrollmentStatus().catch(console.error);
-    this._generatePersonalizedWelcome().catch(console.error);
     this._fetchUserDepartment().catch(console.error);
   }
 
@@ -127,7 +126,6 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
       this._loadEnrollmentStatus().catch(console.error);
     }
     if (prevProps.graphClient !== this.props.graphClient && this.props.graphClient) {
-      this._generatePersonalizedWelcome().catch(console.error);
       this._fetchUserDepartment().catch(console.error);
     }
     // Reload dashboard data when month changes (enrolled only)
@@ -332,6 +330,12 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
     if (idx > 0) this._goToStep(WIZARD_STEPS[idx - 1]);
   };
 
+  private _handleStartChat = (): void => {
+    if (!this.state.aiWelcomeText && !this.state.aiWelcomeLoading) {
+      this._generatePersonalizedWelcome().catch(console.error);
+    }
+  };
+
   // ─── Step indicator ────────────────────────────────────────────────────────
 
   private _renderStepIndicator(): React.ReactElement {
@@ -376,6 +380,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
             aiWelcomeText={aiWelcomeText}
             aiWelcomeLoading={aiWelcomeLoading}
             aiWelcomeStreaming={aiWelcomeStreaming}
+            onStartChat={this._handleStartChat}
             onNext={this._goNext}
           />
         );

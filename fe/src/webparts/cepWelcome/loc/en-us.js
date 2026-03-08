@@ -29,6 +29,7 @@ define([], function() {
     "FeatureLevels": "Level up from Explorer \u2192 Practitioner \u2192 Master",
     "FeatureLeaderboard": "Compete on global and team leaderboards",
     "GetStarted": "Get Started",
+    "LetsStart": "Let's start",
 
     // RulesStep
     "HowItWorksTitle": "How it works",

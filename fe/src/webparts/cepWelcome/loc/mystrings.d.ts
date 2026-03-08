@@ -28,6 +28,7 @@ declare interface ICepWelcomeWebPartStrings {
   FeatureLevels: string;
   FeatureLeaderboard: string;
   GetStarted: string;
+  LetsStart: string;
 
   // RulesStep
   HowItWorksTitle: string;

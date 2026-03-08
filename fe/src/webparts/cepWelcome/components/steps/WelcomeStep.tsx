@@ -23,12 +23,17 @@ export interface IWelcomeStepProps {
   aiWelcomeLoading?: boolean;
   /** True while the Copilot response is being streamed — shows typing cursor */
   aiWelcomeStreaming?: boolean;
+  /** Triggers the AI chat generation (called only once) */
+  onStartChat: () => void;
   onNext: () => void;
 }
 
-export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName, aiWelcomeText, aiWelcomeLoading, aiWelcomeStreaming, onNext }) => {
+export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName, aiWelcomeText, aiWelcomeLoading, aiWelcomeStreaming, onStartChat, onNext }) => {
   const displayText = (welcomeText ?? '').trim();
   const firstName = userName.split(' ')[0];
+
+  // Whether the chat section has been revealed (persists across re-renders via parent state)
+  const chatVisible = !!(aiWelcomeLoading || aiWelcomeText);
 
   // Rotating loading hints
   const loadingHints = React.useMemo(() => [
@@ -48,18 +53,44 @@ export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName
   }, [aiWelcomeLoading, aiWelcomeText, loadingHints.length]);
 
   const aiInProgress = !!(aiWelcomeLoading || aiWelcomeStreaming);
-  // Track when AI finishes to trigger blink
+  const aiDone = !!(aiWelcomeText && !aiWelcomeStreaming);
+
+  // Blink: 3 rapid pulses when AI finishes, then repeat every 5 seconds
   const [blink, setBlink] = React.useState(false);
   const prevInProgress = React.useRef(aiInProgress);
+  const blinkTimer = React.useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+
   React.useEffect(() => {
-    if (prevInProgress.current && !aiInProgress) {
+    // Detect transition from in-progress to done
+    if (prevInProgress.current && !aiInProgress && aiDone) {
+      // Start blink cycle
       setBlink(true);
-      const t = setTimeout(() => setBlink(false), 1500);
-      return () => clearTimeout(t);
+      blinkTimer.current = setInterval(() => {
+        setBlink(true);
+        // Each blink burst lasts ~1.5s (3 × 0.5s animation), then turns off
+        setTimeout(() => setBlink(false), 1500);
+      }, 5000);
     }
     prevInProgress.current = aiInProgress;
     return undefined;
-  }, [aiInProgress]);
+  }, [aiInProgress, aiDone]);
+
+  // If user already has aiWelcomeText on mount (came back), start blink cycle
+  React.useEffect(() => {
+    if (aiDone && !blinkTimer.current) {
+      setBlink(true);
+      blinkTimer.current = setInterval(() => {
+        setBlink(true);
+        setTimeout(() => setBlink(false), 1500);
+      }, 5000);
+    }
+    return () => {
+      if (blinkTimer.current) {
+        clearInterval(blinkTimer.current);
+        blinkTimer.current = undefined;
+      }
+    };
+  }, [aiDone]);
 
   return (
     <Stack className={styles.stepContainer} tokens={{ childrenGap: 24 }}>
@@ -80,8 +111,18 @@ export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName
         </Text>
       </div>
 
+      {/* "Let's start" button — shown only before chat is revealed */}
+      {!chatVisible && (
+        <PrimaryButton
+          className={styles.ctaButton}
+          text={strings.LetsStart}
+          iconProps={{ iconName: 'Play' }}
+          onClick={onStartChat}
+        />
+      )}
+
       {/* Chat-style Copilot conversation */}
-      {(aiWelcomeLoading || aiWelcomeText) && (
+      {chatVisible && (
         <div className={styles.chatContainer}>
           {/* User message bubble */}
           <div className={styles.chatRow + ' ' + styles.chatRowUser}>
@@ -132,13 +173,16 @@ export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName
         </div>
       )}
 
-      <PrimaryButton
-        className={[styles.ctaButton, blink ? styles.ctaBlink : ''].filter(Boolean).join(' ')}
-        text={strings.GetStarted}
-        iconProps={{ iconName: 'ChevronRight' }}
-        disabled={aiInProgress}
-        onClick={onNext}
-      />
+      {/* Get Started — only visible after chat is revealed */}
+      {chatVisible && (
+        <PrimaryButton
+          className={[styles.ctaButton, blink ? styles.ctaBlink : ''].filter(Boolean).join(' ')}
+          text={strings.GetStarted}
+          iconProps={{ iconName: 'ChevronRight' }}
+          disabled={aiInProgress}
+          onClick={onNext}
+        />
+      )}
     </Stack>
   );
 };
