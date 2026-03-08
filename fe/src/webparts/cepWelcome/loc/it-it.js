@@ -190,6 +190,10 @@ define([], function() {
     "OtherUserBadges": "Badge",
 
     // Leaderboard
-    "LeaderboardLastUpdated": "Aggiornato: {0}"
+    "LeaderboardLastUpdated": "Aggiornato: {0}",
+
+    // Copilot Win card
+    "WinCardTitle": "Copilot Win",
+    "WinStatPoints": "{0} pts guadagnati"
   };
 });

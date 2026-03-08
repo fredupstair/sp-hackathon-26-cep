@@ -803,11 +803,15 @@ $card-radius: 8px;
 // ─── Stats row ────────────────────────────────────────────────────────────────
 .statsRow {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 16px;
 
-  @media (max-width: 640px) {
+  @media (max-width: 800px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 480px) {
     grid-template-columns: 1fr;
   }
 }
@@ -860,6 +864,11 @@ $card-radius: 8px;
 .progressBronze { background: $bronze-color; }
 .progressSilver { background: $silver-color; }
 .progressGold   { background: $gold-color; }
+
+.winStatCard {
+  border: 1px solid rgba(96, 60, 186, 0.15);
+  background: linear-gradient(135deg, #faf8ff 0%, #f0ecff 100%);
+}
 
 // ─── App usage chart ──────────────────────────────────────────────────────────
 .sectionTitle {
@@ -1125,6 +1134,48 @@ $card-radius: 8px;
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+}
+
+// ─── Skeleton / Shimmer ───────────────────────────────────────────────────────
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--neutralLighter, #f3f2f1) 25%, var(--neutralLight, #edebe9) 50%, var(--neutralLighter, #f3f2f1) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeletonLine {
+  composes: skeleton;
+  height: 14px;
+  margin-bottom: 8px;
+}
+
+.skeletonLineShort { width: 40%; }
+.skeletonLineMedium { width: 65%; }
+.skeletonLineLong { width: 90%; }
+
+.skeletonCircle {
+  composes: skeleton;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+}
+
+.skeletonBlock {
+  composes: skeleton;
+  height: 48px;
+  width: 100%;
+}
+
+.skeletonBar {
+  composes: skeleton;
+  height: 16px;
+  border-radius: 4px;
 }
 
 // ─── Settings section (enrolled view under dashboard) ─────────────────────────

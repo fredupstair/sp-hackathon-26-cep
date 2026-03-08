@@ -5,7 +5,9 @@ import styles from '../CepWelcome.module.scss';
 import * as strings from 'CepWelcomeWebPartStrings';
 
 interface IAppUsageChartProps {
-  usage: IUserUsage;
+  usage: IUserUsage | undefined;
+  /** Show skeleton placeholders */
+  loading?: boolean;
 }
 
 const APP_LABEL: Record<string, string> = {
@@ -77,7 +79,24 @@ const fmt = (tpl: string, ...args: (string | number)[]): string =>
 
 const ALL_APP_KEYS = Object.keys(APP_LABEL);
 
-export const AppUsageChart: React.FC<IAppUsageChartProps> = ({ usage }) => {
+export const AppUsageChart: React.FC<IAppUsageChartProps> = ({ usage, loading }) => {
+  if (loading || !usage) {
+    return (
+      <div className={styles.card}>
+        <div className={`${styles.skeletonLine} ${styles.skeletonLineMedium}`} style={{ height: 16, marginBottom: 16 }} />
+        <div className={styles.appBarList}>
+          {[100, 85, 60, 40, 20, 10].map((w, i) => (
+            <div key={i} className={styles.appBarRow}>
+              <div className={`${styles.skeletonLine} ${styles.skeletonLineShort}`} style={{ marginBottom: 0 }} />
+              <div className={styles.skeletonBar} style={{ width: `${w}%` }} />
+              <div className={`${styles.skeletonLine}`} style={{ width: 50, marginBottom: 0 }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const breakdownMap: Record<string, number> = {};
   (usage.breakdown ?? []).forEach((e) => { breakdownMap[e.appKey] = e.promptCount; });
 

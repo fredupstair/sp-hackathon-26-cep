@@ -82,7 +82,8 @@ interface ICepWelcomeState {
   usage:            IUserUsage | undefined;
   badges:           ICepBadge[];
   leaderboard:      ILeaderboardPage | undefined;
-  dashboardLoading: boolean;
+  dashboardLoading: boolean;   // initial full load (all sections skeleton)
+  monthLoading:     boolean;   // month change (only month-dependent sections skeleton)
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -113,6 +114,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
       badges:           [],
       leaderboard:      undefined,
       dashboardLoading: false,
+      monthLoading:     false,
     };
   }
 
@@ -128,9 +130,9 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
     if (prevProps.graphClient !== this.props.graphClient && this.props.graphClient) {
       this._fetchUserDepartment().catch(console.error);
     }
-    // Reload dashboard data when month changes (enrolled only)
+    // Reload month-dependent data when month changes (enrolled only)
     if (prevState.month !== this.state.month && this.state.userSummary?.isActive) {
-      this._loadDashboardData().catch(console.error);
+      this._loadMonthData().catch(console.error);
     }
   }
 
@@ -184,6 +186,37 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
     } catch (e) {
       this.setState({
         dashboardLoading: false,
+        errorMessage: `Error loading dashboard: ${(e as Error).message}`,
+      });
+    }
+  }
+
+  /** Reloads only month-dependent data (summary, usage, leaderboard). Badges are month-independent. */
+  private async _loadMonthData(): Promise<void> {
+    const { apiClient } = this.props;
+    if (!apiClient) return;
+
+    this.setState({ monthLoading: true });
+    const { month } = this.state;
+    const { from, to } = getMonthRange(month);
+
+    try {
+      const [summary, usage, leaderboard] = await Promise.all([
+        apiClient.getMeSummary(month),
+        apiClient.getMeUsage(from, to).catch((): IUserUsage => ({
+          from, to, breakdown: [], totalPrompts: 0, totalPoints: 0,
+        })),
+        apiClient.getLeaderboard('global', month, 1, 5).catch((): undefined => undefined),
+      ]);
+      this.setState({
+        userSummary: summary ?? this.state.userSummary,
+        usage,
+        leaderboard,
+        monthLoading: false,
+      });
+    } catch (e) {
+      this.setState({
+        monthLoading: false,
         errorMessage: `Error loading dashboard: ${(e as Error).message}`,
       });
     }
@@ -425,11 +458,15 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
     const {
       userSummary, month, usage, badges, leaderboard,
       submitting, errorMessage, successMessage, showLeaveDialog,
-      dashboardLoading,
+      dashboardLoading, monthLoading,
     } = this.state;
     if (!userSummary) return <></>;
 
     const isCurrentMonth = month === currentMonth();
+    // Month-dependent sections show skeleton on initial load or month change
+    const monthSectionLoading = dashboardLoading || monthLoading;
+    // Badges only skeleton on initial load (they're month-independent)
+    const badgesSectionLoading = dashboardLoading;
 
     return (
       <Stack tokens={{ childrenGap: 0 }}>
@@ -445,25 +482,17 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
         )}
 
         {/* ── Dashboard section ── */}
-        {dashboardLoading ? (
-          <div style={{ textAlign: 'center', padding: 32 }}>
-            <Spinner size={SpinnerSize.small} label={strings.Loading} />
-          </div>
-        ) : (
-          <>
-            <DashboardHeader
-              summary={userSummary}
-              month={month}
-              isCurrentMonth={isCurrentMonth}
-              onPrevMonth={this._handlePrevMonth}
-              onNextMonth={this._handleNextMonth}
-            />
-            <StatsRow summary={userSummary} />
-            {usage && <AppUsageChart usage={usage} />}
-            <BadgeList badges={badges} />
-            {leaderboard && <MiniLeaderboard leaderboard={leaderboard} />}
-          </>
-        )}
+        <DashboardHeader
+          summary={userSummary}
+          month={month}
+          isCurrentMonth={isCurrentMonth}
+          onPrevMonth={this._handlePrevMonth}
+          onNextMonth={this._handleNextMonth}
+        />
+        <StatsRow summary={userSummary} usage={usage} loading={monthSectionLoading} />
+        <AppUsageChart usage={usage} loading={monthSectionLoading} />
+        <BadgeList badges={badges} loading={badgesSectionLoading} />
+        <MiniLeaderboard leaderboard={leaderboard} loading={monthSectionLoading} />
 
         {/* ── Settings section ── */}
         <div className={styles.settingsSection}>

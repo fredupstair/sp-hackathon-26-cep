@@ -190,6 +190,10 @@ declare interface ICepWelcomeWebPartStrings {
 
   // Leaderboard
   LeaderboardLastUpdated: string;
+
+  // Copilot Win card
+  WinCardTitle: string;
+  WinStatPoints: string;
 }
 
 declare module 'CepWelcomeWebPartStrings' {

@@ -5,7 +5,9 @@ import styles from '../CepWelcome.module.scss';
 import * as strings from 'CepWelcomeWebPartStrings';
 
 interface IMiniLeaderboardProps {
-  leaderboard: ILeaderboardPage;
+  leaderboard: ILeaderboardPage | undefined;
+  /** Show skeleton placeholders */
+  loading?: boolean;
 }
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
@@ -44,7 +46,29 @@ const LeaderboardRow: React.FC<{ entry: ILeaderboardEntry }> = ({ entry }) => {
   );
 };
 
-export const MiniLeaderboard: React.FC<IMiniLeaderboardProps> = ({ leaderboard }) => {
+export const MiniLeaderboard: React.FC<IMiniLeaderboardProps> = ({ leaderboard, loading }) => {
+  if (loading || !leaderboard) {
+    return (
+      <div className={styles.card}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div className={`${styles.skeletonLine} ${styles.skeletonLineMedium}`} style={{ height: 16 }} />
+        </div>
+        <table className={styles.leaderboardTable}>
+          <tbody>
+            {[0, 1, 2, 3, 4].map((i) => (
+              <tr key={i} className={styles.lbRow}>
+                <td className={styles.lbRankCell}><div className={styles.skeletonLine} style={{ width: 20, marginBottom: 0 }} /></td>
+                <td><div className={`${styles.skeletonLine} ${styles.skeletonLineMedium}`} style={{ marginBottom: 0 }} /></td>
+                <td className={styles.lbLevelCell}><div className={styles.skeletonLine} style={{ width: 60, marginBottom: 0 }} /></td>
+                <td className={styles.lbPointsCell}><div className={styles.skeletonLine} style={{ width: 40, marginBottom: 0, marginLeft: 'auto' }} /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
   const topEntries = leaderboard.entries.slice(0, 5);
   const currentUserInTop = topEntries.some((e) => e.isCurrentUser);
   const showCurrentUserSeparately =

@@ -1,15 +1,19 @@
 import * as React from 'react';
-import type { IUserSummary } from '../../../../services/CepApiModels';
+import type { IUserSummary, IUserUsage } from '../../../../services/CepApiModels';
 import { getLevelIcon, getLevelLabel, getNextLevelLabel, isTopLevel } from '../../../../services/CepLevelPresentation';
 import styles from '../CepWelcome.module.scss';
 import * as strings from 'CepWelcomeWebPartStrings';
 
 interface IStatsRowProps {
   summary: IUserSummary;
+  /** Usage data to extract win stats */
+  usage?: IUserUsage;
   /** Monthly points needed to reach Silver (default 500) */
   silverThreshold?: number;
   /** Monthly points needed to reach Gold (default 2000) */
   goldThreshold?: number;
+  /** Show skeleton placeholders */
+  loading?: boolean;
 }
 
 const fmt = (tpl: string, ...args: (string | number)[]): string =>
@@ -17,10 +21,31 @@ const fmt = (tpl: string, ...args: (string | number)[]): string =>
 
 export const StatsRow: React.FC<IStatsRowProps> = ({
   summary,
+  usage,
   silverThreshold = 500,
   goldThreshold = 2000,
+  loading,
 }) => {
+  if (loading) {
+    return (
+      <div className={styles.statsRow}>
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className={styles.statCard}>
+            <div className={`${styles.skeletonLine} ${styles.skeletonLineShort}`} />
+            <div className={styles.skeletonBlock} />
+            <div className={`${styles.skeletonLine} ${styles.skeletonLineMedium}`} style={{ marginTop: 8 }} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   const { currentLevel, monthlyPoints, totalPoints, globalRank, teamRank } = summary;
+
+  // Extract win stats from usage breakdown
+  const winEntry = usage?.breakdown?.find((e) => e.appKey === 'Win');
+  const winCount = winEntry?.promptCount ?? 0;
+  const winPoints = winEntry?.pointsEarned ?? 0;
 
   let progressPct = 0;
   let nextLevelName = '';
@@ -88,6 +113,15 @@ export const StatsRow: React.FC<IStatsRowProps> = ({
             {strings.TeamRank}: #{teamRank}
           </div>
         )}
+      </div>
+
+      {/* ── Copilot Wins ── */}
+      <div className={`${styles.statCard} ${styles.winStatCard}`}>
+        <div className={styles.statLabel}>{strings.WinCardTitle}</div>
+        <div className={styles.statValue}>{winCount}</div>
+        <div className={styles.statSubValue}>
+          {strings.WinStatPoints.replace('{0}', String(winPoints))}
+        </div>
       </div>
     </div>
   );
