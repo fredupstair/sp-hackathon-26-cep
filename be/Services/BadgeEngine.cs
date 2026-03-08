@@ -96,7 +96,10 @@ public class BadgeEngine
     {
         var def = cfg.GetBadge(CepBadge.Keys.MonthlyMaster);
         var threshold = def.Threshold > 0 ? def.Threshold : 10;
-        var topN = globalLeaderboard.Where(e => e.Rank <= threshold).Select(e => e.AadUserId).ToHashSet();
+        var topN = globalLeaderboard
+            .Where(e => e.Rank <= threshold && e.MonthlyPoints > 0)
+            .Select(e => e.AadUserId)
+            .ToHashSet();
         foreach (var user in allUsers.Where(u => topN.Contains(u.AadUserId)))
         {
             yield return (user, NewBadge(user, def.Key, def.Name, def.Description, now, monthKey));

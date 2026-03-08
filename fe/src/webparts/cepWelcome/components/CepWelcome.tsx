@@ -429,6 +429,16 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
     return (
       <Stack tokens={{ childrenGap: 0 }}>
 
+        {/* ── Enrollment success banner (top, dismissible) ── */}
+        {successMessage && (
+          <MessageBar
+            messageBarType={MessageBarType.success}
+            onDismiss={() => this.setState({ successMessage: '' })}
+          >
+            {successMessage}
+          </MessageBar>
+        )}
+
         {/* ── Dashboard section ── */}
         {dashboardLoading ? (
           <div style={{ textAlign: 'center', padding: 32 }}>
@@ -468,7 +478,6 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
 
           {/* Messages */}
           {errorMessage   && <MessageBar messageBarType={MessageBarType.error  }>{errorMessage  }</MessageBar>}
-          {successMessage && <MessageBar messageBarType={MessageBarType.success}>{successMessage}</MessageBar>}
 
           {/* Leave */}
           <DefaultButton
