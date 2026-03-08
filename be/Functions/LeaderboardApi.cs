@@ -57,6 +57,7 @@ public class LeaderboardApi
         }
 
         var entries = await _sp.GetLeaderboardAsync(month, scope, page, pageSize, ct);
+        var syncState = await _sp.GetSyncStateAsync(ct);
 
         return new OkObjectResult(new
         {
@@ -64,6 +65,7 @@ public class LeaderboardApi
             scope,
             page,
             pageSize,
+            lastUpdated = syncState.LastLeaderboardRebuildUtc?.ToUniversalTime().ToString("o"),
             entries = entries.Select(e => new
             {
                 rank = e.Rank,

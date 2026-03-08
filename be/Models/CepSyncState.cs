@@ -5,6 +5,7 @@ public class CepSyncState
     public string? SpItemId { get; set; }
 
     public DateTime? LastSuccessfulRunUtc { get; set; }
+    public DateTime? LastLeaderboardRebuildUtc { get; set; }
     public string LastRunStatus { get; set; } = "Unknown"; // Success / Failure / Running
     public string LastRunCorrelationId { get; set; } = "";
     public string LastRunSummary { get; set; } = "";
@@ -13,6 +14,7 @@ public class CepSyncState
     {
         ["Title"] = "SyncState",
         ["CEP_Sync_LastSuccessfulRunUtc"] = LastSuccessfulRunUtc?.ToUniversalTime().ToString("o"),
+        ["CEP_Sync_LastLeaderboardRebuildUtc"] = LastLeaderboardRebuildUtc?.ToUniversalTime().ToString("o"),
         ["CEP_Sync_LastRunStatus"] = LastRunStatus,
         ["CEP_Sync_LastRunCorrelationId"] = LastRunCorrelationId,
         ["CEP_Sync_LastRunSummary"] = LastRunSummary,
@@ -22,6 +24,7 @@ public class CepSyncState
     {
         SpItemId = spItemId,
         LastSuccessfulRunUtc = f.Dt("CEP_Sync_LastSuccessfulRunUtc"),
+        LastLeaderboardRebuildUtc = f.Dt("CEP_Sync_LastLeaderboardRebuildUtc"),
         LastRunStatus = f.Str("CEP_Sync_LastRunStatus", "Unknown"),
         LastRunCorrelationId = f.Str("CEP_Sync_LastRunCorrelationId"),
         LastRunSummary = f.Str("CEP_Sync_LastRunSummary"),

@@ -56,8 +56,9 @@ public class TeamsNotifier
     public async Task<bool> SendInactivityNudgeIfDueAsync(CepUser user, CepConfig cfg, DateTime now, CancellationToken ct = default)
     {
         if (!user.IsEngagementNudgesEnabled) return false;
-        if (user.LastActivityDate is not null &&
-            (now - user.LastActivityDate.Value).TotalDays < cfg.InactivityDaysForNudge)
+        // Never nudge users who have never used Copilot (just enrolled)
+        if (user.LastActivityDate is null) return false;
+        if ((now - user.LastActivityDate.Value).TotalDays < cfg.InactivityDaysForNudge)
             return false;
 
         // Anti-spam cooldown: wait at least InactivityDaysForNudge between nudges

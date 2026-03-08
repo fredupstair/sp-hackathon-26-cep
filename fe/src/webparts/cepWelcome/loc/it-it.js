@@ -171,6 +171,9 @@ define([], function() {
     "OtherUserPointsThisMonth": "Punti mensili",
     "OtherUserTotalPoints": "Punti totali",
     "OtherUserLevel": "Livello",
-    "OtherUserBadges": "Badge"
+    "OtherUserBadges": "Badge",
+
+    // Leaderboard
+    "LeaderboardLastUpdated": "Aggiornato: {0}"
   };
 });

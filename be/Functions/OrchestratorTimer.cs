@@ -119,7 +119,6 @@ public class OrchestratorTimer
 
             _log.LogInformation("[{CorrId}] Enqueued {Count} messages", correlationId, enqueued);
 
-            await RebuildLeaderboardsAsync(correlationId, runTime, config, ct);
             await SendInactivityNudgesAsync(correlationId, config, runTime, ct);
 
             state.LastRunStatus = "Success";
@@ -143,7 +142,8 @@ public class OrchestratorTimer
     // Leaderboard
     // ------------------------------------------------------------------
 
-    private async Task RebuildLeaderboardsAsync(string corrId, DateTime runTime, CepConfig config, CancellationToken ct)
+    /// <summary>Rebuilds leaderboards, awards MonthlyMaster badges, and sends notifications. Called by LeaderboardTimer.</summary>
+    public async Task RebuildLeaderboardsAsync(string corrId, DateTime runTime, CepConfig config, CancellationToken ct)
     {
         var monthKey = runTime.ToString("yyyy-MM");
         var users = await _sp.GetActiveUsersAsync(ct);
@@ -178,11 +178,19 @@ public class OrchestratorTimer
                     continue;
                 }
 
-                var rank = global.FirstOrDefault(e => e.AadUserId == user.AadUserId)?.Rank ?? 0;
-                _log.LogInformation("[{CorrId}] Sending leaderboard notification to {Upn} (rank={Rank}, month={Month})",
-                    corrId, user.UserPrincipalName, rank, monthKey);
+                var entry = global.FirstOrDefault(e => e.AadUserId == user.AadUserId);
+                // Skip users with no points (rank is meaningless)
+                if (entry is null || entry.MonthlyPoints <= 0)
+                {
+                    _log.LogInformation("[{CorrId}] User {Upn} has no points for {Month}, skipping leaderboard notification",
+                        corrId, user.UserPrincipalName, monthKey);
+                    continue;
+                }
 
-                await _notifier.SendLeaderboardUpdateAsync(user, rank, monthKey, config, ct);
+                _log.LogInformation("[{CorrId}] Sending leaderboard notification to {Upn} (rank={Rank}, month={Month})",
+                    corrId, user.UserPrincipalName, entry.Rank, monthKey);
+
+                await _notifier.SendLeaderboardUpdateAsync(user, entry.Rank, monthKey, config, ct);
 
                 user.LastLeaderboardNotifiedMonth = monthKey;
                 await _sp.UpsertUserAsync(user, ct);

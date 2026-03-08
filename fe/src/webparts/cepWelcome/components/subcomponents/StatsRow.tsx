@@ -81,9 +81,9 @@ export const StatsRow: React.FC<IStatsRowProps> = ({
       <div className={styles.statCard}>
         <div className={styles.statLabel}>{strings.GlobalRank}</div>
         <div className={styles.statValue}>
-          {globalRank != null ? `#${globalRank}` : '–'}
+          {globalRank ? `#${globalRank}` : '–'}
         </div>
-        {teamRank != null && (
+        {!!teamRank && (
           <div className={styles.statSubValue}>
             {strings.TeamRank}: #{teamRank}
           </div>

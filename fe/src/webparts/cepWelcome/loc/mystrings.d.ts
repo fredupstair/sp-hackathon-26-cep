@@ -171,6 +171,9 @@ declare interface ICepWelcomeWebPartStrings {
   OtherUserTotalPoints: string;
   OtherUserLevel: string;
   OtherUserBadges: string;
+
+  // Leaderboard
+  LeaderboardLastUpdated: string;
 }
 
 declare module 'CepWelcomeWebPartStrings' {

@@ -2,6 +2,7 @@ import * as React from 'react';
 import type { ILeaderboardPage, ILeaderboardEntry } from '../../../../services/CepApiModels';
 import { getLevelLabel } from '../../../../services/CepLevelPresentation';
 import styles from '../CepWelcome.module.scss';
+import * as strings from 'CepWelcomeWebPartStrings';
 
 interface IMiniLeaderboardProps {
   leaderboard: ILeaderboardPage;
@@ -57,9 +58,20 @@ export const MiniLeaderboard: React.FC<IMiniLeaderboardProps> = ({ leaderboard }
         <div className={styles.leaderboardTitle}>
           🏆 Leaderboard – {leaderboard.month}
         </div>
-        <a className={styles.leaderboardSeeAll} href="#">
-          See full leaderboard →
-        </a>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+          <a className={styles.leaderboardSeeAll} href="#">
+            See full leaderboard →
+          </a>
+          {leaderboard.lastUpdated && (
+            <span style={{ fontSize: 11, opacity: 0.55 }}>
+              {strings.LeaderboardLastUpdated.replace('{0}',
+                new Date(leaderboard.lastUpdated).toLocaleString(undefined, {
+                  day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+                })
+              )}
+            </span>
+          )}
+        </div>
       </div>
 
       <table className={styles.leaderboardTable}>

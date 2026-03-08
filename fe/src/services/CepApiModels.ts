@@ -79,6 +79,7 @@ export interface ILeaderboardPage {
   scope: LeaderboardScope;
   month: string;
   totalEntries: number;
+  lastUpdated?: string;
   entries: ILeaderboardEntry[];
   currentUserEntry?: ILeaderboardEntry;
 }
