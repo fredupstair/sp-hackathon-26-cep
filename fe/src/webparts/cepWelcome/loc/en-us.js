@@ -125,7 +125,7 @@ define([], function() {
     "CopilotLoadingHint3": "Preparing the best answer\u2026",
     "CopilotLoadingHint4": "Making things work\u2026",
     "CopilotLoadingHint5": "Almost there, hang tight\u2026",
-    "CopilotChatUserMessage": "How can Microsoft 365 Copilot help me in my daily work?\u00a0\ud83e\udd14",
+    "CopilotChatUserMessage": "Hey Copilot, how can you help me at work? \ud83d\ude80",
 
     // Inline welcome editor (edit-mode, in-webpart)
     "InlineEditorTitle": "\u2728 Configure Welcome Text",
@@ -160,6 +160,21 @@ define([], function() {
     "FilterWeek": "This week",
     "FilterMonth": "This month",
     "GetInspired": "Get inspired on Prompt Gallery",
+
+    // App tooltips
+    "AppTooltipWord": "Copilot interactions in Word",
+    "AppTooltipExcel": "Copilot interactions in Excel",
+    "AppTooltipPowerPoint": "Copilot interactions in PowerPoint",
+    "AppTooltipOutlook": "Copilot interactions in Outlook",
+    "AppTooltipTeams": "Copilot interactions in Teams (chat, channels, meetings)",
+    "AppTooltipOneNote": "Copilot interactions in OneNote",
+    "AppTooltipLoop": "Copilot interactions in Loop",
+    "AppTooltipBizChat": "Microsoft 365 Copilot Chat (BizChat) interactions",
+    "AppTooltipWebChat": "Copilot interactions via Web Chat",
+    "AppTooltipM365App": "Copilot interactions from other Microsoft 365 apps",
+    "AppTooltipForms": "Copilot interactions in Microsoft Forms",
+    "AppTooltipSharePoint": "Copilot interactions in SharePoint",
+    "AppTooltipWhiteboard": "Copilot interactions in Whiteboard",
 
     // Badges
     "BadgesTitle": "Badges",

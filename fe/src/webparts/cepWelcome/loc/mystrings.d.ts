@@ -160,6 +160,21 @@ declare interface ICepWelcomeWebPartStrings {
   FilterMonth: string;
   GetInspired: string;
 
+  // App tooltips
+  AppTooltipWord: string;
+  AppTooltipExcel: string;
+  AppTooltipPowerPoint: string;
+  AppTooltipOutlook: string;
+  AppTooltipTeams: string;
+  AppTooltipOneNote: string;
+  AppTooltipLoop: string;
+  AppTooltipBizChat: string;
+  AppTooltipWebChat: string;
+  AppTooltipM365App: string;
+  AppTooltipForms: string;
+  AppTooltipSharePoint: string;
+  AppTooltipWhiteboard: string;
+
   // Badges
   BadgesTitle: string;
   NoBadgesYet: string;

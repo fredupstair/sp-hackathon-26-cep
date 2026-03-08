@@ -16,7 +16,7 @@ public class CepActivityLog
     /// <summary>Date-only reference day (UTC).</summary>
     public DateTime UsageDate { get; set; }
 
-    /// <summary>Normalised app key: Word / Excel / PowerPoint / Outlook / Teams / OneNote / Loop / M365Chat / Other / Win.</summary>
+    /// <summary>Normalised app key: Word / Excel / PowerPoint / Outlook / Teams / OneNote / Loop / BizChat / WebChat / M365App / Forms / SharePoint / Whiteboard / Win.</summary>
     public string AppKey { get; set; } = "";
 
     public int PromptCount { get; set; }
@@ -80,18 +80,24 @@ public class CepActivityLog
 
     /// <summary>
     /// Maps a Graph appClass string to the canonical AppKey.
+    /// Returns null for unknown or excluded classes (e.g. ThirdPartyCopilot).
     /// </summary>
-    public static string NormaliseAppClass(string appClass) =>
+    public static string? NormaliseAppClass(string appClass) =>
         appClass switch
         {
             _ when appClass.Contains(".Copilot.Word", StringComparison.OrdinalIgnoreCase) => "Word",
             _ when appClass.Contains(".Copilot.Excel", StringComparison.OrdinalIgnoreCase) => "Excel",
-            _ when appClass.Contains(".Copilot.PowerPoint", StringComparison.OrdinalIgnoreCase) => "PowerPoint",
+            _ when appClass.Contains(".Copilot.Powerpoint", StringComparison.OrdinalIgnoreCase) => "PowerPoint",
             _ when appClass.Contains(".Copilot.Outlook", StringComparison.OrdinalIgnoreCase) => "Outlook",
             _ when appClass.Contains(".Copilot.Teams", StringComparison.OrdinalIgnoreCase) => "Teams",
             _ when appClass.Contains(".Copilot.OneNote", StringComparison.OrdinalIgnoreCase) => "OneNote",
             _ when appClass.Contains(".Copilot.Loop", StringComparison.OrdinalIgnoreCase) => "Loop",
-            _ when appClass.Contains(".Copilot.BizChat", StringComparison.OrdinalIgnoreCase) => "M365Chat",
-            _ => "Other",
+            _ when appClass.Contains(".Copilot.BizChat", StringComparison.OrdinalIgnoreCase) => "BizChat",
+            _ when appClass.Contains(".Copilot.WebChat", StringComparison.OrdinalIgnoreCase) => "WebChat",
+            _ when appClass.Contains(".Copilot.M365App", StringComparison.OrdinalIgnoreCase) => "M365App",
+            _ when appClass.Contains(".Copilot.Forms", StringComparison.OrdinalIgnoreCase) => "Forms",
+            _ when appClass.Contains(".Copilot.SharePoint", StringComparison.OrdinalIgnoreCase) => "SharePoint",
+            _ when appClass.Contains(".Copilot.Whiteboard", StringComparison.OrdinalIgnoreCase) => "Whiteboard",
+            _ => null, // ThirdPartyCopilot and any unknown class – excluded
         };
 }

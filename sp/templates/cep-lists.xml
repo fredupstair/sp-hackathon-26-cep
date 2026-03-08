@@ -131,8 +131,12 @@
             <CHOICE>Teams</CHOICE>
             <CHOICE>OneNote</CHOICE>
             <CHOICE>Loop</CHOICE>
-            <CHOICE>M365Chat</CHOICE>
-            <CHOICE>Other</CHOICE>
+            <CHOICE>BizChat</CHOICE>
+            <CHOICE>WebChat</CHOICE>
+            <CHOICE>M365App</CHOICE>
+            <CHOICE>Forms</CHOICE>
+            <CHOICE>SharePoint</CHOICE>
+            <CHOICE>Whiteboard</CHOICE>
             <CHOICE>Win</CHOICE>
           </CHOICES>
         </Field>

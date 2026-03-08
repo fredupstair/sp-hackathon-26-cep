@@ -186,7 +186,7 @@ public class MeApi
     // ------------------------------------------------------------------
 
     private static readonly string[] _suggestableApps =
-        ["Word", "Excel", "PowerPoint", "Outlook", "Teams", "OneNote", "Loop", "M365Chat"];
+        ["Word", "Excel", "PowerPoint", "Outlook", "Teams", "OneNote", "Loop", "BizChat", "WebChat", "M365App", "Forms", "SharePoint", "Whiteboard"];
 
     private static readonly Dictionary<string, (string Label, string Text)> _suggestionPool = new()
     {
@@ -197,7 +197,12 @@ public class MeApi
         ["Teams"]      = ("Teams",              "Catch up on missed meetings: ask Copilot in Teams to summarise the last transcript!"),
         ["OneNote"]    = ("OneNote",            "Turn scattered notes into tidy action items with Copilot in OneNote!"),
         ["Loop"]       = ("Loop",               "Brainstorm in real-time with Copilot in Loop — great for async collaboration!"),
-        ["M365Chat"]   = ("Microsoft 365 Chat", "Ask Copilot Chat a question about any of your M365 files — it searches across all your content!"),
+        ["BizChat"]    = ("Copilot Chat",       "Ask Copilot Chat a question about any of your M365 files — it searches across all your content!"),
+        ["WebChat"]    = ("Web Chat",           "Use Copilot via the web — no desktop app needed!"),
+        ["M365App"]    = ("M365 App",           "Explore Copilot features across the wider Microsoft 365 ecosystem!"),
+        ["Forms"]      = ("Forms",              "Let Copilot help you draft surveys and quizzes in Microsoft Forms!"),
+        ["SharePoint"] = ("SharePoint",         "Use Copilot in SharePoint to design pages and surfaces faster!"),
+        ["Whiteboard"] = ("Whiteboard",         "Ideate visually with Copilot in Whiteboard — turn brainstorms into structured plans!"),
     };
 
     private static readonly JsonSerializerOptions _jsonOpts = new() { PropertyNameCaseInsensitive = true };

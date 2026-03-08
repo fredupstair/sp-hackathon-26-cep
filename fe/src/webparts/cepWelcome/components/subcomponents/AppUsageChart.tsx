@@ -15,8 +15,28 @@ const APP_LABEL: Record<string, string> = {
   Teams: 'Teams',
   OneNote: 'OneNote',
   Loop: 'Loop',
-  M365Chat: 'Copilot Chat',
-  Other: 'Other',
+  BizChat: 'Copilot Chat',
+  WebChat: 'Web Chat',
+  M365App: 'M365 App',
+  Forms: 'Forms',
+  SharePoint: 'SharePoint',
+  Whiteboard: 'Whiteboard',
+};
+
+const APP_TOOLTIP: Record<string, string> = {
+  Word: strings.AppTooltipWord,
+  Excel: strings.AppTooltipExcel,
+  PowerPoint: strings.AppTooltipPowerPoint,
+  Outlook: strings.AppTooltipOutlook,
+  Teams: strings.AppTooltipTeams,
+  OneNote: strings.AppTooltipOneNote,
+  Loop: strings.AppTooltipLoop,
+  BizChat: strings.AppTooltipBizChat,
+  WebChat: strings.AppTooltipWebChat,
+  M365App: strings.AppTooltipM365App,
+  Forms: strings.AppTooltipForms,
+  SharePoint: strings.AppTooltipSharePoint,
+  Whiteboard: strings.AppTooltipWhiteboard,
 };
 
 const APP_CLASS: Record<string, string> = {
@@ -27,8 +47,12 @@ const APP_CLASS: Record<string, string> = {
   Teams: styles.appTeams,
   OneNote: styles.appOneNote,
   Loop: styles.appLoop,
-  M365Chat: styles.appM365Chat,
-  Other: styles.appOther,
+  BizChat: styles.appBizChat,
+  WebChat: styles.appWebChat,
+  M365App: styles.appM365App,
+  Forms: styles.appForms,
+  SharePoint: styles.appSharePoint,
+  Whiteboard: styles.appWhiteboard,
 };
 
 const fmt = (tpl: string, ...args: (string | number)[]): string =>
@@ -51,13 +75,13 @@ export const AppUsageChart: React.FC<IAppUsageChartProps> = ({ usage }) => {
       <div className={styles.sectionTitle}>{strings.UsageBreakdownTitle}</div>
       <div className={styles.appBarList}>
         {allEntries.map((entry) => (
-          <div key={entry.appKey} className={styles.appBarRow}>
+          <div key={entry.appKey} className={styles.appBarRow} title={APP_TOOLTIP[entry.appKey] ?? ''}>
             <div className={styles.appBarLabel}>
               {APP_LABEL[entry.appKey] ?? entry.appKey}
             </div>
             <div className={styles.appBarTrack}>
               <div
-                className={`${styles.appBarFill} ${APP_CLASS[entry.appKey] ?? styles.appOther}`}
+                className={`${styles.appBarFill} ${APP_CLASS[entry.appKey] ?? styles.appM365App}`}
                 style={{ width: `${(entry.promptCount / maxCount) * 100}%` }}
               />
             </div>

@@ -98,7 +98,7 @@ Invoke-PnPSiteTemplate -Path .\templates\cep-lists.xml -Handlers Fields,Lists
 | `CEP_Log_AadUserId` | Text | Indexed |
 | `CEP_Log_UserEmail` | Text | |
 | `CEP_Log_UsageDate` | DateTime (DateOnly) | Indexed |
-| `CEP_Log_AppKey` | Choice | Word/Excel/PPT/Outlook/Teams/OneNote/Loop/M365Chat/Other |
+| `CEP_Log_AppKey` | Choice | Word/Excel/PPT/Outlook/Teams/OneNote/Loop/BizChat/WebChat/M365App/Forms/SharePoint/Whiteboard |
 | `CEP_Log_PromptCount` | Number | |
 | `CEP_Log_PointsEarned` | Number | |
 | `CEP_Log_MonthKey` | Text | `YYYY-MM`, Indexed |

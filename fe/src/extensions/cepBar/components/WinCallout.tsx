@@ -11,8 +11,12 @@ const APP_OPTIONS: Array<{ key: string; text: string }> = [
   { key: 'Teams',       text: 'Teams' },
   { key: 'OneNote',     text: 'OneNote' },
   { key: 'Loop',        text: 'Loop' },
-  { key: 'M365Chat',    text: 'Copilot Chat' },
-  { key: 'Other',       text: 'Other' },
+  { key: 'BizChat',     text: 'Copilot Chat' },
+  { key: 'WebChat',     text: 'Web Chat' },
+  { key: 'M365App',     text: 'M365 App' },
+  { key: 'Forms',       text: 'Forms' },
+  { key: 'SharePoint',  text: 'SharePoint' },
+  { key: 'Whiteboard',  text: 'Whiteboard' },
 ];
 
 interface IWinCalloutProps {

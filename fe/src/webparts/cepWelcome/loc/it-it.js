@@ -125,7 +125,7 @@ define([], function() {
     "CopilotLoadingHint3": "Sto preparando la risposta migliore\u2026",
     "CopilotLoadingHint4": "Ci sto lavorando\u2026",
     "CopilotLoadingHint5": "Ci siamo quasi\u2026",
-    "CopilotChatUserMessage": "Come pu\u00f2 Microsoft 365 Copilot aiutarmi nel mio lavoro quotidiano?\u00a0\ud83e\udd14",
+    "CopilotChatUserMessage": "Hey Copilot, come puoi aiutarmi al lavoro? \ud83d\ude80",
 
     // Inline welcome editor (edit-mode, in-webpart)
     "InlineEditorTitle": "\u2728 Configura il testo di benvenuto",
@@ -160,6 +160,21 @@ define([], function() {
     "FilterWeek": "Questa settimana",
     "FilterMonth": "Questo mese",
     "GetInspired": "Trova ispirazione su Prompt Gallery",
+
+    // App tooltips
+    "AppTooltipWord": "Interazioni Copilot generate all'interno di Word",
+    "AppTooltipExcel": "Interazioni Copilot generate all'interno di Excel",
+    "AppTooltipPowerPoint": "Interazioni Copilot generate all'interno di PowerPoint",
+    "AppTooltipOutlook": "Interazioni Copilot generate all'interno di Outlook",
+    "AppTooltipTeams": "Interazioni Copilot in Teams (chat, canali, riunioni)",
+    "AppTooltipOneNote": "Interazioni Copilot generate all'interno di OneNote",
+    "AppTooltipLoop": "Interazioni Copilot generate all'interno di Loop",
+    "AppTooltipBizChat": "Interazioni con Microsoft 365 Copilot Chat (BizChat)",
+    "AppTooltipWebChat": "Interazioni Copilot effettuate tramite Web Chat",
+    "AppTooltipM365App": "Interazioni Copilot da altre app Microsoft 365",
+    "AppTooltipForms": "Interazioni Copilot generate in Microsoft Forms",
+    "AppTooltipSharePoint": "Interazioni Copilot legate a SharePoint",
+    "AppTooltipWhiteboard": "Interazioni Copilot generate in Whiteboard",
 
     // Badges
     "BadgesTitle": "Badge",

@@ -89,7 +89,10 @@ public class GraphClient
                     if (created is null) continue;
                     if (created.Value < fromUtc || created.Value >= toUtc) continue;
 
-                    var key = (DateOnly.FromDateTime(created.Value), CepActivityLog.NormaliseAppClass(appClass));
+                    var normalisedApp = CepActivityLog.NormaliseAppClass(appClass);
+                    if (normalisedApp is null) continue; // excluded class (e.g. ThirdPartyCopilot)
+
+                    var key = (DateOnly.FromDateTime(created.Value), normalisedApp);
                     aggregates[key] = aggregates.GetValueOrDefault(key) + 1;
                 }
             }

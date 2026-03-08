@@ -38,7 +38,7 @@ export interface IUserSummary {
 }
 
 export interface IAppUsageBreakdown {
-  appKey: string;                   // Word | Excel | PowerPoint | Outlook | Teams | OneNote | Loop | M365Chat | Other
+  appKey: string;                   // Word | Excel | PowerPoint | Outlook | Teams | OneNote | Loop | BizChat | WebChat | M365App | Forms | SharePoint | Whiteboard
   promptCount: number;
   pointsEarned: number;
 }
