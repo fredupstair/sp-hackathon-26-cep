@@ -8,6 +8,8 @@ import styles from '../CepWelcome.module.scss';
 
 export interface IPreferencesStepProps {
   department: string;
+  /** True when department was auto-fetched from Azure AD / Microsoft Graph */
+  departmentReadOnly?: boolean;
   team: string;
   enableNudges: boolean;
   onDepartmentChange: (value: string) => void;
@@ -19,6 +21,7 @@ export interface IPreferencesStepProps {
 
 export const PreferencesStep: React.FC<IPreferencesStepProps> = ({
   department,
+  departmentReadOnly,
   team,
   enableNudges,
   onDepartmentChange,
@@ -37,12 +40,26 @@ export const PreferencesStep: React.FC<IPreferencesStepProps> = ({
 
     {/* Profile fields */}
     <Stack tokens={{ childrenGap: 14 }}>
-      <TextField
-        label={strings.DepartmentLabel}
-        placeholder={strings.DepartmentPlaceholder}
-        value={department}
-        onChange={(_e, v) => onDepartmentChange(v ?? '')}
-      />
+      <Stack tokens={{ childrenGap: 4 }}>
+        <Text variant="medium" style={{ fontWeight: 600 }}>{strings.DepartmentLabel}</Text>
+        {departmentReadOnly ? (
+          <Stack tokens={{ childrenGap: 4 }}>
+            <Text variant="mediumPlus">{department}</Text>
+            <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 4 }}>
+              <Icon iconName="Lock" style={{ fontSize: 12, color: '#605e5c' }} />
+              <Text variant="small" style={{ color: '#605e5c', fontStyle: 'italic' }}>
+                Managed by your organization
+              </Text>
+            </Stack>
+          </Stack>
+        ) : (
+          <TextField
+            placeholder={strings.DepartmentPlaceholder}
+            value={department}
+            onChange={(_e, v) => onDepartmentChange(v ?? '')}
+          />
+        )}
+      </Stack>
       <TextField
         label={strings.TeamLabel}
         placeholder={strings.TeamPlaceholder}

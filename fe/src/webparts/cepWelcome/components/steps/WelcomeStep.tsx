@@ -26,23 +26,6 @@ export interface IWelcomeStepProps {
   onNext: () => void;
 }
 
-interface IFeaturePillProps {
-  icon: string;
-  text: string;
-}
-
-const FeaturePill: React.FC<IFeaturePillProps> = ({ icon, text }) => (
-  <Stack
-    horizontal
-    verticalAlign="center"
-    tokens={{ childrenGap: 10 }}
-    className={styles.featurePill}
-  >
-    <Icon iconName={icon} className={styles.featurePillIcon} />
-    <Text variant="medium">{text}</Text>
-  </Stack>
-);
-
 export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName, aiWelcomeText, aiWelcomeLoading, aiWelcomeStreaming, onNext }) => {
   const displayText = (welcomeText ?? '').trim();
   const firstName = userName.split(' ')[0];
@@ -64,6 +47,20 @@ export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName
     return () => clearInterval(timer);
   }, [aiWelcomeLoading, aiWelcomeText, loadingHints.length]);
 
+  const aiInProgress = !!(aiWelcomeLoading || aiWelcomeStreaming);
+  // Track when AI finishes to trigger blink
+  const [blink, setBlink] = React.useState(false);
+  const prevInProgress = React.useRef(aiInProgress);
+  React.useEffect(() => {
+    if (prevInProgress.current && !aiInProgress) {
+      setBlink(true);
+      const t = setTimeout(() => setBlink(false), 1500);
+      return () => clearTimeout(t);
+    }
+    prevInProgress.current = aiInProgress;
+    return undefined;
+  }, [aiInProgress]);
+
   return (
     <Stack className={styles.stepContainer} tokens={{ childrenGap: 24 }}>
       {/* Hero */}
@@ -73,9 +70,6 @@ export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName
         </div>
         <Text variant="xxLarge" className={styles.heroTitle}>
           {strings.ProgramTitle}
-        </Text>
-        <Text variant="large" className={styles.heroGreeting}>
-          {strings.HelloGreeting.replace('{0}', userName)}
         </Text>
       </Stack>
 
@@ -138,18 +132,11 @@ export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName
         </div>
       )}
 
-      {/* Feature bullets */}
-      <Stack tokens={{ childrenGap: 8 }}>
-        <FeaturePill icon="LineChart"   text={strings.FeatureTrack} />
-        <FeaturePill icon="StarFill"    text={strings.FeaturePoints} />
-        <FeaturePill icon="RibbonSolid" text={strings.FeatureLevels} />
-        <FeaturePill icon="People"      text={strings.FeatureLeaderboard} />
-      </Stack>
-
       <PrimaryButton
-        className={styles.ctaButton}
+        className={[styles.ctaButton, blink ? styles.ctaBlink : ''].filter(Boolean).join(' ')}
         text={strings.GetStarted}
         iconProps={{ iconName: 'ChevronRight' }}
+        disabled={aiInProgress}
         onClick={onNext}
       />
     </Stack>

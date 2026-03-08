@@ -40,7 +40,10 @@ const PrivacyItem: React.FC<IPrivacyItemProps> = ({ icon, color, text }) => (
 
 export const RulesStep: React.FC<IRulesStepProps> = ({ onNext, onBack }) => (
   <Stack className={styles.stepContainer} tokens={{ childrenGap: 20 }}>
-    <Text variant="xLarge" className={styles.stepTitle}>How it works</Text>
+    <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 8 }}>
+      <Icon iconName="Lightbulb" style={{ fontSize: 24, color: '#0078d4' }} />
+      <Text variant="xLarge" className={styles.stepTitle}>How it works</Text>
+    </Stack>
 
     {/* 3 rule cards */}
     <Stack horizontal tokens={{ childrenGap: 12 }} wrap>
@@ -51,7 +54,7 @@ export const RulesStep: React.FC<IRulesStepProps> = ({ onNext, onBack }) => (
         body="Use Microsoft 365 Copilot in any app — Word, Excel, Outlook, Teams, and more — as part of your everyday work."
       />
       <RuleCard
-        icon="StarFill"
+        icon="FavoriteStarFill"
         color="#ffb900"
         title="Earn Points"
         body="1 point for every prompt you send. Points accumulate over the month and reset at month-end for a fresh competition."

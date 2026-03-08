@@ -66,6 +66,7 @@ interface ICepWelcomeState {
   // wizard
   currentStep:      WizardStep;
   department:       string;
+  departmentReadOnly: boolean;
   team:             string;
   enableNudges:     boolean;
   consentChecked:   boolean;
@@ -97,6 +98,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
       successMessage:   '',
       currentStep:      'welcome',
       department:       '',
+      departmentReadOnly: false,
       team:             '',
       enableNudges:     true,
       consentChecked:   false,
@@ -117,6 +119,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
   public componentDidMount(): void {
     this._loadEnrollmentStatus().catch(console.error);
     this._generatePersonalizedWelcome().catch(console.error);
+    this._fetchUserDepartment().catch(console.error);
   }
 
   public componentDidUpdate(prevProps: ICepWelcomeProps, prevState: ICepWelcomeState): void {
@@ -125,6 +128,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
     }
     if (prevProps.graphClient !== this.props.graphClient && this.props.graphClient) {
       this._generatePersonalizedWelcome().catch(console.error);
+      this._fetchUserDepartment().catch(console.error);
     }
     // Reload dashboard data when month changes (enrolled only)
     if (prevState.month !== this.state.month && this.state.userSummary?.isActive) {
@@ -185,6 +189,23 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
         errorMessage: `Error loading dashboard: ${(e as Error).message}`,
       });
     }
+  }
+
+  private async _fetchUserDepartment(): Promise<void> {
+    const { graphClient } = this.props;
+    if (!graphClient) return;
+    // Only pre-fill if user hasn't already typed something
+    if (this.state.department) return;
+    try {
+      const me = await graphClient
+        .api('/me')
+        .version('v1.0')
+        .select('department')
+        .get() as { department?: string };
+      if (me.department && !this.state.department) {
+        this.setState({ department: me.department, departmentReadOnly: true });
+      }
+    } catch { /* Graph call may fail; leave field empty */ }
   }
 
   private async _generatePersonalizedWelcome(): Promise<void> {
@@ -364,6 +385,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
         return (
           <PreferencesStep
             department={department}
+            departmentReadOnly={this.state.departmentReadOnly}
             team={team}
             enableNudges={enableNudges}
             onDepartmentChange={v => this.setState({ department: v })}

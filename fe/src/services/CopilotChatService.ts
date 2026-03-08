@@ -158,13 +158,13 @@ export class CopilotChatService {
 
       const text = await this._sendStreamMessage(conversationId, fullPrompt, onChunk);
       return { text, fromFallback: false };
-    } catch (err) {
+    } catch {
       // If streaming fails, try non-streaming as fallback
       try {
         const result = await this.generatePersonalizedText(displayName, jobTitle, department, organizationName);
         onChunk(result.text);
         return result;
-      } catch (fallbackErr) {
+      } catch {
         const fallbackText = CopilotChatService.generatePersonalizedFallbackText(displayName, jobTitle, organizationName);
         onChunk(fallbackText);
         return { text: fallbackText, fromFallback: true };
@@ -192,9 +192,9 @@ export class CopilotChatService {
     };
 
     // Use responseType 'raw' to get the native Response for SSE parsing
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rawResponse: Response = await (this._graphClient
       .api(`/copilot/conversations/${conversationId}/chatOverStream`)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .version('beta') as any)
       .responseType('raw')
       .post(body);

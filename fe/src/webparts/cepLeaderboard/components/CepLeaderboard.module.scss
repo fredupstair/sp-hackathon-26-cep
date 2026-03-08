@@ -21,6 +21,7 @@ $card-radius: 8px;
   padding: 16px;
   color: var(--bodyText);
   max-width: 960px;
+  margin: 0 auto;
 
   &.teams {
     font-family: $ms-font-family-fallbacks;
