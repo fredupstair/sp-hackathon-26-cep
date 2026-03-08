@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Icon } from '@fluentui/react';
 import type { IUserUsage } from '../../../../services/CepApiModels';
 import styles from '../CepWelcome.module.scss';
 import * as strings from 'CepWelcomeWebPartStrings';
@@ -55,6 +56,22 @@ const APP_CLASS: Record<string, string> = {
   Whiteboard: styles.appWhiteboard,
 };
 
+const APP_ICON: Record<string, { iconName: string; color: string }> = {
+  Word:       { iconName: 'WordLogo',       color: '#2b579a' },
+  Excel:      { iconName: 'ExcelLogo',      color: '#217346' },
+  PowerPoint: { iconName: 'PowerPointLogo', color: '#b7472a' },
+  Outlook:    { iconName: 'OutlookLogo',    color: '#0078d4' },
+  Teams:      { iconName: 'TeamsLogo',      color: '#6264a7' },
+  OneNote:    { iconName: 'OneNoteLogo',    color: '#7719aa' },
+  Loop:       { iconName: 'Sync',           color: '#008272' },
+  BizChat:    { iconName: 'Chat',           color: '#0f6cbd' },
+  WebChat:    { iconName: 'Globe',          color: '#3a96dd' },
+  M365App:    { iconName: 'Waffle',         color: '#5c2d91' },
+  Forms:      { iconName: 'ClipboardList',  color: '#038387' },
+  SharePoint: { iconName: 'SharePointLogo', color: '#036c70' },
+  Whiteboard: { iconName: 'EditCreate',     color: '#4a8fb8' },
+};
+
 const fmt = (tpl: string, ...args: (string | number)[]): string =>
   tpl.replace(/{(\d+)}/g, (m, i) => (args[i] !== undefined ? String(args[i]) : m));
 
@@ -77,6 +94,13 @@ export const AppUsageChart: React.FC<IAppUsageChartProps> = ({ usage }) => {
         {allEntries.map((entry) => (
           <div key={entry.appKey} className={styles.appBarRow} title={APP_TOOLTIP[entry.appKey] ?? ''}>
             <div className={styles.appBarLabel}>
+              {APP_ICON[entry.appKey] && (
+                <Icon
+                  iconName={APP_ICON[entry.appKey].iconName}
+                  className={styles.appBarIcon}
+                  style={{ color: APP_ICON[entry.appKey].color }}
+                />
+              )}
               {APP_LABEL[entry.appKey] ?? entry.appKey}
             </div>
             <div className={styles.appBarTrack}>

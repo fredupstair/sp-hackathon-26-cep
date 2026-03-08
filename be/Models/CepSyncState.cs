@@ -14,7 +14,7 @@ public class CepSyncState
     {
         ["Title"] = "SyncState",
         ["CEP_Sync_LastSuccessfulRunUtc"] = LastSuccessfulRunUtc?.ToUniversalTime().ToString("o"),
-        ["CEP_Sync_LastLeaderboardRebuildUtc"] = LastLeaderboardRebuildUtc?.ToUniversalTime().ToString("o"),
+        ["CEP_Sync_LeaderboardRebuildUtc"] = LastLeaderboardRebuildUtc?.ToUniversalTime().ToString("o"),
         ["CEP_Sync_LastRunStatus"] = LastRunStatus,
         ["CEP_Sync_LastRunCorrelationId"] = LastRunCorrelationId,
         ["CEP_Sync_LastRunSummary"] = LastRunSummary,
@@ -24,7 +24,7 @@ public class CepSyncState
     {
         SpItemId = spItemId,
         LastSuccessfulRunUtc = f.Dt("CEP_Sync_LastSuccessfulRunUtc"),
-        LastLeaderboardRebuildUtc = f.Dt("CEP_Sync_LastLeaderboardRebuildUtc"),
+        LastLeaderboardRebuildUtc = f.Dt("CEP_Sync_LeaderboardRebuildUtc"),
         LastRunStatus = f.Str("CEP_Sync_LastRunStatus", "Unknown"),
         LastRunCorrelationId = f.Str("CEP_Sync_LastRunCorrelationId"),
         LastRunSummary = f.Str("CEP_Sync_LastRunSummary"),

@@ -129,11 +129,12 @@ public class IngestQueueWorker
         // ------------------------------------------------------------------
         string oldLevel = user.CurrentLevel;
         var allMonthLogs = await _sp.GetAllActivityLogsForUserMonthAsync(msg.AadUserId, monthKey, ct);
-        var validMonthLogs = allMonthLogs.Where(l => l.UsageDate >= optInUtc).ToList();
+        var optInDate = DateOnly.FromDateTime(optInUtc);
+        var validMonthLogs = allMonthLogs.Where(l => DateOnly.FromDateTime(l.UsageDate) >= optInDate).ToList();
         var allUserLogs = await _sp.GetAllActivityLogsForUserAsync(msg.AadUserId, ct);
 
         user.MonthlyPoints = validMonthLogs.Sum(l => l.PointsEarned);
-        user.TotalPoints = allUserLogs.Where(l => l.UsageDate >= optInUtc).Sum(l => l.PointsEarned);
+        user.TotalPoints = allUserLogs.Where(l => DateOnly.FromDateTime(l.UsageDate) >= optInDate).Sum(l => l.PointsEarned);
         user.CurrentLevel = _points.ComputeLevel(user.MonthlyPoints, config);
 
         if (latestActivity is not null && (user.LastActivityDate is null || latestActivity > user.LastActivityDate))

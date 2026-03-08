@@ -3,8 +3,6 @@ import * as ReactDom from 'react-dom';
 import { Log } from '@microsoft/sp-core-library';
 import {
   BaseApplicationCustomizer,
-  PlaceholderContent,
-  PlaceholderName,
 } from '@microsoft/sp-application-base';
 import { AadHttpClient, SPHttpClient } from '@microsoft/sp-http';
 
@@ -33,7 +31,7 @@ export interface ICepBarApplicationCustomizerProperties {
 export default class CepBarApplicationCustomizer
   extends BaseApplicationCustomizer<ICepBarApplicationCustomizerProperties> {
 
-  private _bottomPlaceholder: PlaceholderContent | undefined;
+  private _container: HTMLDivElement | undefined;
   private _apiClient: CepApiClient | undefined;
   private _functionAppBaseUrl: string = '';
   private _functionAppClientId: string = '';
@@ -44,15 +42,16 @@ export default class CepBarApplicationCustomizer
     Log.info(LOG_SOURCE, `Initialized ${strings.Title}`);
     await this._loadTenantProperties();
     await this._initApiClient();
-    this.context.placeholderProvider.changedEvent.add(this, this._renderBar);
-    this._renderBar();
+    this._renderChip();
     return Promise.resolve();
   }
 
   protected onDispose(): void {
-    if (this._bottomPlaceholder?.domElement) {
+    if (this._container) {
       // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
-      ReactDom.unmountComponentAtNode(this._bottomPlaceholder.domElement);
+      ReactDom.unmountComponentAtNode(this._container);
+      this._container.remove();
+      this._container = undefined;
     }
   }
 
@@ -115,17 +114,11 @@ export default class CepBarApplicationCustomizer
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  private _renderBar = (): void => {
-    if (!this._bottomPlaceholder) {
-      this._bottomPlaceholder = this.context.placeholderProvider.tryCreateContent(
-        PlaceholderName.Bottom,
-        { onDispose: this._onDisposePlaceholder }
-      );
-    }
-
-    if (!this._bottomPlaceholder) {
-      Log.warn(LOG_SOURCE, 'Bottom placeholder not available.');
-      return;
+  private _renderChip(): void {
+    if (!this._container) {
+      this._container = document.createElement('div');
+      this._container.id = 'cep-chip-root';
+      document.body.appendChild(this._container);
     }
 
     const element = React.createElement(CepBar, {
@@ -137,14 +130,6 @@ export default class CepBarApplicationCustomizer
     });
 
     // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
-    ReactDom.render(element, this._bottomPlaceholder.domElement);
-  };
-
-  private _onDisposePlaceholder = (): void => {
-    if (this._bottomPlaceholder?.domElement) {
-      // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount
-      ReactDom.unmountComponentAtNode(this._bottomPlaceholder.domElement);
-    }
-    this._bottomPlaceholder = undefined;
-  };
+    ReactDom.render(element, this._container);
+  }
 }

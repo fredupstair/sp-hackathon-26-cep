@@ -25,17 +25,12 @@ function formatDate(d: Date): string {
   return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
 }
 
-/**
- * Computes the current streak from a set of recent active day strings (YYYY-MM-DD).
- * A streak is active if today or yesterday is in the set.
- */
 function computeStreak(recentActiveDays: string[]): number {
   if (!recentActiveDays.length) return 0;
   const daysSet = new Set(recentActiveDays);
   const today     = formatDate(new Date());
   const yesterday = formatDate(new Date(Date.now() - 86400000));
 
-  // Streak must be anchored to today or yesterday
   const startStr = daysSet.has(today) ? today : daysSet.has(yesterday) ? yesterday : null;
   if (!startStr) return 0;
 
@@ -52,10 +47,6 @@ function levelColorClass(level: string): string {
   if (level === 'Gold' || level === 'Master') return styles.gold;
   if (level === 'Silver' || level === 'Practitioner') return styles.silver;
   return styles.bronze;
-}
-
-function levelEmoji(level: string): string {
-  return getLevelIcon(level);
 }
 
 function progressClass(level: string): string {
@@ -77,6 +68,7 @@ interface ICepBarState {
   summary: IUserSummary | undefined;
   suggestion: ICepSuggestion | undefined;
   streak: number;
+  open: boolean;
   showWin: boolean;
   winAnim: boolean;
   winAnimText: string;
@@ -87,6 +79,7 @@ interface ICepBarState {
 
 export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
   private readonly _winBtnRef = React.createRef<HTMLButtonElement>();
+  private readonly _hostRef = React.createRef<HTMLDivElement>();
 
   constructor(props: ICepBarProps) {
     super(props);
@@ -95,6 +88,7 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
       summary: undefined,
       suggestion: undefined,
       streak: 0,
+      open: false,
       showWin: false,
       winAnim: false,
       winAnimText: '',
@@ -104,7 +98,18 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
 
   public componentDidMount(): void {
     this._load().catch(console.error);
+    document.addEventListener('mousedown', this._handleClickOutside);
   }
+
+  public componentWillUnmount(): void {
+    document.removeEventListener('mousedown', this._handleClickOutside);
+  }
+
+  private _handleClickOutside = (e: MouseEvent): void => {
+    if (this._hostRef.current && !this._hostRef.current.contains(e.target as Node)) {
+      this.setState({ open: false, showWin: false });
+    }
+  };
 
   private async _load(): Promise<void> {
     const { apiClient } = this.props;
@@ -122,7 +127,6 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
 
       const streak = computeStreak(summary.recentActiveDays ?? []);
 
-      // fetch suggestion in background; non-critical
       let suggestion: ICepSuggestion | undefined;
       try {
         suggestion = await apiClient.getSuggestion();
@@ -153,44 +157,49 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
     setTimeout(() => this.setState({ winAnim: false }), 1600);
   };
 
+  private _toggleOpen = (): void => {
+    this.setState((s) => ({ open: !s.open, showWin: false }));
+  };
+
   public render(): React.ReactElement {
-    const { loadState, summary, suggestion, streak, showWin, winAnim, winAnimText, suggestionDismissed } = this.state;
+    const { loadState, summary, suggestion, streak, open, showWin, winAnim, winAnimText, suggestionDismissed } = this.state;
     const { dashboardPageUrl, optinPageUrl, silverThreshold, goldThreshold } = this.props;
 
-    // Silently hide bar when not configured or in error
+    // Silently hide when not configured or error
     if (loadState === 'not_configured' || loadState === 'error') return <></>;
 
+    // ── Loading chip ────────────────────────────────────────────────────────
     if (loadState === 'loading') {
       return (
-        <div className={styles.cepBar}>
-          <div className={styles.barLoading}>
+        <div className={styles.cepHost} ref={this._hostRef}>
+          <div className={styles.chipLoading}>
             <Spinner size={SpinnerSize.xSmall} />
-            <span>{strings.BarLoading}</span>
+            <span className={styles.barLoading}>{strings.BarLoading}</span>
           </div>
         </div>
       );
     }
 
+    // ── Not enrolled chip ───────────────────────────────────────────────────
     if (loadState === 'not_enrolled') {
       return (
-        <div className={styles.notEnrolledBar}>
-          <span className={styles.programName}>✦ Copilot Engagement Program</span>
-          <span className={styles.suggestionText}>{strings.BarNotEnrolledDesc}</span>
-          {optinPageUrl && (
-            <a href={optinPageUrl} className={styles.joinBtn}>{strings.BarNotEnrolled}</a>
-          )}
+        <div className={styles.cepHost} ref={this._hostRef}>
+          <a href={optinPageUrl || '#'} className={styles.chipNotEnrolled} style={{ textDecoration: 'none' }}>
+            <span className={styles.programName}>✦ CEP</span>
+            <span className={styles.joinBtn}>{strings.BarNotEnrolled}</span>
+          </a>
         </div>
       );
     }
 
-    // ── Enrolled / ready ────────────────────────────────────────────────────
+    // ── Enrolled ────────────────────────────────────────────────────────────
     const s = summary!;
     const { currentLevel: level, monthlyPoints: monthly } = s;
+    const levelLabel = getLevelLabel(level);
 
     let progressPct: number;
     let nextLevelLabel: string;
     let ptToGo: number;
-    const levelLabel = getLevelLabel(level);
 
     if (levelLabel === 'Explorer') {
       progressPct   = Math.min(monthly / silverThreshold, 1) * 100;
@@ -209,93 +218,100 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
     const showSuggestion = !suggestionDismissed && !!suggestion;
 
     return (
-      <div className={styles.cepBar}>
-
-        {/* Streak */}
-        {streak > 0 && (
-          <>
-            <span
-              className={styles.streak}
-              title={fmt(strings.StreakTooltip, streak)}
-            >
-              <span className={styles.streakFire}>🔥</span>
-              <span className={styles.streakCount}>{fmt(strings.StreakLabel, streak)}</span>
-            </span>
-            <span className={styles.separator} />
-          </>
-        )}
-
-        {/* Level pill */}
-        <span className={`${styles.levelPill} ${levelColorClass(level)}`}>
-          {levelEmoji(level)} {getLevelLabel(level)}
-        </span>
-
-        {/* Points */}
-        <span className={styles.points}>{fmt(strings.BarPoints, monthly)}</span>
-
-        {/* Progress bar */}
-        {!isTopLevel(level) && (
-          <span className={styles.progressGroup}>
-            <span className={styles.progressTrack}>
-              <span
-                className={`${styles.progressFill} ${progressClass(level)}`}
-                style={{ width: `${progressPct}%` }}
-              />
-            </span>
-            <span className={styles.progressLabel}>
-              {fmt(strings.BarProgressLabel, ptToGo, nextLevelLabel)}
-            </span>
-          </span>
-        )}
-
-        <span className={styles.separator} />
-
-        {/* Suggestion */}
-        {showSuggestion && (
-          <>
-            <span className={styles.suggestion}>
-              <span className={styles.suggestionIcon}>💡</span>
-              <span className={styles.suggestionText}>{suggestion!.text}</span>
-              <button
-                className={styles.dismissBtn}
-                onClick={() => this.setState({ suggestionDismissed: true })}
-                title={strings.DismissSuggestion}
-                aria-label={strings.DismissSuggestion}
-              >×</button>
-            </span>
-            <span className={styles.separator} />
-          </>
-        )}
-
-        {/* Win button + callout */}
-        <button
-          ref={this._winBtnRef}
-          className={styles.winBtn}
-          onClick={() => this.setState((prev) => ({ showWin: !prev.showWin }))}
-          aria-expanded={showWin}
-        >
-          ✨ {strings.BarMarkWin}
-        </button>
-
-        {showWin && this._winBtnRef.current && (
-          <WinCallout
-            target={this._winBtnRef.current}
-            onDismiss={() => this.setState({ showWin: false })}
-            onSubmit={this._handleWinSubmit}
-          />
-        )}
-
+      <div className={styles.cepHost} ref={this._hostRef}>
         {/* Win animation */}
         {winAnim && (
           <span className={styles.winAnim} aria-live="polite">{winAnimText}</span>
         )}
 
-        {/* Dashboard link */}
-        {dashboardPageUrl && (
-          <a href={dashboardPageUrl} className={styles.dashBtn}>
-            {strings.BarViewDashboard} →
-          </a>
+        {/* Flyout */}
+        {open && (
+          <div className={styles.flyout}>
+            {/* Header */}
+            <div className={styles.flyoutHeader}>
+              <span className={`${styles.levelPill} ${levelColorClass(level)}`}>
+                {getLevelIcon(level)} {levelLabel}
+              </span>
+              <span className={styles.flyoutPoints}>{fmt(strings.BarPoints, monthly)}</span>
+            </div>
+
+            {/* Progress */}
+            {!isTopLevel(level) && (
+              <div className={styles.progressGroup}>
+                <div className={styles.progressTrack}>
+                  <div
+                    className={`${styles.progressFill} ${progressClass(level)}`}
+                    style={{ width: `${progressPct}%` }}
+                  />
+                </div>
+                <div className={styles.progressLabel}>
+                  {fmt(strings.BarProgressLabel, ptToGo, nextLevelLabel)}
+                </div>
+              </div>
+            )}
+
+            {/* Suggestion */}
+            {showSuggestion && (
+              <div className={styles.suggestion}>
+                <span className={styles.suggestionIcon}>💡</span>
+                <span className={styles.suggestionText}>{suggestion!.text}</span>
+                <button
+                  className={styles.dismissBtn}
+                  onClick={() => this.setState({ suggestionDismissed: true })}
+                  title={strings.DismissSuggestion}
+                  aria-label={strings.DismissSuggestion}
+                >×</button>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className={styles.flyoutActions}>
+              <button
+                ref={this._winBtnRef}
+                className={styles.winBtn}
+                onClick={() => this.setState((prev) => ({ showWin: !prev.showWin }))}
+                aria-expanded={showWin}
+              >
+                ✨ {strings.BarMarkWin}
+              </button>
+
+              {dashboardPageUrl && (
+                <a href={dashboardPageUrl} className={styles.dashBtn}>
+                  {strings.BarViewDashboard} →
+                </a>
+              )}
+            </div>
+
+            {/* WinCallout */}
+            {showWin && this._winBtnRef.current && (
+              <WinCallout
+                target={this._winBtnRef.current}
+                onDismiss={() => this.setState({ showWin: false })}
+                onSubmit={this._handleWinSubmit}
+              />
+            )}
+          </div>
         )}
+
+        {/* Chip */}
+        <div className={styles.chip} onClick={this._toggleOpen} role="button" tabIndex={0} aria-expanded={open}>
+          {streak > 0 && (
+            <>
+              <span className={styles.streak} title={fmt(strings.StreakTooltip, streak)}>
+                🔥{fmt(strings.StreakLabel, streak)}
+              </span>
+              <span className={styles.separator} />
+            </>
+          )}
+
+          <span className={`${styles.levelPill} ${levelColorClass(level)}`}>
+            {getLevelIcon(level)}
+          </span>
+
+          <span className={styles.points}>{fmt(strings.BarPoints, monthly)}</span>
+
+          <span className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}>▲</span>
+        </div>
       </div>
     );
   }

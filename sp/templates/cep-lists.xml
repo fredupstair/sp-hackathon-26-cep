@@ -338,6 +338,11 @@
                Type="Number"                Group="CEP Columns"
                Decimals="0"                 Min="0" />
 
+        <Field ID="{A1B2C3D4-0006-0006-0006-000000000007}"
+               Name="CEP_Sync_LeaderboardRebuildUtc" DisplayName="Leaderboard Rebuild (UTC)"
+               Type="DateTime"              Group="CEP Columns"
+               Format="DateTime" />
+
       </pnp:SiteFields>
 
       <!-- ═══════════════════════════════════════════════════════
@@ -725,6 +730,7 @@
             <pnp:FieldRef ID="{A1B2C3D4-0006-0006-0006-000000000004}" Name="CEP_Sync_LastRunSummary"        DisplayName="Last Run Summary" />
             <pnp:FieldRef ID="{A1B2C3D4-0006-0006-0006-000000000005}" Name="CEP_Sync_UsersProcessed"        DisplayName="Users Processed" />
             <pnp:FieldRef ID="{A1B2C3D4-0006-0006-0006-000000000006}" Name="CEP_Sync_PromptsIngested"       DisplayName="Prompts Ingested" />
+            <pnp:FieldRef ID="{A1B2C3D4-0006-0006-0006-000000000007}" Name="CEP_Sync_LeaderboardRebuildUtc" DisplayName="Leaderboard Rebuild (UTC)" />
           </pnp:FieldRefs>
           <pnp:Views>
             <View Name="Run History" DisplayName="Run History" DefaultView="TRUE">
