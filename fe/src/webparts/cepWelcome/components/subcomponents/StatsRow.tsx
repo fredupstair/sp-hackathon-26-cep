@@ -116,7 +116,7 @@ export const StatsRow: React.FC<IStatsRowProps> = ({
       </div>
 
       {/* ── Copilot Wins ── */}
-      <div className={`${styles.statCard} ${styles.winStatCard}`}>
+      <div className={styles.statCard}>
         <div className={styles.statLabel}>{strings.WinCardTitle}</div>
         <div className={styles.statValue}>{winCount}</div>
         <div className={styles.statSubValue}>
