@@ -117,6 +117,14 @@ declare interface ICepWelcomeWebPartStrings {
   // AI personalised welcome (end-user)
   AiWelcomeGenerating: string;
   AiWelcomeBadge: string;
+  CopilotBubbleLabel: string;
+  CopilotBubbleLoading: string;
+  CopilotLoadingHint: string;
+  CopilotLoadingHint2: string;
+  CopilotLoadingHint3: string;
+  CopilotLoadingHint4: string;
+  CopilotLoadingHint5: string;
+  CopilotChatUserMessage: string;
 
   // Inline welcome editor (edit-mode, in-webpart)
   InlineEditorTitle: string;

@@ -118,6 +118,14 @@ define([], function() {
     // AI personalised welcome (end-user)
     "AiWelcomeGenerating": "Personalizzazione in corso\u2026",
     "AiWelcomeBadge": "Personalizzato da AI",
+    "CopilotBubbleLabel": "Copilot ha qualcosa per te",
+    "CopilotBubbleLoading": "Sta scrivendo un messaggio solo per te\u2026",
+    "CopilotLoadingHint": "Sto generando una risposta personalizzata per te\u2026",
+    "CopilotLoadingHint2": "Un attimo di pazienza\u2026",
+    "CopilotLoadingHint3": "Sto preparando la risposta migliore\u2026",
+    "CopilotLoadingHint4": "Ci sto lavorando\u2026",
+    "CopilotLoadingHint5": "Ci siamo quasi\u2026",
+    "CopilotChatUserMessage": "Come pu\u00f2 Microsoft 365 Copilot aiutarmi nel mio lavoro quotidiano?\u00a0\ud83e\udd14",
 
     // Inline welcome editor (edit-mode, in-webpart)
     "InlineEditorTitle": "\u2728 Configura il testo di benvenuto",

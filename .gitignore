@@ -10,3 +10,4 @@ be/obj
 be/bin
 be/Debug
 be/local.settings.json
+deploy/deploy-now.ps1

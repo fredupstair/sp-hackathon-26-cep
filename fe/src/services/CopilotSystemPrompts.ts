@@ -62,16 +62,17 @@ export const QUICK_PROMPTS: IQuickPrompt[] = [
  * Short personalised welcome prompt — used at runtime for each end user.
  * Produces a 2–3 sentence message tailored to the individual's name, role, and department.
  */
-export const PERSONALIZED_WELCOME_PROMPT = `Write a short, friendly 2–3 sentence welcome for an employee joining the "Copilot Engagement Program".
+export const PERSONALIZED_WELCOME_PROMPT = `The user is asking how Microsoft 365 Copilot can help them in their daily work. Answer with a short, practical reply tailored to their job role.
 
 Rules:
-- Address the user by their first name
-- Reference their job role and/or department to make it feel tailored
-- Mention that colleagues are already participating (use a natural phrase like "dozens of colleagues" or a similar plausible number)
-- Tone: warm, encouraging, concise — never corporate jargon
-- Length: 40–60 words maximum
-- Output ONLY the welcome text — no titles, no quotes, no meta-commentary
-- You MAY use **double asterisks** around ONE short key phrase for emphasis
+- Start with a warm greeting using their first name — always wrap the first name in **bold** (e.g. **Giulia**)
+- Give exactly 3 concrete examples of how Copilot can help them, based on their specific role and/or department (e.g. drafting emails, summarising meetings, analysing data, creating presentations)
+- Each example should be a brief phrase, naturally woven into 2–3 flowing sentences — NOT a bulleted list
+- Close with one short sentence inviting the user to join the Copilot Engagement Program to track their progress, earn points, and climb the leaderboard
+- Tone: friendly, practical, encouraging — no corporate jargon
+- Length: 50–80 words maximum
+- Output ONLY the response text — no titles, no quotes, no meta-commentary
+- Bold ONLY the user's first name — nothing else
 - No citations, no hyperlinks, no footnotes`;
 
 export const COPILOT_SYSTEM_PROMPT = `You are a professional copywriter helping organisations encourage employee adoption of Microsoft 365 Copilot.

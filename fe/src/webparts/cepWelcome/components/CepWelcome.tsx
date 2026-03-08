@@ -74,6 +74,7 @@ interface ICepWelcomeState {
   // AI personalised welcome
   aiWelcomeText:    string;
   aiWelcomeLoading: boolean;
+  aiWelcomeStreaming: boolean;
   editingWelcome:   boolean;
   // dashboard data
   month:            string;
@@ -103,6 +104,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
       showLeaveDialog:  false,
       aiWelcomeText:    '',
       aiWelcomeLoading: false,
+      aiWelcomeStreaming: false,
       editingWelcome:   props.displayMode === DisplayMode.Edit && !props.welcomeText?.trim(),
       month:            currentMonth(),
       usage:            undefined,
@@ -189,7 +191,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
     const { graphClient, organizationName, userDisplayName, displayMode } = this.props;
     if (displayMode === DisplayMode.Edit) return;
     if (!graphClient || !userDisplayName) return;
-    this.setState({ aiWelcomeLoading: true });
+    this.setState({ aiWelcomeLoading: true, aiWelcomeStreaming: false });
     try {
       let jobTitle = '';
       let department = '';
@@ -204,15 +206,24 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
       } catch { /* ignore */ }
 
       const service = new CopilotChatService(graphClient);
-      const { text } = await service.generatePersonalizedText(
+
+      // Switch from loading dots to streaming cursor on first chunk
+      const onChunk = (text: string): void => {
+        this.setState({ aiWelcomeText: text, aiWelcomeLoading: false, aiWelcomeStreaming: true });
+      };
+
+      await service.streamPersonalizedText(
         userDisplayName,
         jobTitle,
         department,
-        organizationName
+        organizationName,
+        onChunk,
       );
-      this.setState({ aiWelcomeText: text, aiWelcomeLoading: false });
+
+      // Stream complete
+      this.setState({ aiWelcomeStreaming: false });
     } catch {
-      this.setState({ aiWelcomeLoading: false });
+      this.setState({ aiWelcomeLoading: false, aiWelcomeStreaming: false });
     }
   }
 
@@ -331,7 +342,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
     const {
       currentStep, department, team,
       enableNudges, consentChecked, submitting, errorMessage,
-      aiWelcomeText, aiWelcomeLoading,
+      aiWelcomeText, aiWelcomeLoading, aiWelcomeStreaming,
     } = this.state;
     const { userDisplayName, welcomeText } = this.props;
 
@@ -343,6 +354,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
             userName={userDisplayName}
             aiWelcomeText={aiWelcomeText}
             aiWelcomeLoading={aiWelcomeLoading}
+            aiWelcomeStreaming={aiWelcomeStreaming}
             onNext={this._goNext}
           />
         );
