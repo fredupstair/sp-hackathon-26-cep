@@ -14,7 +14,7 @@ export interface IEnrollmentJoinRequest {
 
 // ─── User / Me ────────────────────────────────────────────────────────────────
 
-export type CepLevel = 'Bronze' | 'Silver' | 'Gold';
+export type CepLevel = 'Explorer' | 'Practitioner' | 'Master' | 'Bronze' | 'Silver' | 'Gold';
 
 export interface IUserSummary {
   userId: string;

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Persona, PersonaSize } from '@fluentui/react';
 import type { IUserSummary, ICepBadge } from '../../../../services/CepApiModels';
+import { getLevelIcon, getLevelLabel } from '../../../../services/CepLevelPresentation';
 import styles from '../CepWelcome.module.scss';
 import * as strings from 'CepWelcomeWebPartStrings';
 import { BadgeList } from './BadgeList';
@@ -10,16 +11,13 @@ interface IOtherUserViewProps {
   badges: ICepBadge[];
 }
 
-const LEVEL_ICON: Record<string, string> = {
-  Bronze: '🥉',
-  Silver: '🥈',
-  Gold: '🥇',
-};
-
 const LEVEL_CLASS: Record<string, string> = {
   Bronze: styles.bronze,
   Silver: styles.silver,
   Gold: styles.gold,
+  Explorer: styles.bronze,
+  Practitioner: styles.silver,
+  Master: styles.gold,
 };
 
 export const OtherUserView: React.FC<IOtherUserViewProps> = ({ summary, badges }) => (
@@ -32,7 +30,7 @@ export const OtherUserView: React.FC<IOtherUserViewProps> = ({ summary, badges }
         secondaryText={`${summary.department}${summary.team ? ' · ' + summary.team : ''}`}
       />
       <span className={`${styles.levelPill} ${LEVEL_CLASS[summary.currentLevel] ?? ''}`}>
-        {LEVEL_ICON[summary.currentLevel]} {summary.currentLevel}
+        {getLevelIcon(summary.currentLevel)} {getLevelLabel(summary.currentLevel)}
       </span>
     </div>
 
@@ -49,7 +47,7 @@ export const OtherUserView: React.FC<IOtherUserViewProps> = ({ summary, badges }
       <div className={styles.statCard}>
         <div className={styles.statLabel}>{strings.OtherUserLevel}</div>
         <div className={styles.statValue} style={{ fontSize: 22 }}>
-          {summary.currentLevel}
+          {getLevelIcon(summary.currentLevel)} {getLevelLabel(summary.currentLevel)}
         </div>
       </div>
     </div>

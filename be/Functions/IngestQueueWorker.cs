@@ -53,6 +53,16 @@ public class IngestQueueWorker
         _log.LogInformation("[{CorrId}] Processing user {UserId} ({Upn})",
             msg.CorrelationId, msg.AadUserId, msg.UserPrincipalName);
 
+        var user = await _sp.GetUserByAadIdAsync(msg.AadUserId, ct);
+        if (user is null)
+        {
+            _log.LogWarning("[{CorrId}] User {UserId} not found in CEP_Users, skipping", msg.CorrelationId, msg.AadUserId);
+            return;
+        }
+
+        var optInUtc = user.EnrollmentDate?.ToUniversalTime() ?? DateTime.MinValue;
+        var effectiveFromUtc = msg.WatermarkUtc > optInUtc ? msg.WatermarkUtc : optInUtc;
+
         var config = await _sp.GetConfigAsync(ct);
         var monthKey = msg.RunTimeUtc.ToString("yyyy-MM");
 
@@ -63,7 +73,7 @@ public class IngestQueueWorker
         try
         {
             graphCounts = await _graph.GetDailyPromptCountsAsync(
-                msg.AadUserId, msg.WatermarkUtc, msg.RunTimeUtc, ct);
+                msg.AadUserId, effectiveFromUtc, msg.RunTimeUtc, ct);
         }
         catch (Exception ex)
         {
@@ -117,16 +127,13 @@ public class IngestQueueWorker
         // ------------------------------------------------------------------
         // 4. Recalculate user points & level
         // ------------------------------------------------------------------
-        var user = await _sp.GetUserByAadIdAsync(msg.AadUserId, ct);
-        if (user is null)
-        {
-            _log.LogWarning("[{CorrId}] User {UserId} not found in CEP_Users, skipping", msg.CorrelationId, msg.AadUserId);
-            return;
-        }
-
         string oldLevel = user.CurrentLevel;
         var allMonthLogs = await _sp.GetAllActivityLogsForUserMonthAsync(msg.AadUserId, monthKey, ct);
-        (user.TotalPoints, user.MonthlyPoints) = _points.RecalculatePoints(user, allMonthLogs);
+        var validMonthLogs = allMonthLogs.Where(l => l.UsageDate >= optInUtc).ToList();
+        var allUserLogs = await _sp.GetAllActivityLogsForUserAsync(msg.AadUserId, ct);
+
+        user.MonthlyPoints = validMonthLogs.Sum(l => l.PointsEarned);
+        user.TotalPoints = allUserLogs.Where(l => l.UsageDate >= optInUtc).Sum(l => l.PointsEarned);
         user.CurrentLevel = _points.ComputeLevel(user.MonthlyPoints, config);
 
         if (latestActivity is not null && (user.LastActivityDate is null || latestActivity > user.LastActivityDate))
@@ -139,7 +146,7 @@ public class IngestQueueWorker
         // ------------------------------------------------------------------
         var existingBadges = await _sp.GetUserBadgesAsync(msg.AadUserId, ct);
         var newBadges = _badges.EvaluateBadges(
-            user, allMonthLogs, existingBadges, config, monthKey, msg.RunTimeUtc).ToList();
+            user, validMonthLogs, existingBadges, config, monthKey, msg.RunTimeUtc).ToList();
 
         foreach (var badge in newBadges)
         {

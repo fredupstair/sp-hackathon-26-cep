@@ -37,9 +37,9 @@ public class PointsEngine
 
     public string ComputeLevel(int monthlyPoints, CepConfig cfg)
     {
-        if (monthlyPoints >= cfg.LevelThresholdGold) return "Gold";
-        if (monthlyPoints >= cfg.LevelThresholdSilver) return "Silver";
-        return "Bronze";
+        if (monthlyPoints >= cfg.LevelThresholdGold) return "Master";
+        if (monthlyPoints >= cfg.LevelThresholdSilver) return "Practitioner";
+        return "Explorer";
     }
 
     // ------------------------------------------------------------------

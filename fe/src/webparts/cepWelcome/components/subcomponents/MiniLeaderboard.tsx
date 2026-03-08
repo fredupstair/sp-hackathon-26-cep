@@ -1,5 +1,6 @@
 import * as React from 'react';
 import type { ILeaderboardPage, ILeaderboardEntry } from '../../../../services/CepApiModels';
+import { getLevelLabel } from '../../../../services/CepLevelPresentation';
 import styles from '../CepWelcome.module.scss';
 
 interface IMiniLeaderboardProps {
@@ -12,6 +13,9 @@ const LEVEL_CLASS: Record<string, string> = {
   Bronze: styles.bronze,
   Silver: styles.silver,
   Gold: styles.gold,
+  Explorer: styles.bronze,
+  Practitioner: styles.silver,
+  Master: styles.gold,
 };
 
 const LeaderboardRow: React.FC<{ entry: ILeaderboardEntry }> = ({ entry }) => {
@@ -31,7 +35,7 @@ const LeaderboardRow: React.FC<{ entry: ILeaderboardEntry }> = ({ entry }) => {
       </td>
       <td className={styles.lbLevelCell}>
         <span className={`${styles.levelPill} ${LEVEL_CLASS[entry.currentLevel] ?? ''}`}>
-          {entry.currentLevel}
+          {getLevelLabel(entry.currentLevel)}
         </span>
       </td>
       <td className={styles.lbPointsCell}>{entry.monthlyPoints.toLocaleString()} pts</td>

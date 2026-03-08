@@ -21,7 +21,7 @@ public class CepUser
     // Program state
     public bool IsActive { get; set; } = true;
     public DateTime? EnrollmentDate { get; set; }
-    public string CurrentLevel { get; set; } = "Bronze"; // Bronze / Silver / Gold
+    public string CurrentLevel { get; set; } = "Explorer"; // Explorer / Practitioner / Master
     public int TotalPoints { get; set; }
     public int MonthlyPoints { get; set; }
 
@@ -68,7 +68,7 @@ public class CepUser
         Team = f.Str("CEP_Team"),
         IsActive = f.Bool("CEP_IsActive", true),
         EnrollmentDate = f.Dt("CEP_EnrollmentDate"),
-        CurrentLevel = f.Str("CEP_CurrentLevel", "Bronze"),
+        CurrentLevel = f.Str("CEP_CurrentLevel", "Explorer"),
         TotalPoints = f.Int("CEP_TotalPoints"),
         MonthlyPoints = f.Int("CEP_MonthlyPoints"),
         LastActivityDate = f.Dt("CEP_LastActivityDate"),

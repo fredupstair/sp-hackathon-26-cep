@@ -26,7 +26,7 @@ define([], function() {
     "HelloGreeting": "Hello, {0}! \uD83D\uDC4B",
     "FeatureTrack": "Track your Copilot usage across all Microsoft 365 apps",
     "FeaturePoints": "Earn 1 point for every prompt you send",
-    "FeatureLevels": "Level up from Bronze \u2192 Silver \u2192 Gold",
+    "FeatureLevels": "Level up from Explorer \u2192 Practitioner \u2192 Master",
     "FeatureLeaderboard": "Compete on global and team leaderboards",
     "GetStarted": "Get Started",
 
@@ -37,7 +37,7 @@ define([], function() {
     "RuleEarnTitle": "Earn Points",
     "RuleEarnBody": "1 point for every prompt you send. Points accumulate over the month and reset at month-end for a fresh competition.",
     "RuleLevelTitle": "Level Up",
-    "RuleLevelBody": "Reach Bronze, Silver, and Gold tiers as your usage grows. Badges are permanent \u2014 earn them once, keep them forever.",
+    "RuleLevelBody": "Reach Explorer, Practitioner, and Master tiers as your usage grows. Badges are permanent \u2014 earn them once, keep them forever.",
     "PrivacyTitle": "Privacy & Transparency",
     "PrivacyItem1": "Number of prompts sent to Copilot (content is never read)",
     "PrivacyItem2": "App used (Word, Excel, Outlook, Teams\u2026)",

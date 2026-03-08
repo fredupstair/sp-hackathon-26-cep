@@ -87,6 +87,7 @@ public class GraphClient
                         : (DateTime?)null;
 
                     if (created is null) continue;
+                    if (created.Value < fromUtc || created.Value >= toUtc) continue;
 
                     var key = (DateOnly.FromDateTime(created.Value), CepActivityLog.NormaliseAppClass(appClass));
                     aggregates[key] = aggregates.GetValueOrDefault(key) + 1;

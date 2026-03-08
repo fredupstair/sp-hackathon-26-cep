@@ -157,8 +157,8 @@ public class AdminApi
                 break;
             case "ceplevelup":
                 activityType = "cepLevelUp";
-                preview = "You reached Gold level! 🏆";
-                templateParams = new() { ["levelName"] = "Gold" };
+                preview = "You reached Master level! 🏆";
+                templateParams = new() { ["levelName"] = "Master" };
                 webUrl = config.NotificationUrlDashboard;
                 break;
             case "cepbadgeearned":

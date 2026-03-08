@@ -199,6 +199,23 @@ public class SharePointClient
             .ToList();
     }
 
+    /// <summary>
+    /// Returns ALL activity log rows for a user across all months.
+    /// </summary>
+    public async Task<List<CepActivityLog>> GetAllActivityLogsForUserAsync(
+        string aadUserId, CancellationToken ct = default)
+    {
+        var filter = $"fields/CEP_Log_AadUserId eq '{aadUserId}'";
+        var items = await GetAllItemsAsync(_listActivityLog, filter, ct);
+        return items
+            .Select(i =>
+            {
+                var id = i.TryGetValue("id", out var v) ? v?.ToString() ?? "" : "";
+                return CepActivityLog.FromSpFields(id, ExtractFields(i));
+            })
+            .ToList();
+    }
+
     /// <summary>Counts how many Win rows exist for this user on a specific day.</summary>
     public async Task<int> CountWinsForUserDayAsync(
         string aadUserId, DateOnly day, CancellationToken ct = default)

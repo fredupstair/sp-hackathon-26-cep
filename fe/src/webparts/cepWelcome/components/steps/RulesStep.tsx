@@ -60,7 +60,7 @@ export const RulesStep: React.FC<IRulesStepProps> = ({ onNext, onBack }) => (
         icon="RibbonSolid"
         color="#107c10"
         title="Level Up"
-        body="Reach Bronze, Silver, and Gold tiers as your usage grows. Badges are permanent — earn them once, keep them forever."
+        body="Reach Explorer, Practitioner, and Master tiers as your usage grows. Badges are permanent — earn them once, keep them forever."
       />
     </Stack>
 

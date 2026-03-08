@@ -53,11 +53,11 @@
         <Field ID="{A1B2C3D4-0001-0001-0001-000000000007}"
                Name="CEP_CurrentLevel"      DisplayName="Current Level"
                Type="Choice"                Group="CEP Columns"
-               Format="Dropdown"            Default="Bronze">
+               Format="Dropdown"            Default="Explorer">
           <CHOICES>
-            <CHOICE>Bronze</CHOICE>
-            <CHOICE>Silver</CHOICE>
-            <CHOICE>Gold</CHOICE>
+            <CHOICE>Explorer</CHOICE>
+            <CHOICE>Practitioner</CHOICE>
+            <CHOICE>Master</CHOICE>
           </CHOICES>
         </Field>
 
@@ -213,9 +213,9 @@
                Type="Choice"                Group="CEP Columns"
                Format="Dropdown">
           <CHOICES>
-            <CHOICE>Bronze</CHOICE>
-            <CHOICE>Silver</CHOICE>
-            <CHOICE>Gold</CHOICE>
+            <CHOICE>Explorer</CHOICE>
+            <CHOICE>Practitioner</CHOICE>
+            <CHOICE>Master</CHOICE>
           </CHOICES>
         </Field>
 

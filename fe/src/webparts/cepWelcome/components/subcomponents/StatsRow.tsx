@@ -1,5 +1,6 @@
 import * as React from 'react';
 import type { IUserSummary } from '../../../../services/CepApiModels';
+import { getLevelIcon, getLevelLabel, getNextLevelLabel, isTopLevel } from '../../../../services/CepLevelPresentation';
 import styles from '../CepWelcome.module.scss';
 import * as strings from 'CepWelcomeWebPartStrings';
 
@@ -25,14 +26,15 @@ export const StatsRow: React.FC<IStatsRowProps> = ({
   let nextLevelName = '';
   let pointsToGo = 0;
   let progressClass = styles.progressBronze;
+  const currentLabel = getLevelLabel(currentLevel);
 
-  if (currentLevel === 'Bronze') {
-    nextLevelName = 'Silver';
+  if (currentLabel === 'Explorer') {
+    nextLevelName = getNextLevelLabel(currentLevel);
     pointsToGo = Math.max(0, silverThreshold - monthlyPoints);
     progressPct = Math.min(monthlyPoints / silverThreshold, 1) * 100;
     progressClass = styles.progressBronze;
-  } else if (currentLevel === 'Silver') {
-    nextLevelName = 'Gold';
+  } else if (currentLabel === 'Practitioner') {
+    nextLevelName = getNextLevelLabel(currentLevel);
     pointsToGo = Math.max(0, goldThreshold - monthlyPoints);
     progressPct = Math.min(monthlyPoints / goldThreshold, 1) * 100;
     progressClass = styles.progressSilver;
@@ -47,7 +49,7 @@ export const StatsRow: React.FC<IStatsRowProps> = ({
       <div className={styles.statCard}>
         <div className={styles.statLabel}>{strings.Level}</div>
         <div className={styles.statValue} style={{ fontSize: 22 }}>
-          {currentLevel}
+          {getLevelIcon(currentLevel)} {getLevelLabel(currentLevel)}
         </div>
         <div className={styles.levelProgress}>
           <div className={styles.progressTrack}>
@@ -56,12 +58,12 @@ export const StatsRow: React.FC<IStatsRowProps> = ({
               style={{ width: `${progressPct}%` }}
             />
           </div>
-          {currentLevel !== 'Gold' ? (
+          {!isTopLevel(currentLevel) ? (
             <div className={styles.statSubValue}>
               {fmt(strings.PointsToNextLevel, pointsToGo, nextLevelName)}
             </div>
           ) : (
-            <div className={styles.statSubValue}>🏆 Max level reached!</div>
+            <div className={styles.statSubValue}>🏆 Master level reached!</div>
           )}
         </div>
       </div>

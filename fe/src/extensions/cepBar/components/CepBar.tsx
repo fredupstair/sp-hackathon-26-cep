@@ -3,6 +3,7 @@ import { Spinner, SpinnerSize } from '@fluentui/react';
 import * as strings from 'CepBarApplicationCustomizerStrings';
 import type { CepApiClient } from '../../../services/CepApiClient';
 import type { IUserSummary, ICepSuggestion } from '../../../services/CepApiModels';
+import { getLevelIcon, getLevelLabel, getNextLevelLabel, isTopLevel } from '../../../services/CepLevelPresentation';
 import { WinCallout } from './WinCallout';
 import styles from './CepBar.module.scss';
 
@@ -48,20 +49,18 @@ function computeStreak(recentActiveDays: string[]): number {
 }
 
 function levelColorClass(level: string): string {
-  if (level === 'Gold')   return styles.gold;
-  if (level === 'Silver') return styles.silver;
+  if (level === 'Gold' || level === 'Master') return styles.gold;
+  if (level === 'Silver' || level === 'Practitioner') return styles.silver;
   return styles.bronze;
 }
 
 function levelEmoji(level: string): string {
-  if (level === 'Gold')   return '🥇';
-  if (level === 'Silver') return '🥈';
-  return '🥉';
+  return getLevelIcon(level);
 }
 
 function progressClass(level: string): string {
-  if (level === 'Silver') return styles.progressSilver;
-  if (level === 'Gold')   return styles.progressGold;
+  if (level === 'Silver' || level === 'Practitioner') return styles.progressSilver;
+  if (level === 'Gold' || level === 'Master') return styles.progressGold;
   return styles.progressBronze;
 }
 
@@ -191,15 +190,16 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
     let progressPct: number;
     let nextLevelLabel: string;
     let ptToGo: number;
+    const levelLabel = getLevelLabel(level);
 
-    if (level === 'Bronze') {
+    if (levelLabel === 'Explorer') {
       progressPct   = Math.min(monthly / silverThreshold, 1) * 100;
       ptToGo        = Math.max(0, silverThreshold - monthly);
-      nextLevelLabel = 'Silver';
-    } else if (level === 'Silver') {
+      nextLevelLabel = getNextLevelLabel(level);
+    } else if (levelLabel === 'Practitioner') {
       progressPct   = Math.min(monthly / goldThreshold, 1) * 100;
       ptToGo        = Math.max(0, goldThreshold - monthly);
-      nextLevelLabel = 'Gold';
+      nextLevelLabel = getNextLevelLabel(level);
     } else {
       progressPct   = 100;
       ptToGo        = 0;
@@ -227,14 +227,14 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
 
         {/* Level pill */}
         <span className={`${styles.levelPill} ${levelColorClass(level)}`}>
-          {levelEmoji(level)} {level}
+          {levelEmoji(level)} {getLevelLabel(level)}
         </span>
 
         {/* Points */}
         <span className={styles.points}>{fmt(strings.BarPoints, monthly)}</span>
 
         {/* Progress bar */}
-        {level !== 'Gold' && (
+        {!isTopLevel(level) && (
           <span className={styles.progressGroup}>
             <span className={styles.progressTrack}>
               <span

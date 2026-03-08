@@ -13,6 +13,7 @@ import {
 import styles from './CepLeaderboard.module.scss';
 import type { ICepLeaderboardProps } from './ICepLeaderboardProps';
 import type { ILeaderboardEntry, ILeaderboardPage, LeaderboardScope } from '../../../services/CepApiModels';
+import { getLevelLabel } from '../../../services/CepLevelPresentation';
 import * as strings from 'CepLeaderboardWebPartStrings';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -47,6 +48,9 @@ const LEVEL_CLASS: Record<string, string> = {
   Bronze: styles.bronze,
   Silver: styles.silver,
   Gold: styles.gold,
+  Explorer: styles.bronze,
+  Practitioner: styles.silver,
+  Master: styles.gold,
 };
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -92,7 +96,7 @@ const PodiumCard: React.FC<IPodiumCardProps> = ({ entry, placement }) => {
       </div>
       <div className={styles.podiumMeta}>
         <span className={`${styles.levelPill} ${LEVEL_CLASS[entry.currentLevel] ?? ''}`}>
-          {entry.currentLevel}
+          {getLevelLabel(entry.currentLevel)}
         </span>
       </div>
       <div className={styles.podiumPoints}>{entry.monthlyPoints.toLocaleString()} pts</div>
@@ -119,7 +123,7 @@ const LeaderboardRow: React.FC<{ entry: ILeaderboardEntry }> = ({ entry }) => {
       <td className={styles.lbDeptCell}>{entry.department ?? '—'}</td>
       <td className={styles.lbLevelCell}>
         <span className={`${styles.levelPill} ${LEVEL_CLASS[entry.currentLevel] ?? ''}`}>
-          {entry.currentLevel}
+          {getLevelLabel(entry.currentLevel)}
         </span>
       </td>
       <td className={styles.lbPointsCell}>{entry.monthlyPoints.toLocaleString()}</td>

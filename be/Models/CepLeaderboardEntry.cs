@@ -21,7 +21,7 @@ public class CepLeaderboardEntry
     public string Team { get; set; } = "";
     public int MonthlyPoints { get; set; }
     public int Rank { get; set; }
-    public string Level { get; set; } = "Bronze";
+    public string Level { get; set; } = "Explorer";
 
     public Dictionary<string, object?> ToSpFields() => new()
     {
@@ -50,6 +50,6 @@ public class CepLeaderboardEntry
         Team = f.Str("CEP_LB_Team"),
         MonthlyPoints = f.Int("CEP_LB_MonthlyPoints"),
         Rank = f.Int("CEP_LB_Rank"),
-        Level = f.Str("CEP_LB_Level", "Bronze"),
+        Level = f.Str("CEP_LB_Level", "Explorer"),
     };
 }
