@@ -67,11 +67,13 @@ public class MeApi
         // Compute recent active days (last 2 months, excludes Win entries) for client-side streak calculation
         var currMonthKey = now.ToString("yyyy-MM");
         var prevMonthKey = now.AddMonths(-1).ToString("yyyy-MM");
-        var optInUtc = user.EnrollmentDate?.ToUniversalTime();
+        var optInDate = user.EnrollmentDate.HasValue
+            ? DateOnly.FromDateTime(user.EnrollmentDate.Value.ToUniversalTime())
+            : (DateOnly?)null;
         var currLogs = await _sp.GetAllActivityLogsForUserMonthAsync(aadUserId, currMonthKey, ct);
         var prevLogs = await _sp.GetAllActivityLogsForUserMonthAsync(aadUserId, prevMonthKey, ct);
         var recentActiveDays = currLogs.Concat(prevLogs)
-            .Where(l => !optInUtc.HasValue || l.UsageDate >= optInUtc.Value)
+            .Where(l => !optInDate.HasValue || DateOnly.FromDateTime(l.UsageDate) >= optInDate.Value)
             .Where(l => !l.IsWin && l.PromptCount > 0)
             .Select(l => l.UsageDate.ToString("yyyy-MM-dd"))
             .Distinct()
@@ -124,14 +126,16 @@ public class MeApi
         DateTime fromDate = DateTime.TryParse(fromStr, out var fd) ? fd : new DateTime(now.Year, now.Month, 1);
         DateTime toDate   = DateTime.TryParse(toStr,   out var td) ? td : new DateTime(now.Year, now.Month,
             DateTime.DaysInMonth(now.Year, now.Month));
-        var optInUtc = user.EnrollmentDate?.ToUniversalTime();
+        var optInDate = user.EnrollmentDate.HasValue
+            ? DateOnly.FromDateTime(user.EnrollmentDate.Value.ToUniversalTime())
+            : (DateOnly?)null;
 
         var month = fromDate.ToString("yyyy-MM");
         var logs = await _sp.GetAllActivityLogsForUserMonthAsync(aadUserId, month, ct);
         var endExclusive = toDate.Date.AddDays(1);
         logs = logs
             .Where(l => l.UsageDate >= fromDate.Date && l.UsageDate < endExclusive)
-            .Where(l => !optInUtc.HasValue || l.UsageDate >= optInUtc.Value)
+            .Where(l => !optInDate.HasValue || DateOnly.FromDateTime(l.UsageDate) >= optInDate.Value)
             .ToList();
 
         // Return breakdown by app + totals

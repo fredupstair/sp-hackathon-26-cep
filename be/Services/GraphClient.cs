@@ -90,6 +90,8 @@ public class GraphClient
                     if (created.Value < fromUtc || created.Value >= toUtc) continue;
 
                     var normalisedApp = CepActivityLog.NormaliseAppClass(appClass);
+                    _log.LogInformation("Graph interaction user={UserId} appClass={AppClass} normalised={Normalised} date={Date}",
+                        aadUserId, appClass, normalisedApp ?? "(excluded)", created.Value.ToString("yyyy-MM-dd"));
                     if (normalisedApp is null) continue; // excluded class (e.g. ThirdPartyCopilot)
 
                     var key = (DateOnly.FromDateTime(created.Value), normalisedApp);
