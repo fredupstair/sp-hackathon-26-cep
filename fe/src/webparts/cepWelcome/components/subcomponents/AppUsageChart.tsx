@@ -104,35 +104,54 @@ export const AppUsageChart: React.FC<IAppUsageChartProps> = ({ usage, loading })
     .map((appKey) => ({ appKey, promptCount: breakdownMap[appKey] ?? 0 }))
     .sort((a, b) => b.promptCount - a.promptCount);
 
-  const maxCount = allEntries[0].promptCount > 0 ? allEntries[0].promptCount : 1;
+  const totalCount = allEntries.reduce((sum, e) => sum + e.promptCount, 0);
+  const scale = totalCount > 0 ? totalCount : 1;
+
+  const usedEntries = allEntries.filter((e) => e.promptCount > 0);
+  const unusedEntries = allEntries.filter((e) => e.promptCount === 0);
+
+  const renderRow = (entry: { appKey: string; promptCount: number }, dimmed: boolean): JSX.Element => {
+    const pct = Math.round((entry.promptCount / scale) * 100);
+    return (
+      <div
+        key={entry.appKey}
+        className={`${styles.appBarRow} ${dimmed ? styles.appBarRowDimmed : ''}`}
+        title={APP_TOOLTIP[entry.appKey] ?? ''}
+      >
+        <div className={styles.appBarLabel}>
+          {APP_ICON[entry.appKey] && (
+            <Icon
+              iconName={APP_ICON[entry.appKey].iconName}
+              className={styles.appBarIcon}
+              style={{ color: dimmed ? undefined : APP_ICON[entry.appKey].color }}
+            />
+          )}
+          {APP_LABEL[entry.appKey] ?? entry.appKey}
+        </div>
+        <div className={`${styles.appBarTrack} ${dimmed ? styles.appBarTrackDimmed : ''}`}>
+          {!dimmed && (
+            <div
+              className={`${styles.appBarFill} ${APP_CLASS[entry.appKey] ?? styles.appM365App}`}
+              style={{ width: `${pct}%` }}
+            />
+          )}
+        </div>
+        <div className={`${styles.appBarCount} ${dimmed ? styles.appBarCountDimmed : ''}`}>
+          {dimmed ? '—' : `${fmt(strings.PromptCount, entry.promptCount)} · ${pct}%`}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className={styles.card}>
       <div className={styles.sectionTitle}>{strings.UsageBreakdownTitle}</div>
       <div className={styles.appBarList}>
-        {allEntries.map((entry) => (
-          <div key={entry.appKey} className={styles.appBarRow} title={APP_TOOLTIP[entry.appKey] ?? ''}>
-            <div className={styles.appBarLabel}>
-              {APP_ICON[entry.appKey] && (
-                <Icon
-                  iconName={APP_ICON[entry.appKey].iconName}
-                  className={styles.appBarIcon}
-                  style={{ color: APP_ICON[entry.appKey].color }}
-                />
-              )}
-              {APP_LABEL[entry.appKey] ?? entry.appKey}
-            </div>
-            <div className={styles.appBarTrack}>
-              <div
-                className={`${styles.appBarFill} ${APP_CLASS[entry.appKey] ?? styles.appM365App}`}
-                style={{ width: `${(entry.promptCount / maxCount) * 100}%` }}
-              />
-            </div>
-            <div className={styles.appBarCount}>
-              {fmt(strings.PromptCount, entry.promptCount)}
-            </div>
-          </div>
-        ))}
+        {usedEntries.map((entry) => renderRow(entry, false))}
+        {unusedEntries.length > 0 && usedEntries.length > 0 && (
+          <div className={styles.appBarDivider} />
+        )}
+        {unusedEntries.map((entry) => renderRow(entry, true))}
       </div>
     </div>
   );

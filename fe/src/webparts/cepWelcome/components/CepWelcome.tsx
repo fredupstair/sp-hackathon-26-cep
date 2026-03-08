@@ -491,7 +491,13 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
         />
         <StatsRow summary={userSummary} usage={usage} loading={monthSectionLoading} />
         <AppUsageChart usage={usage} loading={monthSectionLoading} />
-        <BadgeList badges={badges} loading={badgesSectionLoading} />
+        <BadgeList badges={badges.filter(b => {
+            // Determine the month this badge was earned.
+            // monthKey is set for most badges; FirstSteps uses earnedDate as fallback.
+            const badgeMonth = b.monthKey || (b.earnedDate ? b.earnedDate.substring(0, 7) : undefined);
+            // Show only badges earned on or before the selected month.
+            return !badgeMonth || badgeMonth <= month;
+          })} loading={badgesSectionLoading} />
         <MiniLeaderboard leaderboard={leaderboard} loading={monthSectionLoading} />
 
         {/* ── Settings section ── */}

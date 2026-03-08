@@ -58,6 +58,8 @@ export interface ICepBadge {
   badgeName: string;
   description: string;
   earnedDate: string;               // ISO date string
+  /** YYYY-MM of the month in which the badge was earned */
+  monthKey?: string;
   iconUrl?: string;
 }
 

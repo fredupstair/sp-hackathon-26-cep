@@ -881,9 +881,13 @@ $card-radius: 8px;
 
 .appBarRow {
   display: grid;
-  grid-template-columns: 130px 1fr 80px;
+  grid-template-columns: 130px 1fr 120px;
   align-items: center;
   gap: 10px;
+}
+
+.appBarRowDimmed {
+  opacity: 0.45;
 }
 
 .appBarLabel {
@@ -907,6 +911,16 @@ $card-radius: 8px;
   background: var(--neutralLighter, #f3f2f1);
   border-radius: 4px;
   overflow: hidden;
+}
+
+.appBarTrackDimmed {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--neutralLight, #edebe9) 0px,
+    var(--neutralLight, #edebe9) 4px,
+    transparent 4px,
+    transparent 8px
+  );
 }
 
 .appBarFill {
@@ -935,6 +949,16 @@ $card-radius: 8px;
   color: var(--neutralSecondary, #605e5c);
   text-align: right;
   white-space: nowrap;
+}
+
+.appBarCountDimmed {
+  color: var(--neutralTertiary, #a19f9d);
+}
+
+.appBarDivider {
+  height: 1px;
+  background: var(--neutralLight, #edebe9);
+  margin: 4px 0;
 }
 
 .emptyState {

@@ -202,5 +202,37 @@ public class AdminApi
         });
     }
 
+    // ------------------------------------------------------------------
+    // POST /api/ops/rebuild-leaderboard  – force leaderboard rebuild
+    // ------------------------------------------------------------------
+    [Function("AdminRebuildLeaderboard")]
+    public async Task<IActionResult> RebuildLeaderboardAsync(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "ops/rebuild-leaderboard")] HttpRequest req,
+        CancellationToken ct)
+    {
+        var correlationId = $"LB-MANUAL-{Guid.NewGuid():N}";
+        var runTime = DateTime.UtcNow;
+        _log.LogInformation("[{CorrId}] Manual leaderboard rebuild triggered", correlationId);
+
+        try
+        {
+            var config = await _sp.GetConfigAsync(ct);
+            await _orchestrator.RebuildLeaderboardsAsync(correlationId, runTime, config, ct);
+
+            var state = await _sp.GetSyncStateAsync(ct);
+            state.LastLeaderboardRebuildUtc = runTime;
+            await _sp.UpsertSyncStateAsync(state, ct);
+
+            _log.LogInformation("[{CorrId}] Manual leaderboard rebuild completed", correlationId);
+            return new OkObjectResult(new { status = "Success", correlationId, rebuiltAt = runTime });
+        }
+        catch (Exception ex)
+        {
+            _log.LogError(ex, "[{CorrId}] Manual leaderboard rebuild failed", correlationId);
+            return new ObjectResult(new { status = "Failure", correlationId, error = ex.Message })
+            { StatusCode = 500 };
+        }
+    }
+
     private record TestNotificationRequest(string? Upn, string? Type);
 }
