@@ -46,7 +46,7 @@ public class MeApi
         if (aadUserId is null) return Unauthorized();
 
         var user = await _sp.GetUserByAadIdAsync(aadUserId, ct);
-        if (user is null) return new NotFoundObjectResult("User not enrolled.");
+        if (user is null || !user.IsActive) return new NotFoundObjectResult("User not enrolled.");
 
         var now = DateTime.UtcNow;
         var month = req.Query["month"].FirstOrDefault() ?? now.ToString("yyyy-MM");
@@ -122,7 +122,7 @@ public class MeApi
         if (aadUserId is null) return Unauthorized();
 
         var user = await _sp.GetUserByAadIdAsync(aadUserId, ct);
-        if (user is null) return new NotFoundObjectResult("User not enrolled.");
+        if (user is null || !user.IsActive) return new NotFoundObjectResult("User not enrolled.");
 
         // Accept ?from=YYYY-MM-DD&to=YYYY-MM-DD; derive month from the from-date.
         // Fall back to the current month when parameters are missing.
@@ -179,7 +179,7 @@ public class MeApi
         if (aadUserId is null) return Unauthorized();
 
         var user = await _sp.GetUserByAadIdAsync(aadUserId, ct);
-        if (user is null) return new NotFoundObjectResult("User not enrolled.");
+        if (user is null || !user.IsActive) return new NotFoundObjectResult("User not enrolled.");
 
         var badges = await _sp.GetUserBadgesAsync(aadUserId, ct);
         return new OkObjectResult(badges.Select(b => new
@@ -233,7 +233,7 @@ public class MeApi
         if (aadUserId is null) return Unauthorized();
 
         var user = await _sp.GetUserByAadIdAsync(aadUserId, ct);
-        if (user is null) return new NotFoundObjectResult("User not enrolled.");
+        if (user is null || !user.IsActive) return new NotFoundObjectResult("User not enrolled.");
 
         using var reader = new StreamReader(req.Body);
         var body = await reader.ReadToEndAsync();
@@ -298,7 +298,7 @@ public class MeApi
         if (aadUserId is null) return Unauthorized();
 
         var user = await _sp.GetUserByAadIdAsync(aadUserId, ct);
-        if (user is null) return new NotFoundObjectResult("User not enrolled.");
+        if (user is null || !user.IsActive) return new NotFoundObjectResult("User not enrolled.");
 
         var monthKey = DateTime.UtcNow.ToString("yyyy-MM");
         var logs = await _sp.GetAllActivityLogsForUserMonthAsync(aadUserId, monthKey, ct);
