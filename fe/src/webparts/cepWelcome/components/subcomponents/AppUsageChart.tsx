@@ -8,6 +8,8 @@ interface IAppUsageChartProps {
   usage: IUserUsage | undefined;
   /** Show skeleton placeholders */
   loading?: boolean;
+  /** When true, renders without the outer card wrapper and section title (for use inside another card) */
+  embedded?: boolean;
 }
 
 const APP_LABEL: Record<string, string> = {
@@ -79,7 +81,7 @@ const fmt = (tpl: string, ...args: (string | number)[]): string =>
 
 const ALL_APP_KEYS = Object.keys(APP_LABEL);
 
-export const AppUsageChart: React.FC<IAppUsageChartProps> = ({ usage, loading }) => {
+export const AppUsageChart: React.FC<IAppUsageChartProps> = ({ usage, loading, embedded }) => {
   if (loading || !usage) {
     return (
       <div className={styles.card}>
@@ -143,16 +145,22 @@ export const AppUsageChart: React.FC<IAppUsageChartProps> = ({ usage, loading })
     );
   };
 
+  const list = (
+    <div className={styles.appBarList}>
+      {usedEntries.map((entry) => renderRow(entry, false))}
+      {unusedEntries.length > 0 && usedEntries.length > 0 && (
+        <div className={styles.appBarDivider} />
+      )}
+      {unusedEntries.map((entry) => renderRow(entry, true))}
+    </div>
+  );
+
+  if (embedded) return list;
+
   return (
     <div className={styles.card}>
       <div className={styles.sectionTitle}>{strings.UsageBreakdownTitle}</div>
-      <div className={styles.appBarList}>
-        {usedEntries.map((entry) => renderRow(entry, false))}
-        {unusedEntries.length > 0 && usedEntries.length > 0 && (
-          <div className={styles.appBarDivider} />
-        )}
-        {unusedEntries.map((entry) => renderRow(entry, true))}
-      </div>
+      {list}
     </div>
   );
 };

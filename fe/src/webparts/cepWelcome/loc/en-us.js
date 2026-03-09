@@ -161,6 +161,13 @@ define([], function() {
     "FilterWeek": "This week",
     "FilterMonth": "This month",
     "GetInspired": "Get inspired on Prompt Gallery",
+    "TabUniverse": "Universe",
+    "TabStats": "Stats",
+    "UniversePromptsLabel": "prompts",
+    "UniverseOfTotal": "of total",
+    "UniversePoints": "points",
+    "UniverseLockedWorlds": "🔒 Locked Worlds",
+    "UniverseLockedHint": "Use Copilot in {0} and unlock this world!",
 
     // App tooltips
     "AppTooltipWord": "Copilot interactions in Word",

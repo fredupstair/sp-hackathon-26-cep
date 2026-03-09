@@ -160,6 +160,13 @@ declare interface ICepWelcomeWebPartStrings {
   FilterWeek: string;
   FilterMonth: string;
   GetInspired: string;
+  TabUniverse: string;
+  TabStats: string;
+  UniversePromptsLabel: string;
+  UniverseOfTotal: string;
+  UniversePoints: string;
+  UniverseLockedWorlds: string;
+  UniverseLockedHint: string;
 
   // App tooltips
   AppTooltipWord: string;

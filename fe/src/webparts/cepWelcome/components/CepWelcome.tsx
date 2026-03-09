@@ -23,10 +23,10 @@ import { WelcomeStep }     from './steps/WelcomeStep';
 import { RulesStep }       from './steps/RulesStep';
 import { PreferencesStep } from './steps/PreferencesStep';
 import { ConsentStep }     from './steps/ConsentStep';
-import { DashboardHeader } from './subcomponents/DashboardHeader';
-import { StatsRow }        from './subcomponents/StatsRow';
-import { AppUsageChart }   from './subcomponents/AppUsageChart';
-import { BadgeList }       from './subcomponents/BadgeList';
+import { DashboardHeader }   from './subcomponents/DashboardHeader';
+import { StatsRow }          from './subcomponents/StatsRow';
+import { CopilotUniverse }   from './subcomponents/CopilotUniverse';
+import { BadgeList }         from './subcomponents/BadgeList';
 import { MiniLeaderboard } from './subcomponents/MiniLeaderboard';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -490,7 +490,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
           onNextMonth={this._handleNextMonth}
         />
         <StatsRow summary={userSummary} usage={usage} loading={monthSectionLoading} />
-        <AppUsageChart usage={usage} loading={monthSectionLoading} />
+        <CopilotUniverse usage={usage} loading={monthSectionLoading} />
         <BadgeList badges={badges.filter(b => {
             // Determine the month this badge was earned.
             // monthKey is set for most badges; FirstSteps uses earnedDate as fallback.
