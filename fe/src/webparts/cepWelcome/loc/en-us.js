@@ -93,6 +93,7 @@ define([], function() {
     "LastActivity": "Last activity: {0}",
     "PreferencesTitle": "Notification preferences",
     "NudgesToggleLabel": "Teams engagement nudges after 3+ days of inactivity",
+    "SettingsPanelTitle": "Settings",
 
     // Leave dialog
     "LeaveDialogTitle": "Cancel enrollment",

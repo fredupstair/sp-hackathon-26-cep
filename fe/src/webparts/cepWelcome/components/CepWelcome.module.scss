@@ -1198,10 +1198,48 @@ $card-radius: 8px;
   border-radius: 4px;
 }
 
-// ─── Settings section (enrolled view under dashboard) ─────────────────────────
-.settingsSection {
-  @include card-base;
-  margin-top: 4px;
+// ─── Header name row (display name + gear button) ─────────────────────────────
+.headerNameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.headerGearBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background 0.15s;
+
+  &:hover { background: var(--neutralLighter, #f3f2f1); }
+}
+
+// ─── Settings panel (slide-in) ────────────────────────────────────────────────
+.settingsPanelBody {
+  padding-top: 8px;
+}
+
+.settingsSectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.settingsSectionIcon {
+  font-size: 16px;
+  color: var(--themePrimary, #0078d4);
+}
+
+.settingsDivider {
+  height: 1px;
+  background: var(--neutralLight, #edebe9);
+  margin: 4px 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

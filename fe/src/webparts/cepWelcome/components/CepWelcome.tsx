@@ -6,6 +6,7 @@ import {
   DefaultButton, PrimaryButton,
   Toggle,
   Dialog, DialogType, DialogFooter,
+  Panel, PanelType,
 } from '@fluentui/react';
 import { DisplayMode } from '@microsoft/sp-core-library';
 import * as strings from 'CepWelcomeWebPartStrings';
@@ -84,6 +85,8 @@ interface ICepWelcomeState {
   leaderboard:      ILeaderboardPage | undefined;
   dashboardLoading: boolean;   // initial full load (all sections skeleton)
   monthLoading:     boolean;   // month change (only month-dependent sections skeleton)
+  showSettingsPanel: boolean;
+  nudgeSaving:       boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -113,8 +116,10 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
       usage:            undefined,
       badges:           [],
       leaderboard:      undefined,
-      dashboardLoading: false,
-      monthLoading:     false,
+      dashboardLoading:    false,
+      monthLoading:         false,
+      showSettingsPanel:    false,
+      nudgeSaving:          false,
     };
   }
 
@@ -328,10 +333,35 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
     }
   };
 
-  private _handleNudgeToggle = (_ev: React.MouseEvent<HTMLElement>, checked?: boolean): void => {
+  private _handleNudgeToggle = async (_ev: React.MouseEvent<HTMLElement>, checked?: boolean): Promise<void> => {
+    const { apiClient } = this.props;
     const { userSummary } = this.state;
-    if (!userSummary) return;
-    this.setState({ userSummary: { ...userSummary, isEngagementNudgesEnabled: !!checked } });
+    if (!userSummary || !apiClient) return;
+    const next = !!checked;
+    this.setState({ userSummary: { ...userSummary, isEngagementNudgesEnabled: next }, nudgeSaving: true });
+    try {
+      await apiClient.updateMePreferences({ isEngagementNudgesEnabled: next });
+    } catch {
+      // rollback on error
+      this.setState({ userSummary: { ...userSummary, isEngagementNudgesEnabled: !next } });
+    } finally {
+      this.setState({ nudgeSaving: false });
+    }
+  };
+
+  private _handleOpenSettings = async (): Promise<void> => {
+    const { apiClient } = this.props;
+    if (apiClient) {
+      try {
+        const prefs = await apiClient.getMePreferences();
+        this.setState((s) => ({
+          userSummary: s.userSummary
+            ? { ...s.userSummary, isEngagementNudgesEnabled: prefs.isEngagementNudgesEnabled }
+            : s.userSummary,
+        }));
+      } catch { /* show panel with cached value on error */ }
+    }
+    this.setState({ showSettingsPanel: true });
   };
 
   // ─── Month navigation ─────────────────────────────────────────────────────
@@ -452,20 +482,18 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
     }
   }
 
-  // ─── Enrolled view (Dashboard + Settings) ─────────────────────────────────
+  // ─── Enrolled view (Dashboard + Settings panel) ──────────────────────────
 
   private _renderEnrolledView(): React.ReactElement {
     const {
       userSummary, month, usage, badges, leaderboard,
       submitting, errorMessage, successMessage, showLeaveDialog,
-      dashboardLoading, monthLoading,
+      dashboardLoading, monthLoading, showSettingsPanel, nudgeSaving,
     } = this.state;
     if (!userSummary) return <></>;
 
     const isCurrentMonth = month === currentMonth();
-    // Month-dependent sections show skeleton on initial load or month change
     const monthSectionLoading = dashboardLoading || monthLoading;
-    // Badges only skeleton on initial load (they're month-independent)
     const badgesSectionLoading = dashboardLoading;
 
     return (
@@ -488,62 +516,82 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
           isCurrentMonth={isCurrentMonth}
           onPrevMonth={this._handlePrevMonth}
           onNextMonth={this._handleNextMonth}
+          onOpenSettings={this._handleOpenSettings}
         />
         <StatsRow summary={userSummary} usage={usage} loading={monthSectionLoading} />
         <CopilotUniverse usage={usage} loading={monthSectionLoading} />
         <BadgeList badges={badges.filter(b => {
-            // Determine the month this badge was earned.
-            // monthKey is set for most badges; FirstSteps uses earnedDate as fallback.
             const badgeMonth = b.monthKey || (b.earnedDate ? b.earnedDate.substring(0, 7) : undefined);
-            // Show only badges earned on or before the selected month.
             return !badgeMonth || badgeMonth <= month;
           })} loading={badgesSectionLoading} />
         <MiniLeaderboard leaderboard={leaderboard} loading={monthSectionLoading} />
 
-        {/* ── Settings section ── */}
-        <div className={styles.settingsSection}>
-          <Stack tokens={{ childrenGap: 12 }}>
-            <Text variant="mediumPlus">
-              <Icon iconName="Settings" /> {strings.PreferencesTitle}
-            </Text>
-            <Toggle
-              label={strings.NudgesToggleLabel}
-              onText={strings.NudgesOn}
-              offText={strings.NudgesOff}
-              checked={userSummary.isEngagementNudgesEnabled}
-              onChange={this._handleNudgeToggle}
-              inlineLabel
-            />
+        {/* ── Settings panel (slide-in) ── */}
+        <Panel
+          isOpen={showSettingsPanel}
+          onDismiss={() => this.setState({ showSettingsPanel: false })}
+          type={PanelType.smallFixedFar}
+          headerText={strings.SettingsPanelTitle}
+          closeButtonAriaLabel={strings.LeaveDialogCancel}
+          isLightDismiss
+        >
+          <Stack tokens={{ childrenGap: 20 }} className={styles.settingsPanelBody}>
+
+            {/* Notifications */}
+            <Stack tokens={{ childrenGap: 8 }}>
+              <Text variant="mediumPlus" className={styles.settingsSectionTitle}>
+                <Icon iconName="Ringer" className={styles.settingsSectionIcon} /> {strings.PreferencesTitle}
+              </Text>
+              <Toggle
+                label={strings.NudgesToggleLabel}
+                onText={strings.NudgesOn}
+                offText={strings.NudgesOff}
+                checked={userSummary.isEngagementNudgesEnabled}
+                onChange={this._handleNudgeToggle}
+                disabled={nudgeSaving}
+                inlineLabel
+              />
+            </Stack>
+
+            {/* Error */}
+            {errorMessage && (
+              <MessageBar messageBarType={MessageBarType.error}>{errorMessage}</MessageBar>
+            )}
+
+            {/* Divider */}
+            <div className={styles.settingsDivider} />
+
+            {/* Cancel enrollment */}
+            <Stack tokens={{ childrenGap: 8 }}>
+              <Text variant="mediumPlus" className={styles.settingsSectionTitle}>
+                <Icon iconName="Leave" className={styles.settingsSectionIcon} /> {strings.LeaveDialogTitle}
+              </Text>
+              <DefaultButton
+                text={submitting ? strings.LeaveButtonLoading : strings.LeaveButton}
+                iconProps={{ iconName: 'Leave' }}
+                disabled={submitting}
+                onClick={() => this.setState({ showLeaveDialog: true })}
+                className={styles.leaveButton}
+              />
+            </Stack>
           </Stack>
+        </Panel>
 
-          {/* Messages */}
-          {errorMessage   && <MessageBar messageBarType={MessageBarType.error  }>{errorMessage  }</MessageBar>}
-
-          {/* Leave */}
-          <DefaultButton
-            text={submitting ? strings.LeaveButtonLoading : strings.LeaveButton}
-            iconProps={{ iconName: 'Leave' }}
-            disabled={submitting}
-            onClick={() => this.setState({ showLeaveDialog: true })}
-            className={styles.leaveButton}
-          />
-
-          {/* Leave confirmation dialog */}
-          <Dialog
-            hidden={!showLeaveDialog}
-            onDismiss={() => this.setState({ showLeaveDialog: false })}
-            dialogContentProps={{
-              type:    DialogType.normal,
-              title:   strings.LeaveDialogTitle,
-              subText: strings.LeaveDialogMessage,
-            }}
-          >
-            <DialogFooter>
-              <PrimaryButton text={strings.LeaveDialogConfirm} onClick={this._handleLeave} />
-              <DefaultButton text={strings.LeaveDialogCancel} onClick={() => this.setState({ showLeaveDialog: false })} />
-            </DialogFooter>
-          </Dialog>
-        </div>
+        {/* ── Leave confirmation dialog (outside panel so it renders above it) ── */}
+        <Dialog
+          hidden={!showLeaveDialog}
+          onDismiss={() => this.setState({ showLeaveDialog: false })}
+          dialogContentProps={{
+            type:    DialogType.normal,
+            title:   strings.LeaveDialogTitle,
+            subText: strings.LeaveDialogMessage,
+          }}
+        >
+          <DialogFooter>
+            <PrimaryButton text={strings.LeaveDialogConfirm} onClick={this._handleLeave} />
+            <DefaultButton text={strings.LeaveDialogCancel} onClick={() => this.setState({ showLeaveDialog: false })} />
+          </DialogFooter>
+        </Dialog>
       </Stack>
     );
   }

@@ -23,6 +23,9 @@ define([], function() {
     "WinCalloutSubmit":        "+10 pt!",
     "WinLimitReached":         "Limite giornaliero di 10 win raggiunto. Riprova domani!",
     "WinAnimText":             "+{0} pt!",
+    // Bar – notification preferences
+    "NudgesTooltipOn":  "Nudge Teams attivi — clicca per silenziare",
+    "NudgesTooltipOff": "Nudge Teams silenziati — clicca per attivare",
     // Bar – suggestion
     "DismissSuggestion":   "Ignora",
     // Common

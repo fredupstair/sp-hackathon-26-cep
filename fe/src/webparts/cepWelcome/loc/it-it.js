@@ -93,6 +93,7 @@ define([], function() {
     "LastActivity": "Ultima attivit\u00e0: {0}",
     "PreferencesTitle": "Preferenze notifiche",
     "NudgesToggleLabel": "Notifiche di engagement su Teams dopo 3+ giorni di inattivit\u00e0",
+    "SettingsPanelTitle": "Impostazioni",
 
     // Leave dialog
     "LeaveDialogTitle": "Annulla iscrizione",

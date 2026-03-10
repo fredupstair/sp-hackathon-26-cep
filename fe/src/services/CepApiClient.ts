@@ -152,6 +152,30 @@ export class CepApiClient {
     return response.json() as Promise<ICepWinResponse>;
   }
 
+  // ─── Me: Preferences ──────────────────────────────────────────────────────
+
+  public async getMePreferences(): Promise<{ isEngagementNudgesEnabled: boolean }> {
+    const response = await this._client.get(
+      `${this._baseUrl}/api/me/preferences`,
+      AadHttpClient.configurations.v1,
+      { headers: this._defaultHeaders }
+    );
+    await this._assertOk(response);
+    return response.json() as Promise<{ isEngagementNudgesEnabled: boolean }>;
+  }
+
+  public async updateMePreferences(prefs: { isEngagementNudgesEnabled?: boolean }): Promise<void> {
+    const response = await this._client.post(
+      `${this._baseUrl}/api/me/preferences`,
+      AadHttpClient.configurations.v1,
+      {
+        body: JSON.stringify(prefs),
+        headers: { ...this._defaultHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+    await this._assertOk(response);
+  }
+
   // ─── Bar: Suggestion ───────────────────────────────────────────────────────
 
   /** Returns a contextual Copilot suggestion based on the user's least-used apps. */

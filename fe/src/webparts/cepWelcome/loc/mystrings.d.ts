@@ -92,6 +92,7 @@ declare interface ICepWelcomeWebPartStrings {
   LastActivity: string;
   PreferencesTitle: string;
   NudgesToggleLabel: string;
+  SettingsPanelTitle: string;
 
   // Leave dialog
   LeaveDialogTitle: string;

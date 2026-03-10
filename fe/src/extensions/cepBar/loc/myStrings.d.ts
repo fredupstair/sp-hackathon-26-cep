@@ -22,6 +22,9 @@ declare interface ICepBarApplicationCustomizerStrings {
   WinCalloutSubmit: string;
   WinLimitReached: string;
   WinAnimText: string;
+  // Bar – notification preferences
+  NudgesTooltipOn: string;
+  NudgesTooltipOff: string;
   // Bar – suggestion
   DismissSuggestion: string;
   // Common

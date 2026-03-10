@@ -9,6 +9,7 @@ interface IDashboardHeaderProps {
   isCurrentMonth: boolean;
   onPrevMonth: () => void;
   onNextMonth: () => void;
+  onOpenSettings: () => void;
 }
 
 function formatMonthLabel(month: string): string {
@@ -25,6 +26,7 @@ export const DashboardHeader: React.FC<IDashboardHeaderProps> = ({
   isCurrentMonth,
   onPrevMonth,
   onNextMonth,
+  onOpenSettings,
 }) => (
   <div className={styles.headerCard}>
     <Persona
@@ -35,7 +37,17 @@ export const DashboardHeader: React.FC<IDashboardHeaderProps> = ({
       imageUrl={`/_layouts/15/userphoto.aspx?AccountName=${encodeURIComponent(summary.email)}&Size=L`}
     />
     <div className={styles.headerInfo}>
-      <div className={styles.displayName}>{summary.displayName}</div>
+      <div className={styles.headerNameRow}>
+        <div className={styles.displayName}>{summary.displayName}</div>
+        <button
+          className={styles.headerGearBtn}
+          onClick={onOpenSettings}
+          title="Settings"
+          aria-label="Settings"
+        >
+          ⚙️
+        </button>
+      </div>
       <div className={styles.headerMeta}>
         {summary.department}
         {summary.team ? ` · ${summary.team}` : ''}

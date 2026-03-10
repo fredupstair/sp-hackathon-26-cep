@@ -28,10 +28,58 @@ $card-radius: 8px;
   }
 }
 
-// ─── Loading ──────────────────────────────────────────────────────────────────
-.spinnerWrap {
-  text-align: center;
-  padding: 48px;
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+.skeletonBlock {
+  margin-bottom: 20px;
+}
+
+.skeletonPodium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
+  @include card-base;
+  padding: 20px 16px 0;
+}
+
+.skeletonPodCard {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 140px;
+  padding: 12px 12px 0;
+  border-radius: $card-radius $card-radius 0 0;
+  background: var(--neutralLighter, #f3f2f1);
+  border: 1px solid var(--neutralLight, #edebe9);
+}
+
+.skeletonPodFirst  { min-height: 180px; }
+.skeletonPodSecond { min-height: 150px; }
+.skeletonPodThird  { min-height: 130px; }
+
+.skeletonMiniRow {
+  margin-bottom: 8px;
+}
+
+.skeletonTable {
+  @include card-base;
+  padding: 0;
+  overflow: hidden;
+}
+
+.skeletonTableHeader {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--neutralLight, #edebe9);
+  background: var(--neutralLighterAlt, #faf9f8);
+}
+
+.skeletonTableRow {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--neutralLight, #edebe9);
+
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 // ─── Header row ───────────────────────────────────────────────────────────────

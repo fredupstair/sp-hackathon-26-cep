@@ -23,6 +23,8 @@ namespace CepFunctions.Functions;
 /// GET /api/me/badges
 /// POST /api/me/wins
 /// GET /api/me/suggestion
+/// GET /api/me/preferences
+/// POST /api/me/preferences
 /// </summary>
 public class MeApi
 {
@@ -283,6 +285,57 @@ public class MeApi
             totalMonthlyPoints = user.MonthlyPoints,
             todayWinCount = todayCount + 1,
         });
+    }
+
+    // ------------------------------------------------------------------
+    // GET /api/me/preferences
+    // ------------------------------------------------------------------
+
+    [Function("MeGetPreferences")]
+    public async Task<IActionResult> GetPreferencesAsync(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "me/preferences")] HttpRequest req,
+        CancellationToken ct)
+    {
+        var aadUserId = GetCallerId(req);
+        if (aadUserId is null) return Unauthorized();
+
+        var user = await _sp.GetUserByAadIdAsync(aadUserId, ct);
+        if (user is null || !user.IsActive) return new NotFoundObjectResult("User not enrolled.");
+
+        return new OkObjectResult(new { isEngagementNudgesEnabled = user.IsEngagementNudgesEnabled });
+    }
+
+    // ------------------------------------------------------------------
+    // POST /api/me/preferences
+    // ------------------------------------------------------------------
+
+    private record PreferencesRequest(bool? IsEngagementNudgesEnabled);
+
+    [Function("MeUpdatePreferences")]
+    public async Task<IActionResult> UpdatePreferencesAsync(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "me/preferences")] HttpRequest req,
+        CancellationToken ct)
+    {
+        var aadUserId = GetCallerId(req);
+        if (aadUserId is null) return Unauthorized();
+
+        var user = await _sp.GetUserByAadIdAsync(aadUserId, ct);
+        if (user is null || !user.IsActive) return new NotFoundObjectResult("User not enrolled.");
+
+        PreferencesRequest? body;
+        try
+        {
+            body = await JsonSerializer.DeserializeAsync<PreferencesRequest>(req.Body, _jsonOpts, ct);
+        }
+        catch { return new BadRequestObjectResult("Invalid JSON body."); }
+
+        if (body is null) return new BadRequestObjectResult("Request body is required.");
+
+        if (body.IsEngagementNudgesEnabled.HasValue)
+            user.IsEngagementNudgesEnabled = body.IsEngagementNudgesEnabled.Value;
+
+        await _sp.UpsertUserAsync(user, ct);
+        return new OkObjectResult(new { isEngagementNudgesEnabled = user.IsEngagementNudgesEnabled });
     }
 
     // ------------------------------------------------------------------

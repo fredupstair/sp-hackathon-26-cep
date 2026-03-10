@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {
-  Spinner,
-  SpinnerSize,
+  Shimmer,
+  ShimmerElementType,
   MessageBar,
   MessageBarType,
   DefaultButton,
@@ -52,6 +52,108 @@ const LEVEL_CLASS: Record<string, string> = {
   Practitioner: styles.silver,
   Master: styles.gold,
 };
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+const ROW_NAME_WIDTHS = [162, 135, 188, 145, 172, 130, 160, 152];
+
+const SkeletonPodCol: React.FC<{ cls: string }> = ({ cls }) => (
+  <div className={`${styles.skeletonPodCard} ${cls}`}>
+    <div className={styles.skeletonMiniRow}>
+      <Shimmer shimmerElements={[{ type: ShimmerElementType.line, width: '50%', height: 28 }, { type: ShimmerElementType.gap, width: '50%' }]} />
+    </div>
+    <div className={styles.skeletonMiniRow}>
+      <Shimmer shimmerElements={[{ type: ShimmerElementType.line, width: '85%', height: 12 }, { type: ShimmerElementType.gap, width: '15%' }]} />
+    </div>
+    <div className={styles.skeletonMiniRow}>
+      <Shimmer shimmerElements={[{ type: ShimmerElementType.line, width: '55%', height: 10 }, { type: ShimmerElementType.gap, width: '45%' }]} />
+    </div>
+    <div className={styles.skeletonMiniRow}>
+      <Shimmer shimmerElements={[{ type: ShimmerElementType.line, width: '45%', height: 18 }, { type: ShimmerElementType.gap, width: '55%' }]} />
+    </div>
+  </div>
+);
+
+// Data-only skeleton — used for re-loads (tab / month change)
+const DataSkeleton: React.FC = () => (
+  <div>
+    {/* Stats chip */}
+    <Shimmer
+      className={styles.skeletonBlock}
+      shimmerElements={[
+        { type: ShimmerElementType.line, width: 140, height: 24 },
+        { type: ShimmerElementType.gap,  width: '100%' },
+      ]}
+    />
+    {/* Podium */}
+    <div className={`${styles.skeletonPodium} ${styles.skeletonBlock}`}>
+      <SkeletonPodCol cls={styles.skeletonPodSecond} />
+      <SkeletonPodCol cls={styles.skeletonPodFirst}  />
+      <SkeletonPodCol cls={styles.skeletonPodThird}  />
+    </div>
+    {/* Table */}
+    <div className={`${styles.skeletonTable} ${styles.skeletonBlock}`}>
+      <div className={styles.skeletonTableHeader}>
+        <Shimmer shimmerElements={[
+          { type: ShimmerElementType.line, width: 36,  height: 10 },
+          { type: ShimmerElementType.gap,  width: 24 },
+          { type: ShimmerElementType.line, width: 110, height: 10 },
+          { type: ShimmerElementType.gap,  width: 24 },
+          { type: ShimmerElementType.line, width: 90,  height: 10 },
+          { type: ShimmerElementType.gap,  width: 24 },
+          { type: ShimmerElementType.line, width: 58,  height: 10 },
+          { type: ShimmerElementType.gap,  width: 24 },
+          { type: ShimmerElementType.line, width: 52,  height: 10 },
+          { type: ShimmerElementType.gap,  width: '100%' },
+        ]} />
+      </div>
+      {ROW_NAME_WIDTHS.map((nameWidth, i) => (
+        <div key={i} className={styles.skeletonTableRow}>
+          <Shimmer shimmerElements={[
+            { type: ShimmerElementType.line, width: 32,        height: 14 },
+            { type: ShimmerElementType.gap,  width: 24 },
+            { type: ShimmerElementType.line, width: nameWidth,  height: 14 },
+            { type: ShimmerElementType.gap,  width: 24 },
+            { type: ShimmerElementType.line, width: 90,        height: 14 },
+            { type: ShimmerElementType.gap,  width: 24 },
+            { type: ShimmerElementType.line, width: 58,        height: 20 },
+            { type: ShimmerElementType.gap,  width: 24 },
+            { type: ShimmerElementType.line, width: 50,        height: 14 },
+            { type: ShimmerElementType.gap,  width: '100%' },
+          ]} />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+// Full skeleton — used only on first mount
+const LeaderboardSkeleton: React.FC = () => (
+  <div>
+    {/* Header: title + month picker */}
+    <Shimmer
+      className={styles.skeletonBlock}
+      shimmerElements={[
+        { type: ShimmerElementType.line, width: '28%', height: 26 },
+        { type: ShimmerElementType.gap,  width: '44%' },
+        { type: ShimmerElementType.line, width: '24%', height: 28 },
+      ]}
+    />
+    {/* Pivot scopes */}
+    <Shimmer
+      className={styles.skeletonBlock}
+      shimmerElements={[
+        { type: ShimmerElementType.line, width: 72,  height: 16 },
+        { type: ShimmerElementType.gap,  width: 16 },
+        { type: ShimmerElementType.line, width: 100, height: 16 },
+        { type: ShimmerElementType.gap,  width: 16 },
+        { type: ShimmerElementType.line, width: 72,  height: 16 },
+        { type: ShimmerElementType.gap,  width: '100%' },
+      ]}
+    />
+    <DataSkeleton />
+  </div>
+);
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
@@ -135,6 +237,9 @@ const LeaderboardRow: React.FC<{ entry: ILeaderboardEntry }> = ({ entry }) => {
 
 export default class CepLeaderboard extends React.Component<ICepLeaderboardProps, ICepLeaderboardState> {
 
+  // true after the first successful load; used to decide skeleton depth on re-loads
+  private _hasLoaded = false;
+
   constructor(props: ICepLeaderboardProps) {
     super(props);
     this.state = {
@@ -181,6 +286,7 @@ export default class CepLeaderboard extends React.Component<ICepLeaderboardProps
     const { scope, month } = this.state;
     try {
       const result: ILeaderboardPage = await apiClient.getLeaderboard(scope, month, 1, PAGE_SIZE);
+      this._hasLoaded = true;
       this.setState({
         loadState: 'ready',
         buffer: result.entries,
@@ -273,12 +379,8 @@ export default class CepLeaderboard extends React.Component<ICepLeaderboardProps
     return (
       <section className={`${styles.cepLeaderboard} ${hasTeamsContext ? styles.teams : ''}`}>
 
-        {/* ── Loading ── */}
-        {loadState === 'loading' && (
-          <div className={styles.spinnerWrap}>
-            <Spinner size={SpinnerSize.large} label={strings.Loading} />
-          </div>
-        )}
+        {/* ── Loading: full skeleton on first mount only ── */}
+        {loadState === 'loading' && !this._hasLoaded && <LeaderboardSkeleton />}
 
         {/* ── Error ── */}
         {loadState === 'error' && (
@@ -298,8 +400,8 @@ export default class CepLeaderboard extends React.Component<ICepLeaderboardProps
           </MessageBar>
         )}
 
-        {/* ── Ready ── */}
-        {loadState === 'ready' && (
+        {/* ── Shell: header + scope tabs kept alive during re-loads ── */}
+        {(loadState === 'ready' || (loadState === 'loading' && this._hasLoaded)) && (
           <>
             {/* Header */}
             <div className={styles.headerRow}>
@@ -330,7 +432,15 @@ export default class CepLeaderboard extends React.Component<ICepLeaderboardProps
               <PivotItem headerText={strings.FilterDepartment} itemKey="department" />
               <PivotItem headerText={strings.FilterTeam} itemKey="team" />
             </Pivot>
+          </>
+        )}
 
+        {/* ── Data skeleton during tab / month re-loads ── */}
+        {loadState === 'loading' && this._hasLoaded && <DataSkeleton />}
+
+        {/* ── Data ── */}
+        {loadState === 'ready' && (
+          <>
             {/* Stats */}
             <div className={styles.statsBar}>
               <span className={styles.statChip}>

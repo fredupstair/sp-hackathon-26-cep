@@ -73,6 +73,8 @@ interface ICepBarState {
   winAnim: boolean;
   winAnimText: string;
   suggestionDismissed: boolean;
+  nudgesEnabled: boolean;
+  nudgeSaving: boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -93,6 +95,8 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
       winAnim: false,
       winAnimText: '',
       suggestionDismissed: false,
+      nudgesEnabled: true,
+      nudgeSaving: false,
     };
   }
 
@@ -132,7 +136,7 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
         suggestion = await apiClient.getSuggestion();
       } catch { /* ignore */ }
 
-      this.setState({ loadState: 'ready', summary, streak, suggestion });
+      this.setState({ loadState: 'ready', summary, streak, suggestion, nudgesEnabled: summary.isEngagementNudgesEnabled });
     } catch {
       this.setState({ loadState: 'error' });
     }
@@ -157,12 +161,37 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
     setTimeout(() => this.setState({ winAnim: false }), 1600);
   };
 
+  private _toggleNudges = async (): Promise<void> => {
+    const { apiClient } = this.props;
+    if (!apiClient || this.state.nudgeSaving) return;
+    const next = !this.state.nudgesEnabled;
+    this.setState({ nudgesEnabled: next, nudgeSaving: true });
+    try {
+      await apiClient.updateMePreferences({ isEngagementNudgesEnabled: next });
+    } catch {
+      this.setState({ nudgesEnabled: !next });  // rollback on error
+    } finally {
+      this.setState({ nudgeSaving: false });
+    }
+  };
+
   private _toggleOpen = (): void => {
+    const opening = !this.state.open;
     this.setState((s) => ({ open: !s.open, showWin: false }));
+    if (opening) {
+      this._fetchNudgePreference().catch(() => { /* keep cached value */ });
+    }
+  };
+
+  private _fetchNudgePreference = async (): Promise<void> => {
+    const { apiClient } = this.props;
+    if (!apiClient) return;
+    const prefs = await apiClient.getMePreferences();
+    this.setState({ nudgesEnabled: prefs.isEngagementNudgesEnabled });
   };
 
   public render(): React.ReactElement {
-    const { loadState, summary, suggestion, streak, open, showWin, winAnim, winAnimText, suggestionDismissed } = this.state;
+    const { loadState, summary, suggestion, streak, open, showWin, winAnim, winAnimText, suggestionDismissed, nudgesEnabled, nudgeSaving } = this.state;
     const { dashboardPageUrl, optinPageUrl, silverThreshold, goldThreshold } = this.props;
 
     // Silently hide when not configured or error
@@ -229,10 +258,24 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
           <div className={styles.flyout}>
             {/* Header */}
             <div className={styles.flyoutHeader}>
-              <span className={`${styles.levelPill} ${levelColorClass(level)}`}>
-                {getLevelIcon(level)} {levelLabel}
-              </span>
-              <span className={styles.flyoutPoints}>{fmt(strings.BarPoints, monthly)}</span>
+              <div className={styles.flyoutNameRow}>
+                <span className={styles.flyoutDisplayName}>{s.displayName}</span>
+                <button
+                  className={styles.nudgeBtn}
+                  onClick={this._toggleNudges}
+                  title={nudgesEnabled ? strings.NudgesTooltipOn : strings.NudgesTooltipOff}
+                  aria-label={nudgesEnabled ? strings.NudgesTooltipOn : strings.NudgesTooltipOff}
+                  disabled={nudgeSaving}
+                >
+                  {nudgesEnabled ? '🔔' : '🔕'}
+                </button>
+              </div>
+              <div className={styles.flyoutLevelRow}>
+                <span className={`${styles.levelPill} ${levelColorClass(level)}`}>
+                  {getLevelIcon(level)} {levelLabel}
+                </span>
+                <span className={styles.flyoutPoints}>{fmt(strings.BarPoints, monthly)}</span>
+              </div>
             </div>
 
             {/* Progress */}
