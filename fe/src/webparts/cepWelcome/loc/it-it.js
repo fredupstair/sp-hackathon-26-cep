@@ -127,6 +127,11 @@ define([], function() {
     "CopilotLoadingHint3": "Sto preparando la risposta migliore\u2026",
     "CopilotLoadingHint4": "Ci sto lavorando\u2026",
     "CopilotLoadingHint5": "Ci siamo quasi\u2026",
+    // AI personalised welcome — static prefix (typed immediately on click)
+    "AiWelcomeStaticIntro": "Ciao **{0}**! Sono contento che tu sia qui. Copilot per Microsoft 365 \u00e8 il tuo AI companion \u2014 funziona direttamente in **Teams**, **Outlook**, **Word**, **Excel** e in tutte le app che gi\u00e0 usi ogni giorno.{1} Ecco cosa pu\u00f2 fare concretamente per te:",
+    "AiWelcomeStaticRoleHint": " Pu\u00f2 sicuramente aiutarti per tematiche relative a **{0}**.",
+    "AiWelcomeClosing": "Che dici, vuoi iniziare?",
+
     "CopilotChatUserMessage": "Hey Copilot, come puoi aiutarmi al lavoro? \ud83d\ude80",
 
     // Inline welcome editor (edit-mode, in-webpart)

@@ -62,18 +62,16 @@ export const QUICK_PROMPTS: IQuickPrompt[] = [
  * Short personalised welcome prompt — used at runtime for each end user.
  * Produces a 2–3 sentence message tailored to the individual's name, role, and department.
  */
-export const PERSONALIZED_WELCOME_PROMPT = `The user is asking how Microsoft 365 Copilot can help them in their daily work. Answer with a short, practical reply tailored to their job role.
+export const PERSONALIZED_WELCOME_PROMPT = `You are continuing a personalised welcome message for a new Microsoft 365 Copilot user. The opening greeting has already been written — do NOT repeat it.
+Output ONLY 4–5 bullet points (each line must start with "- ") showing specific, practical ways Microsoft 365 Copilot can help this user, tailored to their job role and/or department.
 
 Rules:
-- Start with a warm greeting using their first name — always wrap the first name in **bold** (e.g. **Giulia**)
-- Give exactly 3 concrete examples of how Copilot can help them, based on their specific role and/or department (e.g. drafting emails, summarising meetings, analysing data, creating presentations)
-- Each example should be a brief phrase, naturally woven into 2–3 flowing sentences — NOT a bulleted list
-- Close with one short sentence inviting the user to join the Copilot Engagement Program to track their progress, earn points, and climb the leaderboard
-- Tone: friendly, practical, encouraging — no corporate jargon
-- Length: max 30 words — be as concise as possible
-- Output ONLY the response text — no titles, no quotes, no meta-commentary
-- Bold ONLY the user's first name — nothing else
-- No citations, no hyperlinks, no footnotes`;
+- Each bullet: one concrete, specific Copilot action (max 12 words per bullet)
+- Tailor every example to the user's role/department — be specific, not generic
+- No greeting, no "Hi", no intro sentence, no closing sentence, no meta-commentary
+- Each bullet MUST start with "- " (hyphen + space)
+- No citations, no footnotes, no links
+- Output ONLY the bullet lines, nothing else`;
 
 export const COPILOT_SYSTEM_PROMPT = `You are a professional copywriter helping organisations encourage employee adoption of Microsoft 365 Copilot.
 

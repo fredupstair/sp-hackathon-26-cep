@@ -3,20 +3,64 @@ import { Stack, Text, PrimaryButton, Icon } from '@fluentui/react';
 import * as strings from 'CepWelcomeWebPartStrings';
 import styles from '../CepWelcome.module.scss';
 
-/** Converts **word** tokens to <strong> spans, returns a React.ReactNode array */
-function renderBoldText(text: string): React.ReactNode[] {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>;
+/**
+ * Renders text that may contain:
+ *  - **bold** markers  → <strong>
+ *  - \n line breaks   → <br /> + block layout
+ *  - • bullet lines   → flex row with a styled dot
+ */
+function renderFormattedText(text: string, trailingNode?: React.ReactNode): React.ReactNode[] {
+  // Normalize literal \u2022 escape sequences (Copilot sometimes sends them as text)
+  const normalised = text.replace(/\\u2022\s*/g, '- ');
+  const lines = normalised.split('\n').filter(l => l.length > 0);
+  return lines.map((line, lineIdx) => {
+    const isLast = lineIdx === lines.length - 1;
+    const isBullet = line.startsWith('- ') || line.startsWith('\u2022 ');
+    const content  = isBullet ? line.slice(2) : line;
+    const segments = content.split(/(\*\*[^*]+\*\*)/g);
+    const boldParts: React.ReactNode[] = segments.map((seg, si) =>
+      seg.startsWith('**') && seg.endsWith('**')
+        ? <strong key={`s-${lineIdx}-${si}`}>{seg.slice(2, -2)}</strong>
+        : seg
+    );
+    if (isBullet) {
+      return (
+        <div key={`line-${lineIdx}`} className={styles.bulletLine}>
+          <span className={styles.bulletDot}>•</span>
+          <span>{boldParts}{isLast && trailingNode}</span>
+        </div>
+      );
+    } else {
+      return <div key={`line-${lineIdx}`} className={styles.textLine}>{boldParts}{isLast && trailingNode}</div>;
     }
-    return part;
   });
 }
+
+/** Copilot logo: shows a placeholder SVG. Pass `copilotLogoUrl` prop to use your own image. */
+const CopilotLogoIcon: React.FC<{ src?: string; className?: string }> = ({ src, className }) =>
+  src
+    ? <img src={src} className={className} alt="Copilot" />
+    : (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" className={className} aria-hidden="true">
+        <defs>
+          <linearGradient id="cg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#6B3FA0" />
+            <stop offset="60%" stopColor="#2563EB" />
+            <stop offset="100%" stopColor="#00B4C8" />
+          </linearGradient>
+        </defs>
+        <circle cx="16" cy="16" r="16" fill="url(#cg)" />
+        <polygon points="16,8 17.8,14.2 24,14.2 19,18.1 21,24 16,20.2 11,24 13,18.1 8,14.2 14.2,14.2" fill="white" opacity="0.92" />
+      </svg>
+    );
 
 export interface IWelcomeStepProps {
   welcomeText: string;
   userName: string;
+  /** Circular profile photo URL (from Graph /me/photo/$value) */
+  userPhotoUrl?: string;
+  /** Optional URL for the Copilot logo (absolute URL or SharePoint-hosted path). Falls back to built-in placeholder SVG. */
+  copilotLogoUrl?: string;
   /** AI-personalised text (streamed progressively) */
   aiWelcomeText?: string;
   /** True while the conversation is being created — shows bouncing dots */
@@ -28,7 +72,7 @@ export interface IWelcomeStepProps {
   onNext: () => void;
 }
 
-export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName, aiWelcomeText, aiWelcomeLoading, aiWelcomeStreaming, onStartChat, onNext }) => {
+export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName, userPhotoUrl, copilotLogoUrl, aiWelcomeText, aiWelcomeLoading, aiWelcomeStreaming, onStartChat, onNext }) => {
   const displayText = (welcomeText ?? '').trim();
   const firstName = userName.split(' ')[0];
 
@@ -69,7 +113,7 @@ export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName
         setBlink(true);
         // Each blink burst lasts ~1.5s (3 × 0.5s animation), then turns off
         setTimeout(() => setBlink(false), 1500);
-      }, 5000);
+      }, 3000);
     }
     prevInProgress.current = aiInProgress;
     return undefined;
@@ -107,7 +151,7 @@ export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName
       {/* Static welcome text box — always visible, never overridden */}
       <div className={styles.welcomeTextBox}>
         <Text variant="medium" className={styles.welcomeText}>
-          {renderBoldText(displayText)}
+          {renderFormattedText(displayText)}
         </Text>
       </div>
 
@@ -128,7 +172,9 @@ export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName
           <div className={styles.chatRow + ' ' + styles.chatRowUser}>
             <div className={styles.chatBubbleUser}>
               <div className={styles.chatBubbleUserName}>
-                <Icon iconName="Contact" className={styles.chatAvatarIcon} />
+              {userPhotoUrl
+                ? <img src={userPhotoUrl} className={styles.userAvatar} alt={firstName} />
+                : <Icon iconName="Contact" className={styles.chatAvatarIcon} />}
                 <Text variant="smallPlus" className={styles.chatNameLabel}>{firstName}</Text>
               </div>
               <Text variant="medium">{strings.CopilotChatUserMessage}</Text>
@@ -139,7 +185,7 @@ export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName
           <div className={styles.chatRow + ' ' + styles.chatRowCopilot}>
             <div className={styles.chatBubbleCopilot}>
               <div className={styles.chatBubbleCopilotName}>
-                <Icon iconName="ChatBot" className={styles.copilotBubbleIcon} />
+                <CopilotLogoIcon src={copilotLogoUrl} className={styles.copilotLogoImg} />
                 <Text variant="smallPlus" className={styles.copilotBubbleLabel}>Copilot</Text>
               </div>
               {aiWelcomeLoading && !aiWelcomeText ? (
@@ -155,12 +201,12 @@ export const WelcomeStep: React.FC<IWelcomeStepProps> = ({ welcomeText, userName
                 </div>
               ) : (
                 <div className={styles.copilotBubbleBody}>
-                  <Text variant="medium">
-                    {renderBoldText(aiWelcomeText!)}
-                    {aiWelcomeStreaming && (
-                      <span className={styles.streamingCursor} />
+                  <div className={styles.copilotBubbleText}>
+                    {renderFormattedText(
+                      aiWelcomeText!,
+                      aiWelcomeStreaming ? <span className={styles.streamingCursor} /> : undefined
                     )}
-                  </Text>
+                  </div>
                   {!aiWelcomeStreaming && aiWelcomeText && (
                     <div className={styles.aiBadge}>
                       ✨ {strings.AiWelcomeBadge}

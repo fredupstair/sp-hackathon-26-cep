@@ -117,6 +117,9 @@ declare interface ICepWelcomeWebPartStrings {
   ClearWelcomeText: string;
 
   // AI personalised welcome (end-user)
+  AiWelcomeStaticIntro: string;
+  AiWelcomeStaticRoleHint: string;
+  AiWelcomeClosing: string;
   AiWelcomeGenerating: string;
   AiWelcomeBadge: string;
   CopilotBubbleLabel: string;

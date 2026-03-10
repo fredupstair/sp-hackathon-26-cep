@@ -146,6 +146,7 @@ export class CopilotChatService {
     organizationName: string,
     onChunk: (accumulatedText: string) => void,
     conversationId?: string,
+    staticPrefix?: string,
   ): Promise<{ text: string; fromFallback: boolean }> {
     try {
       const convId = conversationId ?? await this.createConversation();
@@ -153,17 +154,18 @@ export class CopilotChatService {
       const roleContext = [jobTitle, department].filter(Boolean).join(', ');
       const userContext =
         `User: ${firstName}${roleContext ? ` (${roleContext})` : ''}. ` +
-        `Organisation: "${organizationName || 'our company'}". Write the short welcome message now.`;
+        `Organisation: "${organizationName || 'our company'}". Write the bullet points now.`;
       const fullPrompt = `${PERSONALIZED_WELCOME_PROMPT}\n\n${userContext}`;
 
-      const text = await this._sendStreamMessage(convId, fullPrompt, onChunk);
+      const text = await this._sendStreamMessage(convId, fullPrompt, onChunk, staticPrefix);
       return { text, fromFallback: false };
     } catch {
-      // If streaming fails, try non-streaming as fallback
+      // Streaming failed — fall back to non-streaming then static fallback
       try {
         const result = await this.generatePersonalizedText(displayName, jobTitle, department, organizationName);
-        onChunk(result.text);
-        return result;
+        const combined = staticPrefix ? `${staticPrefix}\n${result.text}` : result.text;
+        onChunk(combined);
+        return { text: combined, fromFallback: result.fromFallback };
       } catch {
         const fallbackText = CopilotChatService.generatePersonalizedFallbackText(displayName, jobTitle, organizationName);
         onChunk(fallbackText);
@@ -176,11 +178,16 @@ export class CopilotChatService {
    * POST /beta/copilot/conversations/{id}/chatOverStream
    * Returns a text/event-stream (SSE). Each event is a copilotConversation
    * whose messages array contains the accumulated assistant text.
+   *
+   * When staticPrefix is provided it is typed out immediately (before the
+   * HTTP response even arrives), so the user sees instant feedback. The
+   * Copilot bullet-point response is then appended seamlessly.
    */
   private async _sendStreamMessage(
     conversationId: string,
     text: string,
     onChunk: (accumulated: string) => void,
+    staticPrefix?: string,
   ): Promise<string> {
     const body = {
       message: { text },
@@ -190,52 +197,36 @@ export class CopilotChatService {
       },
     };
 
-    // Use responseType 'raw' to get the native Response for SSE parsing
-    const rawResponse: Response = await (this._graphClient
-      .api(`/copilot/conversations/${conversationId}/chatOverStream`)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .version('beta') as any)
-      .responseType('raw')
-      .post(body);
+    // ── State shared between reveal timer and SSE loop ────────────────────────
+    let targetText  = staticPrefix ?? '';  // grows: staticPrefix + '\n' + copilot chunks
+    let copilotText = '';                  // tracks just the Copilot contribution
+    let revealedLen = 0;
+    let streamDone  = false;
+    const staticPrefixLen = staticPrefix?.length ?? 0;
+    const TICK_MS = 40;   // ms between each reveal step
+    // Prefix phase: 1 char / 40ms ≈ 25 chars/sec — comfortable typewriter feel
+    // Copilot phase: 5 chars / 40ms ≈ 125 chars/sec — fast reveal of bullets
 
-    if (!rawResponse.body) {
-      throw new Error('No response body from chatOverStream');
-    }
-
-    const reader = rawResponse.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    // ── Smooth typewriter reveal ──────────────────────────────────────────────
-    // SSE events fill targetText; a parallel timer reveals characters at an
-    // adaptive pace: slow when the unrevealed buffer is thin (so it never
-    // fully catches up during streaming), faster when there is plenty of
-    // runway or the stream has finished.
-    let targetText = '';        // Full accumulated text from SSE so far
-    let revealedLen = 0;        // How many characters have been shown via onChunk
-    let streamDone = false;     // True once the SSE read loop finishes
-    const BUFFER_CHARS = 120;   // Accumulate this many chars before starting reveal
-    const TICK_MS = 25;         // Base interval between reveals
-
+    // ── Reveal timer starts IMMEDIATELY so the static prefix types right away ─
+    // setInterval fires between every async await, so it runs while the HTTP
+    // request is in-flight — giving the impression of instant response.
     const revealDone = new Promise<void>((resolve) => {
       const tick = setInterval(() => {
-        // Don't start until we have enough runway (or the stream already ended)
-        if (targetText.length < BUFFER_CHARS && !streamDone) return;
-
         const slack = targetText.length - revealedLen;
         let chars: number;
 
-        if (streamDone) {
-          // Stream finished — flush remaining text quickly but still smoothly
-          chars = Math.max(3, Math.ceil(slack / 15));
+        if (revealedLen < staticPrefixLen) {
+          chars = 1;   // Slow typewriter for the static prefix
+        } else if (streamDone) {
+          chars = Math.max(3, Math.ceil(slack / 10));  // Flush bullets quickly
         } else if (slack > 80) {
-          chars = 3;   // Plenty of buffer, reveal at normal speed
+          chars = 5;
         } else if (slack > 40) {
-          chars = 2;   // Buffer shrinking, ease off
+          chars = 3;
         } else if (slack > 15) {
-          chars = 1;   // Running low, drip-feed to avoid catching up
+          chars = 2;
         } else {
-          chars = 0;   // Nearly caught up, wait for more SSE data
+          chars = 0;   // Waiting for more SSE data
         }
 
         if (chars > 0 && revealedLen < targetText.length) {
@@ -250,51 +241,68 @@ export class CopilotChatService {
       }, TICK_MS);
     });
 
-    // ── SSE read loop ─────────────────────────────────────────────────────────
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
+    // ── HTTP fetch + SSE loop run in parallel with the reveal timer ───────────
+    // JS event loop: setInterval fires during every 'await', so the timer
+    // types the static prefix while we wait for the API response.
+    try {
+      // Use responseType 'raw' to get the native Response for SSE parsing
+      const rawResponse: Response = await (this._graphClient
+        .api(`/copilot/conversations/${conversationId}/chatOverStream`)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .version('beta') as any)
+        .responseType('raw')
+        .post(body);
 
-      buffer += decoder.decode(value, { stream: true });
+      if (!rawResponse.body) throw new Error('No response body from chatOverStream');
 
-      // SSE format: "data: {JSON}\nid:N\n\n" — blank line separates events
-      const parts = buffer.split('\n');
-      buffer = parts.pop() ?? '';
+      const reader  = rawResponse.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      const sep = staticPrefix ? '\n' : '';
 
-      let jsonAccumulator = '';
-      let inDataBlock = false;
+      // ── SSE read loop ───────────────────────────────────────────────────────
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-      for (const line of parts) {
-        if (line.startsWith('data: ')) {
-          inDataBlock = true;
-          jsonAccumulator = line.slice(6);
-        } else if (inDataBlock && line.trim() === '') {
-          // Blank line = end of this SSE event
-          inDataBlock = false;
-          if (jsonAccumulator.trim()) {
-            try {
-              const parsed = JSON.parse(jsonAccumulator);
-              const messages: Array<{ text?: string }> = parsed?.messages ?? [];
-              // Always take the LAST message — it is the assistant response.
-              if (messages.length > 0) {
-                const assistantText = (messages[messages.length - 1].text ?? '').trim();
-                if (assistantText && assistantText.length > targetText.length) {
-                  targetText = assistantText;
+        buffer += decoder.decode(value, { stream: true });
+
+        // SSE format: "data: {JSON}\nid:N\n\n" — blank line separates events
+        const parts = buffer.split('\n');
+        buffer = parts.pop() ?? '';
+
+        let jsonAccumulator = '';
+        let inDataBlock = false;
+
+        for (const line of parts) {
+          if (line.startsWith('data: ')) {
+            inDataBlock = true;
+            jsonAccumulator = line.slice(6);
+          } else if (inDataBlock && line.trim() === '') {
+            inDataBlock = false;
+            if (jsonAccumulator.trim()) {
+              try {
+                const parsed = JSON.parse(jsonAccumulator);
+                const messages: Array<{ text?: string }> = parsed?.messages ?? [];
+                if (messages.length > 0) {
+                  const chunk = (messages[messages.length - 1].text ?? '').trim();
+                  if (chunk && chunk.length > copilotText.length) {
+                    copilotText = chunk;
+                    targetText = `${staticPrefix ?? ''}${sep}${copilotText}`;
+                  }
                 }
-              }
-            } catch { /* skip malformed JSON */ }
+              } catch { /* skip malformed JSON */ }
+            }
+            jsonAccumulator = '';
+          } else if (inDataBlock) {
+            if (line.startsWith('id:') || line.startsWith('event:') || line.startsWith('retry:')) continue;
+            jsonAccumulator += line;
           }
-          jsonAccumulator = '';
-        } else if (inDataBlock) {
-          if (line.startsWith('id:') || line.startsWith('event:') || line.startsWith('retry:')) {
-            continue;
-          }
-          jsonAccumulator += line;
         }
       }
-    }
+    } catch { /* swallow — timer will flush whatever targetText we have so far */ }
 
-    // SSE stream finished — let the reveal timer catch up to the final text
+    // Let the reveal timer catch up to the final targetText
     streamDone = true;
     await revealDone;
 

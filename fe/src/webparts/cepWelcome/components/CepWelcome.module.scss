@@ -218,6 +218,22 @@ $card-radius: 8px;
   color: var(--themePrimary);
 }
 
+.userAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--themeLighter, #deecf9);
+  flex-shrink: 0;
+}
+
+.copilotLogoImg {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
 .chatNameLabel {
   font-weight: 600;
   font-size: 12px;
@@ -297,6 +313,32 @@ $card-radius: 8px;
 
 .copilotBubbleBody {
   line-height: 1.55;
+}
+
+.copilotBubbleText {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--bodyText, #323130);
+}
+
+.textLine {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.bulletLine {
+  display: flex;
+  gap: 6px;
+  margin: 1px 0;
+  align-items: flex-start;
+  line-height: 1.5;
+}
+
+.bulletDot {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #6b3fa0;
+  font-weight: 600;
 }
 
 .streamingCursor {

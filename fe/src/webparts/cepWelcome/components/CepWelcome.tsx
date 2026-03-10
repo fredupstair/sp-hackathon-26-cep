@@ -77,6 +77,7 @@ interface ICepWelcomeState {
   aiWelcomeText:    string;
   aiWelcomeLoading: boolean;
   aiWelcomeStreaming: boolean;
+  userPhotoUrl:     string;
   // prefetched user profile
   jobTitle:         string;
   editingWelcome:   boolean;
@@ -116,6 +117,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
       aiWelcomeText:    '',
       aiWelcomeLoading: false,
       aiWelcomeStreaming: false,
+      userPhotoUrl:     '',
       jobTitle:         '',
       editingWelcome:   props.displayMode === DisplayMode.Edit && !props.welcomeText?.trim(),
       month:            currentMonth(),
@@ -239,6 +241,14 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
   private async _fetchUserProfile(): Promise<void> {
     const { graphClient } = this.props;
     if (!graphClient) return;
+    // Best-effort: fetch profile photo in parallel (does not block profile load)
+    graphClient.api('/me/photo/$value').version('v1.0').get()
+      .then((blob: Blob) => {
+        if (blob instanceof Blob) {
+          this.setState({ userPhotoUrl: URL.createObjectURL(blob) });
+        }
+      })
+      .catch(() => { /* photo not available */ });
     try {
       const me = await graphClient
         .api('/me')
@@ -271,13 +281,27 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
     // Consume the pre-created conversation ID (if available) and clear it
     const preConvId = this._preCreatedConvId;
     this._preCreatedConvId = undefined;
+    this._preCreatedConvId = undefined;
+
+    // Show the rotating-hints loader for 4 seconds before typing begins
+    await new Promise<void>(resolve => setTimeout(resolve, 4000));
 
     try {
       const { jobTitle, department } = this.state;
       const service = new CopilotChatService(graphClient);
 
+      // Build a static greeting that types out immediately while the API is in flight
+      const firstName = userDisplayName.split(' ')[0];
+      const role = jobTitle || department;
+      const roleHint = role ? strings.AiWelcomeStaticRoleHint.replace('{0}', role) : '';
+      const staticPrefix = strings.AiWelcomeStaticIntro
+        .replace('{0}', firstName)
+        .replace('{1}', roleHint);
+
       // Switch from loading dots to streaming cursor on first chunk
+      let latestText = staticPrefix;
       const onChunk = (text: string): void => {
+        latestText = text;
         this.setState({ aiWelcomeText: text, aiWelcomeLoading: false, aiWelcomeStreaming: true });
       };
 
@@ -288,10 +312,14 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
         organizationName,
         onChunk,
         preConvId,
+        staticPrefix,
       );
 
-      // Stream complete
-      this.setState({ aiWelcomeStreaming: false });
+      // Stream complete — append closing sentence on a new line
+      this.setState({
+        aiWelcomeText: latestText + '\n' + strings.AiWelcomeClosing,
+        aiWelcomeStreaming: false,
+      });
     } catch {
       this.setState({ aiWelcomeLoading: false, aiWelcomeStreaming: false });
     }
@@ -448,7 +476,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
     const {
       currentStep, department, team,
       enableNudges, consentChecked, submitting, errorMessage,
-      aiWelcomeText, aiWelcomeLoading, aiWelcomeStreaming,
+      aiWelcomeText, aiWelcomeLoading, aiWelcomeStreaming, userPhotoUrl,
     } = this.state;
     const { userDisplayName, welcomeText } = this.props;
 
@@ -458,6 +486,8 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
           <WelcomeStep
             welcomeText={welcomeText}
             userName={userDisplayName}
+            userPhotoUrl={userPhotoUrl}
+            copilotLogoUrl="/sites/Copilot-Engagement-Program/SiteAssets/copilot-color.png"
             aiWelcomeText={aiWelcomeText}
             aiWelcomeLoading={aiWelcomeLoading}
             aiWelcomeStreaming={aiWelcomeStreaming}
