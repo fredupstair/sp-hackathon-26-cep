@@ -158,7 +158,7 @@ export class CepApiClient {
     const response = await this._client.get(
       `${this._baseUrl}/api/me/preferences`,
       AadHttpClient.configurations.v1,
-      { headers: this._defaultHeaders }
+      { headers: { ...this._defaultHeaders, 'Cache-Control': 'no-cache' } }
     );
     await this._assertOk(response);
     return response.json() as Promise<{ isEngagementNudgesEnabled: boolean }>;

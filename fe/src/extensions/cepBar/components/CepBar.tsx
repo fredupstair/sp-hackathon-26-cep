@@ -75,6 +75,7 @@ interface ICepBarState {
   suggestionDismissed: boolean;
   nudgesEnabled: boolean;
   nudgeSaving: boolean;
+  nudgeChecking: boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -97,6 +98,7 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
       suggestionDismissed: false,
       nudgesEnabled: true,
       nudgeSaving: false,
+      nudgeChecking: false,
     };
   }
 
@@ -177,9 +179,15 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
 
   private _toggleOpen = (): void => {
     const opening = !this.state.open;
-    this.setState((s) => ({ open: !s.open, showWin: false }));
+    this.setState((s) => ({
+      open: !s.open,
+      showWin: false,
+      nudgeChecking: opening,
+    }));
     if (opening) {
-      this._fetchNudgePreference().catch(() => { /* keep cached value */ });
+      this._fetchNudgePreference()
+        .catch(() => { /* keep cached value */ })
+        .finally(() => this.setState({ nudgeChecking: false }));
     }
   };
 
@@ -191,7 +199,7 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
   };
 
   public render(): React.ReactElement {
-    const { loadState, summary, suggestion, streak, open, showWin, winAnim, winAnimText, suggestionDismissed, nudgesEnabled, nudgeSaving } = this.state;
+    const { loadState, summary, suggestion, streak, open, showWin, winAnim, winAnimText, suggestionDismissed, nudgesEnabled, nudgeSaving, nudgeChecking } = this.state;
     const { dashboardPageUrl, optinPageUrl, silverThreshold, goldThreshold } = this.props;
 
     // Silently hide when not configured or error
@@ -265,9 +273,9 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
                   onClick={this._toggleNudges}
                   title={nudgesEnabled ? strings.NudgesTooltipOn : strings.NudgesTooltipOff}
                   aria-label={nudgesEnabled ? strings.NudgesTooltipOn : strings.NudgesTooltipOff}
-                  disabled={nudgeSaving}
+                  disabled={nudgeSaving || nudgeChecking}
                 >
-                  {nudgesEnabled ? '🔔' : '🔕'}
+                  {nudgeChecking ? '🔔' : nudgesEnabled ? '🔔' : '🔕'}
                 </button>
               </div>
               <div className={styles.flyoutLevelRow}>

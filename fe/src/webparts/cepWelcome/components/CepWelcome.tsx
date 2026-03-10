@@ -349,19 +349,24 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
     }
   };
 
-  private _handleOpenSettings = async (): Promise<void> => {
+  private _handleOpenSettings = (): void => {
+    // Open the panel immediately, disable toggle while fetching fresh data
+    this.setState({ showSettingsPanel: true, nudgeSaving: true });
     const { apiClient } = this.props;
-    if (apiClient) {
-      try {
-        const prefs = await apiClient.getMePreferences();
+    if (!apiClient) {
+      this.setState({ nudgeSaving: false });
+      return;
+    }
+    apiClient.getMePreferences()
+      .then((prefs) => {
         this.setState((s) => ({
           userSummary: s.userSummary
             ? { ...s.userSummary, isEngagementNudgesEnabled: prefs.isEngagementNudgesEnabled }
             : s.userSummary,
         }));
-      } catch { /* show panel with cached value on error */ }
-    }
-    this.setState({ showSettingsPanel: true });
+      })
+      .catch(() => { /* keep cached value on error */ })
+      .finally(() => this.setState({ nudgeSaving: false }));
   };
 
   // ─── Month navigation ─────────────────────────────────────────────────────
