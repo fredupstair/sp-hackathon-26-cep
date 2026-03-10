@@ -5,6 +5,7 @@ import type { CepApiClient } from '../../../services/CepApiClient';
 import type { IUserSummary, ICepSuggestion } from '../../../services/CepApiModels';
 import { getLevelIcon, getLevelLabel, getNextLevelLabel, isTopLevel } from '../../../services/CepLevelPresentation';
 import { WinCallout } from './WinCallout';
+import { JoinOverlay } from './JoinOverlay';
 import styles from './CepBar.module.scss';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -70,6 +71,7 @@ interface ICepBarState {
   streak: number;
   open: boolean;
   showWin: boolean;
+  showJoin: boolean;
   winAnim: boolean;
   winAnimText: string;
   suggestionDismissed: boolean;
@@ -93,6 +95,7 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
       streak: 0,
       open: false,
       showWin: false,
+      showJoin: false,
       winAnim: false,
       winAnimText: '',
       suggestionDismissed: false,
@@ -199,7 +202,7 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
   };
 
   public render(): React.ReactElement {
-    const { loadState, summary, suggestion, streak, open, showWin, winAnim, winAnimText, suggestionDismissed, nudgesEnabled, nudgeSaving, nudgeChecking } = this.state;
+    const { loadState, summary, suggestion, streak, open, showWin, showJoin, winAnim, winAnimText, suggestionDismissed, nudgesEnabled, nudgeSaving, nudgeChecking } = this.state;
     const { dashboardPageUrl, optinPageUrl, silverThreshold, goldThreshold } = this.props;
 
     // Silently hide when not configured or error
@@ -221,10 +224,22 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
     if (loadState === 'not_enrolled') {
       return (
         <div className={styles.cepHost} ref={this._hostRef}>
-          <a href={optinPageUrl || '#'} className={styles.chipNotEnrolled} style={{ textDecoration: 'none' }}>
-            <span className={styles.programName}>✦ CEP</span>
+          <div
+            className={styles.chipNotEnrolled}
+            onClick={() => this.setState({ showJoin: true })}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') this.setState({ showJoin: true }); }}
+          >
+            <span className={styles.programName}>✦ Copilot Engagement Program</span>
             <span className={styles.joinBtn}>{strings.BarNotEnrolled}</span>
-          </a>
+          </div>
+          {showJoin && (
+            <JoinOverlay
+              programUrl={optinPageUrl || '#'}
+              onDismiss={() => this.setState({ showJoin: false })}
+            />
+          )}
         </div>
       );
     }

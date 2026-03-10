@@ -7,6 +7,7 @@ declare interface ICepBarApplicationCustomizerStrings {
   BarRank: string;
   BarNotEnrolled: string;
   BarNotEnrolledDesc: string;
+  JoinOverlayCta: string;
   BarViewDashboard: string;
   // Bar – streak / progress
   StreakLabel: string;

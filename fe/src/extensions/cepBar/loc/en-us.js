@@ -6,8 +6,9 @@ define([], function() {
     "BarPoints":           "{0} pts",
     "BarLevel":            "Level: {0}",
     "BarRank":             "Rank #{0}",
-    "BarNotEnrolled":      "Join CEP →",
+    "BarNotEnrolled":      "Join",
     "BarNotEnrolledDesc":  "Join the program and earn points using Copilot!",
+    "JoinOverlayCta":      "Join the program →",
     "BarViewDashboard":    "My Dashboard",
     // Bar – streak / progress
     "StreakLabel":         "{0}d",

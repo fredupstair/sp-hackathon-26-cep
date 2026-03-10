@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.25/MicrosoftTeams.schema.json",
-  "version": "1.1.0",
+  "version": "1.3.0",
   "manifestVersion": "1.25",
   "id": "1336459f-9891-4da1-8f8f-300a2368c01b",
   "name": {
@@ -15,7 +15,7 @@
   },
   "description": {
     "short": "Gamify your Copilot usage – earn points, badges, and climb the leaderboard!",
-    "full": "The Copilot Engagement Program tracks your Microsoft 365 Copilot usage (opt-in), awards points for every prompt, assigns levels (Bronze/Silver/Gold), unlocks badges, and publishes a monthly leaderboard. Stay motivated with Teams notifications for milestones, badge achievements, and leaderboard updates."
+    "full": "The Copilot Engagement Program tracks your Microsoft 365 Copilot usage (opt-in), awards points for every prompt, assigns levels (Explorer/Practitioner/Master), unlocks badges, and publishes a monthly leaderboard. Stay motivated with Teams notifications for milestones, badge achievements, and leaderboard updates."
   },
   "icons": {
     "outline": "outline.png",
@@ -28,6 +28,18 @@
       "name": "Home",
       "contentUrl": "https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/SitePages/CePWelcome.aspx",
       "websiteUrl": "https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/_layouts/15/embed.aspx?source=https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/SitePages/CePWelcome.aspx",
+      "scopes": [
+        "personal"
+      ],
+      "context": [
+        "personalTab"
+      ]
+    },
+    {
+      "entityId": "a089112b-59d8-4670-ad0c-1f0034d4072e",
+      "name": "Leaderboard",
+      "contentUrl": "https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/SitePages/CePLearderboard.aspx",
+      "websiteUrl": "https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/_layouts/15/embed.aspx?source=https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/SitePages/CePLearderboard.aspx",
       "scopes": [
         "personal"
       ],

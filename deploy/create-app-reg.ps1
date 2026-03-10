@@ -254,6 +254,50 @@ if (-not [string]::IsNullOrWhiteSpace($existingPreAuth)) {
 }
 
 # ---------------------------------------------------------------------------
+# 5.7 Pre-authorize Microsoft Teams clients
+#     1fec8e78-bce4-4aaf-ab1b-5451cc387264  – Teams web client
+#     5e3ce6c0-2b1f-4285-8d4b-75ee78787346  – Teams desktop / mobile client
+#     Required so that the Teams tab can acquire tokens for this API
+#     without triggering an extra consent prompt.
+# ---------------------------------------------------------------------------
+Info "Pre-authorizing Microsoft Teams clients..."
+
+$teamsClientIds = @(
+    "1fec8e78-bce4-4aaf-ab1b-5451cc387264",
+    "5e3ce6c0-2b1f-4285-8d4b-75ee78787346"
+)
+
+foreach ($teamsClientId in $teamsClientIds) {
+    $existingTeamsPreAuth = az ad app show --id $appObjId `
+        --query "api.preAuthorizedApplications[?appId=='$teamsClientId'].appId | [0]" `
+        --output tsv 2>$null
+
+    if (-not [string]::IsNullOrWhiteSpace($existingTeamsPreAuth)) {
+        Ok "Teams client $teamsClientId already pre-authorized – skipping"
+    } else {
+        $teamsPreAuthPatch = @{
+            api = @{
+                preAuthorizedApplications = @(
+                    @{
+                        appId                  = $teamsClientId
+                        delegatedPermissionIds = @($scopeId)
+                    }
+                )
+            }
+        } | ConvertTo-Json -Depth 10 -Compress
+
+        $tmpTeamsPreAuth = [System.IO.Path]::GetTempFileName() + ".json"
+        $teamsPreAuthPatch | Set-Content -Path $tmpTeamsPreAuth -Encoding UTF8
+        az rest --method PATCH `
+            --uri "https://graph.microsoft.com/v1.0/applications/$appObjId" `
+            --headers "Content-Type=application/json" `
+            --body "@$tmpTeamsPreAuth" --output none 2>$null
+        Remove-Item $tmpTeamsPreAuth -Force -ErrorAction SilentlyContinue
+        Ok "Teams client $teamsClientId pre-authorized for scope '$scopeId'"
+    }
+}
+
+# ---------------------------------------------------------------------------
 # 6. Admin consent (grant application permissions)
 # ---------------------------------------------------------------------------
 Info "Granting admin consent..."

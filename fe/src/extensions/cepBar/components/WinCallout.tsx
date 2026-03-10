@@ -3,20 +3,27 @@ import { Callout, DirectionalHint } from '@fluentui/react';
 import * as strings from 'CepBarApplicationCustomizerStrings';
 import styles from './CepBar.module.scss';
 
-const APP_OPTIONS: Array<{ key: string; text: string }> = [
-  { key: 'Word',        text: 'Word' },
-  { key: 'Excel',       text: 'Excel' },
-  { key: 'PowerPoint',  text: 'PowerPoint' },
-  { key: 'Outlook',     text: 'Outlook' },
-  { key: 'Teams',       text: 'Teams' },
-  { key: 'OneNote',     text: 'OneNote' },
-  { key: 'Loop',        text: 'Loop' },
-  { key: 'BizChat',     text: 'Copilot Chat' },
-  { key: 'WebChat',     text: 'Web Chat' },
-  { key: 'M365App',     text: 'M365 App' },
-  { key: 'Forms',       text: 'Forms' },
-  { key: 'SharePoint',  text: 'SharePoint' },
-  { key: 'Whiteboard',  text: 'Whiteboard' },
+interface IAppOption {
+  key: string;
+  text: string;
+  initial: string;
+  bg: string;
+}
+
+const APP_OPTIONS: IAppOption[] = [
+  { key: 'Word',        text: 'Word',         initial: 'W',  bg: '#185ABD' },
+  { key: 'Excel',       text: 'Excel',        initial: 'X',  bg: '#107C41' },
+  { key: 'PowerPoint',  text: 'PPT',          initial: 'P',  bg: '#C43E1C' },
+  { key: 'Outlook',     text: 'Outlook',      initial: 'O',  bg: '#0078D4' },
+  { key: 'Teams',       text: 'Teams',        initial: 'T',  bg: '#6264A7' },
+  { key: 'OneNote',     text: 'OneNote',      initial: 'N',  bg: '#7719AA' },
+  { key: 'Loop',        text: 'Loop',         initial: 'L',  bg: '#0F6CBD' },
+  { key: 'BizChat',     text: 'Copilot Chat', initial: '✨', bg: '#0F6CBD' },
+  { key: 'WebChat',     text: 'Web Chat',     initial: '🌐', bg: '#4A4A6A' },
+  { key: 'M365App',     text: 'M365 App',     initial: 'M',  bg: '#D83B01' },
+  { key: 'Forms',       text: 'Forms',        initial: 'F',  bg: '#007744' },
+  { key: 'SharePoint',  text: 'SharePoint',   initial: 'SP', bg: '#0078D4' },
+  { key: 'Whiteboard',  text: 'Whiteboard',   initial: 'WB', bg: '#0091DA' },
 ];
 
 interface IWinCalloutProps {
@@ -81,16 +88,26 @@ export class WinCallout extends React.Component<IWinCalloutProps, IWinCalloutSta
 
           <div className={styles.winCalloutField}>
             <label className={styles.winCalloutLabel}>{strings.WinCalloutApp}</label>
-            <select
-              className={styles.winCalloutSelect}
-              value={appKey}
-              onChange={(e) => this.setState({ appKey: e.target.value })}
-              disabled={submitting}
-            >
+            <div className={styles.appGrid}>
               {APP_OPTIONS.map((o) => (
-                <option key={o.key} value={o.key}>{o.text}</option>
+                <button
+                  key={o.key}
+                  type="button"
+                  className={`${styles.appBtn} ${appKey === o.key ? styles.appBtnSelected : ''}`}
+                  onClick={() => this.setState({ appKey: o.key })}
+                  disabled={submitting}
+                  title={o.text}
+                >
+                  <div
+                    className={styles.appIcon}
+                    style={{ background: o.bg }}
+                  >
+                    {o.initial}
+                  </div>
+                  <span className={styles.appLabel}>{o.text}</span>
+                </button>
               ))}
-            </select>
+            </div>
           </div>
 
           <div className={styles.winCalloutField}>

@@ -624,6 +624,12 @@
               <pnp:DataValue FieldName="CEP_Cfg_Value">UTC</pnp:DataValue>
               <pnp:DataValue FieldName="CEP_Cfg_Category">general</pnp:DataValue>
             </pnp:DataRow>
+            <!-- ── UI URLs ── -->
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">JoinProgramUrl</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Value">https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program</pnp:DataValue>
+              <pnp:DataValue FieldName="CEP_Cfg_Category">ui</pnp:DataValue>
+            </pnp:DataRow>
             <!-- ── Notification URLs ── -->
             <pnp:DataRow>
               <pnp:DataValue FieldName="Title">NotificationUrlDashboard</pnp:DataValue>

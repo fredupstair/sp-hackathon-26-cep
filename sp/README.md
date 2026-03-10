@@ -82,7 +82,7 @@ Invoke-PnPSiteTemplate -Path .\templates\cep-lists.xml -Handlers Fields,Lists
 | `CEP_Department` | Text | Indexed |
 | `CEP_Team` | Text | Indexed |
 | `CEP_EnrollmentDate` | DateTime | |
-| `CEP_CurrentLevel` | Choice | Bronze / Silver / Gold |
+| `CEP_CurrentLevel` | Choice | Explorer / Practitioner / Master |
 | `CEP_TotalPoints` | Number | |
 | `CEP_MonthlyPoints` | Number | |
 | `CEP_IsActive` | Boolean | Default: true |
@@ -113,7 +113,7 @@ Invoke-PnPSiteTemplate -Path .\templates\cep-lists.xml -Handlers Fields,Lists
 | `CEP_LB_AadUserId` | Text | |
 | `CEP_LB_MonthlyPoints` | Number | |
 | `CEP_LB_Rank` | Number | Standard competition ranking |
-| `CEP_LB_Level` | Choice | Bronze/Silver/Gold |
+| `CEP_LB_Level` | Choice | Explorer/Practitioner/Master |
 | `CEP_LB_Scope` | Choice | Global/Department/Team, Indexed |
 | `CEP_LB_MonthKey` | Text | `YYYY-MM`, Indexed |
 
