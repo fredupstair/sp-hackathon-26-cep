@@ -35,16 +35,7 @@ export class JoinOverlay extends React.Component<IJoinOverlayProps> {
           <h2 className={styles.joinOverlayTitle}>Copilot Engagement Program</h2>
 
           <div className={styles.joinOverlayBody}>
-            <p className={styles.joinOverlayTextEN}>
-              Join the <strong>Copilot Engagement Program</strong> and start earning
-              points for every Copilot interaction! Track your progress, climb the
-              leaderboard, and unlock exclusive badges.
-            </p>
-            <p className={styles.joinOverlayTextIT}>
-              Iscriviti al <strong>Copilot Engagement Program</strong> e inizia a
-              guadagnare punti per ogni interazione con Copilot! Monitora i tuoi
-              progressi, scala la classifica e sblocca badge esclusivi.
-            </p>
+            <p dangerouslySetInnerHTML={{ __html: strings.JoinOverlayBody }} />
           </div>
 
           <a

@@ -32,7 +32,6 @@ export class CopilotChatService {
       message: { text },
       locationHint: { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
       contextualResources: {
-        files: [],
         webContext: { isWebEnabled: false },
       },
     };
@@ -146,9 +145,10 @@ export class CopilotChatService {
     department: string,
     organizationName: string,
     onChunk: (accumulatedText: string) => void,
+    conversationId?: string,
   ): Promise<{ text: string; fromFallback: boolean }> {
     try {
-      const conversationId = await this.createConversation();
+      const convId = conversationId ?? await this.createConversation();
       const firstName = displayName.split(' ')[0];
       const roleContext = [jobTitle, department].filter(Boolean).join(', ');
       const userContext =
@@ -156,7 +156,7 @@ export class CopilotChatService {
         `Organisation: "${organizationName || 'our company'}". Write the short welcome message now.`;
       const fullPrompt = `${PERSONALIZED_WELCOME_PROMPT}\n\n${userContext}`;
 
-      const text = await this._sendStreamMessage(conversationId, fullPrompt, onChunk);
+      const text = await this._sendStreamMessage(convId, fullPrompt, onChunk);
       return { text, fromFallback: false };
     } catch {
       // If streaming fails, try non-streaming as fallback
@@ -186,7 +186,6 @@ export class CopilotChatService {
       message: { text },
       locationHint: { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
       contextualResources: {
-        files: [],
         webContext: { isWebEnabled: false },
       },
     };

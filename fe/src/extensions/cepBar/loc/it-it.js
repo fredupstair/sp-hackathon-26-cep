@@ -8,6 +8,7 @@ define([], function() {
     "BarRank":             "Pos. #{0}",
     "BarNotEnrolled":      "Iscriviti",
     "BarNotEnrolledDesc":  "Iscriviti al programma e guadagna punti usando Copilot!",
+    "JoinOverlayBody":     "Iscriviti al <strong>Copilot Engagement Program</strong> e inizia a guadagnare punti per ogni interazione con Copilot! Monitora i tuoi progressi, scala la classifica e sblocca badge esclusivi.",
     "JoinOverlayCta":      "Scopri il programma →",
     "BarViewDashboard":    "La mia Dashboard",
     // Bar – streak / progress

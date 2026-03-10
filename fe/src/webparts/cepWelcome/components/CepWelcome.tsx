@@ -77,6 +77,8 @@ interface ICepWelcomeState {
   aiWelcomeText:    string;
   aiWelcomeLoading: boolean;
   aiWelcomeStreaming: boolean;
+  // prefetched user profile
+  jobTitle:         string;
   editingWelcome:   boolean;
   // dashboard data
   month:            string;
@@ -92,6 +94,9 @@ interface ICepWelcomeState {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWelcomeState> {
+
+  /** Pre-created Copilot conversation ID — ready before the user clicks Let's Start */
+  private _preCreatedConvId: string | undefined;
 
   constructor(props: ICepWelcomeProps) {
     super(props);
@@ -111,6 +116,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
       aiWelcomeText:    '',
       aiWelcomeLoading: false,
       aiWelcomeStreaming: false,
+      jobTitle:         '',
       editingWelcome:   props.displayMode === DisplayMode.Edit && !props.welcomeText?.trim(),
       month:            currentMonth(),
       usage:            undefined,
@@ -125,7 +131,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
 
   public componentDidMount(): void {
     this._loadEnrollmentStatus().catch(console.error);
-    this._fetchUserDepartment().catch(console.error);
+    this._fetchUserProfile().catch(console.error);
   }
 
   public componentDidUpdate(prevProps: ICepWelcomeProps, prevState: ICepWelcomeState): void {
@@ -133,7 +139,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
       this._loadEnrollmentStatus().catch(console.error);
     }
     if (prevProps.graphClient !== this.props.graphClient && this.props.graphClient) {
-      this._fetchUserDepartment().catch(console.error);
+      this._fetchUserProfile().catch(console.error);
     }
     // Reload month-dependent data when month changes (enrolled only)
     if (prevState.month !== this.state.month && this.state.userSummary?.isActive) {
@@ -155,6 +161,9 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
       this.setState({ loadingState: 'loaded', userSummary: summary });
       if (summary?.isActive) {
         await this._loadDashboardData();
+      } else {
+        // User not enrolled — pre-create the Copilot conversation so it's ready at click
+        this._preCreateConversation().catch(() => { /* ignore */ });
       }
     } catch (e) {
       this.setState({
@@ -227,21 +236,30 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
     }
   }
 
-  private async _fetchUserDepartment(): Promise<void> {
+  private async _fetchUserProfile(): Promise<void> {
     const { graphClient } = this.props;
     if (!graphClient) return;
-    // Only pre-fill if user hasn't already typed something
-    if (this.state.department) return;
     try {
       const me = await graphClient
         .api('/me')
         .version('v1.0')
-        .select('department')
-        .get() as { department?: string };
-      if (me.department && !this.state.department) {
-        this.setState({ department: me.department, departmentReadOnly: true });
-      }
-    } catch { /* Graph call may fail; leave field empty */ }
+        .select('jobTitle,department')
+        .get() as { jobTitle?: string; department?: string };
+      this.setState(prev => ({
+        jobTitle:   me.jobTitle   ?? prev.jobTitle,
+        department: me.department && !prev.department ? me.department : prev.department,
+        departmentReadOnly: !!(me.department && !prev.department),
+      }));
+    } catch { /* Graph call may fail; leave fields empty */ }
+  }
+
+  private async _preCreateConversation(): Promise<void> {
+    const { graphClient, displayMode } = this.props;
+    if (!graphClient || displayMode === DisplayMode.Edit) return;
+    try {
+      const service = new CopilotChatService(graphClient);
+      this._preCreatedConvId = await service.createConversation();
+    } catch { /* best-effort — will create on demand */ }
   }
 
   private async _generatePersonalizedWelcome(): Promise<void> {
@@ -249,19 +267,13 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
     if (displayMode === DisplayMode.Edit) return;
     if (!graphClient || !userDisplayName) return;
     this.setState({ aiWelcomeLoading: true, aiWelcomeStreaming: false });
-    try {
-      let jobTitle = '';
-      let department = '';
-      try {
-        const me = await graphClient
-          .api('/me')
-          .version('v1.0')
-          .select('jobTitle,department')
-          .get() as { jobTitle?: string; department?: string };
-        jobTitle   = me.jobTitle   ?? '';
-        department = me.department ?? '';
-      } catch { /* ignore */ }
 
+    // Consume the pre-created conversation ID (if available) and clear it
+    const preConvId = this._preCreatedConvId;
+    this._preCreatedConvId = undefined;
+
+    try {
+      const { jobTitle, department } = this.state;
       const service = new CopilotChatService(graphClient);
 
       // Switch from loading dots to streaming cursor on first chunk
@@ -275,6 +287,7 @@ export default class CepWelcome extends React.Component<ICepWelcomeProps, ICepWe
         department,
         organizationName,
         onChunk,
+        preConvId,
       );
 
       // Stream complete

@@ -575,23 +575,13 @@ $flyout-width: 280px;
 .joinOverlayBody {
   margin-bottom: 24px;
   text-align: left;
-}
 
-.joinOverlayTextEN {
-  font-size: 13px;
-  line-height: 1.65;
-  color: var(--bodyText, #323130);
-  margin: 0 0 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f3f2f1;
-}
-
-.joinOverlayTextIT {
-  font-size: 13px;
-  line-height: 1.65;
-  color: var(--neutralSecondary, #605e5c);
-  margin: 0;
-  font-style: italic;
+  p {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--bodyText, #323130);
+    margin: 0;
+  }
 }
 
 .joinOverlayCta {

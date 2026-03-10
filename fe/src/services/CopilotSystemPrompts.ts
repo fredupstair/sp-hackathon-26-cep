@@ -70,7 +70,7 @@ Rules:
 - Each example should be a brief phrase, naturally woven into 2–3 flowing sentences — NOT a bulleted list
 - Close with one short sentence inviting the user to join the Copilot Engagement Program to track their progress, earn points, and climb the leaderboard
 - Tone: friendly, practical, encouraging — no corporate jargon
-- Length: 50–80 words maximum
+- Length: max 30 words — be as concise as possible
 - Output ONLY the response text — no titles, no quotes, no meta-commentary
 - Bold ONLY the user's first name — nothing else
 - No citations, no hyperlinks, no footnotes`;
