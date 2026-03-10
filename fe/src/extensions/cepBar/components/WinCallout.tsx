@@ -1,29 +1,29 @@
 import * as React from 'react';
-import { Callout, DirectionalHint } from '@fluentui/react';
+import { Callout, DirectionalHint, Icon } from '@fluentui/react';
 import * as strings from 'CepBarApplicationCustomizerStrings';
 import styles from './CepBar.module.scss';
 
 interface IAppOption {
   key: string;
   text: string;
-  initial: string;
+  icon: string;
   bg: string;
 }
 
 const APP_OPTIONS: IAppOption[] = [
-  { key: 'Word',        text: 'Word',         initial: 'W',  bg: '#185ABD' },
-  { key: 'Excel',       text: 'Excel',        initial: 'X',  bg: '#107C41' },
-  { key: 'PowerPoint',  text: 'PPT',          initial: 'P',  bg: '#C43E1C' },
-  { key: 'Outlook',     text: 'Outlook',      initial: 'O',  bg: '#0078D4' },
-  { key: 'Teams',       text: 'Teams',        initial: 'T',  bg: '#6264A7' },
-  { key: 'OneNote',     text: 'OneNote',      initial: 'N',  bg: '#7719AA' },
-  { key: 'Loop',        text: 'Loop',         initial: 'L',  bg: '#0F6CBD' },
-  { key: 'BizChat',     text: 'Copilot Chat', initial: '✨', bg: '#0F6CBD' },
-  { key: 'WebChat',     text: 'Web Chat',     initial: '🌐', bg: '#4A4A6A' },
-  { key: 'M365App',     text: 'M365 App',     initial: 'M',  bg: '#D83B01' },
-  { key: 'Forms',       text: 'Forms',        initial: 'F',  bg: '#007744' },
-  { key: 'SharePoint',  text: 'SharePoint',   initial: 'SP', bg: '#0078D4' },
-  { key: 'Whiteboard',  text: 'Whiteboard',   initial: 'WB', bg: '#0091DA' },
+  { key: 'Word',        text: 'Word',         icon: 'WordLogo',        bg: '#185ABD' },
+  { key: 'Excel',       text: 'Excel',        icon: 'ExcelLogo',       bg: '#107C41' },
+  { key: 'PowerPoint',  text: 'PPT',          icon: 'PowerPointLogo',  bg: '#C43E1C' },
+  { key: 'Outlook',     text: 'Outlook',      icon: 'OutlookLogo',     bg: '#0078D4' },
+  { key: 'Teams',       text: 'Teams',        icon: 'TeamsLogo',       bg: '#6264A7' },
+  { key: 'OneNote',     text: 'OneNote',      icon: 'OneNoteLogo',     bg: '#7719AA' },
+  { key: 'Loop',        text: 'Loop',         icon: 'Sync',            bg: '#0F6CBD' },
+  { key: 'BizChat',     text: 'Copilot Chat', icon: 'Chat',            bg: '#0F6CBD' },
+  { key: 'WebChat',     text: 'Web Chat',     icon: 'Globe',           bg: '#4A4A6A' },
+  { key: 'M365App',     text: 'M365 App',     icon: 'Waffle',          bg: '#D83B01' },
+  { key: 'Forms',       text: 'Forms',        icon: 'ClipboardList',   bg: '#007744' },
+  { key: 'SharePoint',  text: 'SharePoint',   icon: 'SharePointLogo',  bg: '#0078D4' },
+  { key: 'Whiteboard',  text: 'Whiteboard',   icon: 'EditCreate',      bg: '#0091DA' },
 ];
 
 interface IWinCalloutProps {
@@ -102,7 +102,7 @@ export class WinCallout extends React.Component<IWinCalloutProps, IWinCalloutSta
                     className={styles.appIcon}
                     style={{ background: o.bg }}
                   >
-                    {o.initial}
+                    <Icon iconName={o.icon} style={{ fontSize: 18, color: '#ffffff' }} />
                   </div>
                   <span className={styles.appLabel}>{o.text}</span>
                 </button>
