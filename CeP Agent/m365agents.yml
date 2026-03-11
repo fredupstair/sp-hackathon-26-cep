@@ -61,6 +61,13 @@ provision:
       outputDir: ./appPackage/.generated
       typeSpecConfigPath: ./tspconfig.yaml
 
+  # Inject adaptive card (response_semantics) into the plugin manifest.
+  # Workaround: @card TypeSpec decorator does not emit response_semantics with TypeSpec 1.5.
+  - uses: cli/runNpmCommand
+    name: Patch adaptive card into plugin manifest
+    with:
+      args: run patch:card
+
   # OAUTH2AUTH_REGISTRATION_ID is managed manually in env/.env.dev.
   # Create/update the registration once in Teams Developer Portal:
   #   Tools → OAuth client registration → use client ID b234776d-48cc-4b0b-a73a-6607018c0289
@@ -116,6 +123,13 @@ publish:
       manifestPath: ./appPackage/manifest.json
       outputDir: ./appPackage/.generated
       typeSpecConfigPath: ./tspconfig.yaml
+
+  # Inject adaptive card (response_semantics) into the plugin manifest.
+  # Workaround: @card TypeSpec decorator does not emit response_semantics with TypeSpec 1.5.
+  - uses: cli/runNpmCommand
+    name: Patch adaptive card into plugin manifest
+    with:
+      args: run patch:card
 
   # Build app package with latest env value
   - uses: teamsApp/zipAppPackage

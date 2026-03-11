@@ -51,6 +51,13 @@ provision:
       outputDir: ./appPackage/.generated
       typeSpecConfigPath: ./tspconfig.yaml
 
+  # Inject adaptive card (response_semantics) into the plugin manifest.
+  # Workaround: @card TypeSpec decorator does not emit response_semantics with TypeSpec 1.5.
+  - uses: cli/runNpmCommand
+    name: Patch adaptive card into plugin manifest
+    with:
+      args: run patch:card
+
   # Build app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:

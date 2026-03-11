@@ -4,6 +4,7 @@ import "../env.tsp";
 
 using TypeSpec.Http;
 using TypeSpec.M365.Copilot.Actions;
+using TypeSpec.M365.Copilot;
 
 /**
  * Request body for logging a Copilot WIN.
@@ -67,5 +68,6 @@ namespace CePAPI {
    * @returns Points earned and updated totals.
    */
   @route("/me/wins")
+  @card(#{ dataPath: "$", file: "./adaptiveCards/postWin.json" })
   @post op postWin(@body body: WinRequest): WinResponse;
 }
