@@ -34,4 +34,3 @@ define([], function() {
     "Cancel":              "Annulla"
   };
 });
-

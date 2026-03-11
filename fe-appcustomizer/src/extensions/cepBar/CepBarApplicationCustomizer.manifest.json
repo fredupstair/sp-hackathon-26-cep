@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-extension-manifest.schema.json",
 
-  "id": "76600779-f064-4aac-8d2f-6800cc00ac06",
+  "id": "95306e7a-9e5f-4a8a-a238-0d34d65807f1",
   "alias": "CepBarApplicationCustomizer",
   "componentType": "Extension",
   "extensionType": "ApplicationCustomizer",

@@ -13,12 +13,20 @@ using TypeSpec.M365.Copilot.Agents;
 )
 @instructions(Prompts.INSTRUCTIONS)
 @conversationStarter(#{
+  title: "Mark this as a win",
+  text: "Mark the prompt I just used as a Copilot win. Use the text I used as the description, remove any sensitive info, and deduce the app from the context."
+})
+@conversationStarter(#{
   title: "Log a shared Copilot win",
   text: "Use the prompt I just sent as the description of my win and log it as a shared Copilot win for the app I used."
 })
 @conversationStarter(#{
   title: "Log a Word win",
   text: "Copilot in Word helped me draft a proposal much faster than usual. Log this as a shared win."
+})
+@conversationStarter(#{
+  title: "Log a PowerPoint win",
+  text: "Copilot in PowerPoint helped me build a presentation from scratch in minutes. Log this as a shared win."
 })
 @conversationStarter(#{
   title: "Log a BizChat win",

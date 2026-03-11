@@ -1,0 +1,52 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "cep-appcustomizer-client-side-solution",
+    "id": "6f254539-27e3-44b2-ae75-c92ac8ddcca4",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.22.1"
+    },
+     "webApiPermissionRequests": [
+      {
+        "resource": "CEP-Backend",
+        "scope": "user_impersonation"
+      }]
+    ,
+    "metadata": {
+      "shortDescription": {
+        "default": "cep-appcustomizer description"
+      },
+      "longDescription": {
+        "default": "cep-appcustomizer description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "Application Extension - Deployment of custom action",
+        "description": "Deploys a custom action with ClientSideComponentId association",
+        "id": "9a43237f-fddd-43fb-a2f2-cc4cd5863e8d",
+        "version": "1.0.0.0",
+        "assets": {
+          "elementManifests": [
+            "elements.xml",
+            "ClientSideInstance.xml"
+          ]
+        }
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/cep-appcustomizer.sppkg"
+  }
+}

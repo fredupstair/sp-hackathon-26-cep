@@ -1,0 +1,20 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "useGulp": false,
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "22.22.0",
+    "sdksVersions": {},
+    "version": "1.22.1",
+    "libraryName": "cep-appcustomizer",
+    "libraryId": "6f254539-27e3-44b2-ae75-c92ac8ddcca4",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "cep-appcustomizer",
+    "solutionShortDescription": "cep-appcustomizer description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "extension",
+    "extensionType": "ApplicationCustomizer"
+  }
+}

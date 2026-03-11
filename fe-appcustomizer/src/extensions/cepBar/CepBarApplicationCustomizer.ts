@@ -133,3 +133,4 @@ export default class CepBarApplicationCustomizer
     ReactDom.render(element, this._container);
   }
 }
+

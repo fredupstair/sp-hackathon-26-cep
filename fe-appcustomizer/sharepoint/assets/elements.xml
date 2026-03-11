@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+    <CustomAction
+        Title="CepBar"
+        Location="ClientSideExtension.ApplicationCustomizer"
+        ClientSideComponentId="95306e7a-9e5f-4a8a-a238-0d34d65807f1"
+        ClientSideComponentProperties="{&quot;dashboardPageUrl&quot;:&quot;&quot;,&quot;optinPageUrl&quot;:&quot;&quot;}">
+    </CustomAction>
+</Elements>
