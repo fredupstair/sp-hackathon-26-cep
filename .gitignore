@@ -13,3 +13,5 @@ be/local.settings.json
 deploy/deploy-now.ps1
 be/func.err
 be/func.log
+fe/package-lock.json
+fe-appcustomizer/package-lock.json
