@@ -8,10 +8,10 @@ interface IStatsRowProps {
   summary: IUserSummary;
   /** Usage data to extract win stats */
   usage?: IUserUsage;
-  /** Monthly points needed to reach Silver (default 500) */
-  silverThreshold?: number;
-  /** Monthly points needed to reach Gold (default 2000) */
-  goldThreshold?: number;
+  /** Monthly points needed to reach Practitioner (default 500) */
+  practitionerThreshold?: number;
+  /** Monthly points needed to reach Master (default 1500) */
+  masterThreshold?: number;
   /** Show skeleton placeholders */
   loading?: boolean;
 }
@@ -22,8 +22,8 @@ const fmt = (tpl: string, ...args: (string | number)[]): string =>
 export const StatsRow: React.FC<IStatsRowProps> = ({
   summary,
   usage,
-  silverThreshold = 500,
-  goldThreshold = 2000,
+  practitionerThreshold = 500,
+  masterThreshold = 1500,
   loading,
 }) => {
   if (loading) {
@@ -55,13 +55,13 @@ export const StatsRow: React.FC<IStatsRowProps> = ({
 
   if (currentLabel === 'Explorer') {
     nextLevelName = getNextLevelLabel(currentLevel);
-    pointsToGo = Math.max(0, silverThreshold - monthlyPoints);
-    progressPct = Math.min(monthlyPoints / silverThreshold, 1) * 100;
+    pointsToGo = Math.max(0, practitionerThreshold - monthlyPoints);
+    progressPct = Math.min(monthlyPoints / practitionerThreshold, 1) * 100;
     progressClass = styles.progressBronze;
   } else if (currentLabel === 'Practitioner') {
     nextLevelName = getNextLevelLabel(currentLevel);
-    pointsToGo = Math.max(0, goldThreshold - monthlyPoints);
-    progressPct = Math.min(monthlyPoints / goldThreshold, 1) * 100;
+    pointsToGo = Math.max(0, masterThreshold - monthlyPoints);
+    progressPct = Math.min(monthlyPoints / masterThreshold, 1) * 100;
     progressClass = styles.progressSilver;
   } else {
     progressPct = 100;

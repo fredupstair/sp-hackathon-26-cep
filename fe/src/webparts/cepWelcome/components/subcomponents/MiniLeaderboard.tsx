@@ -13,9 +13,6 @@ interface IMiniLeaderboardProps {
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 const LEVEL_CLASS: Record<string, string> = {
-  Bronze: styles.bronze,
-  Silver: styles.silver,
-  Gold: styles.gold,
   Explorer: styles.bronze,
   Practitioner: styles.silver,
   Master: styles.gold,

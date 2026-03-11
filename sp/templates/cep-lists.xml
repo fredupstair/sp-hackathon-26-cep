@@ -599,12 +599,12 @@
               <pnp:DataValue FieldName="CEP_Cfg_Category">scoring</pnp:DataValue>
             </pnp:DataRow>
             <pnp:DataRow>
-              <pnp:DataValue FieldName="Title">LevelThresholdSilver</pnp:DataValue>
+              <pnp:DataValue FieldName="Title">LevelThresholdPractitioner</pnp:DataValue>
               <pnp:DataValue FieldName="CEP_Cfg_Value">500</pnp:DataValue>
               <pnp:DataValue FieldName="CEP_Cfg_Category">scoring</pnp:DataValue>
             </pnp:DataRow>
             <pnp:DataRow>
-              <pnp:DataValue FieldName="Title">LevelThresholdGold</pnp:DataValue>
+              <pnp:DataValue FieldName="Title">LevelThresholdMaster</pnp:DataValue>
               <pnp:DataValue FieldName="CEP_Cfg_Value">1500</pnp:DataValue>
               <pnp:DataValue FieldName="CEP_Cfg_Category">scoring</pnp:DataValue>
             </pnp:DataRow>

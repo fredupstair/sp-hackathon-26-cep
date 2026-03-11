@@ -12,9 +12,6 @@ interface IOtherUserViewProps {
 }
 
 const LEVEL_CLASS: Record<string, string> = {
-  Bronze: styles.bronze,
-  Silver: styles.silver,
-  Gold: styles.gold,
   Explorer: styles.bronze,
   Practitioner: styles.silver,
   Master: styles.gold,

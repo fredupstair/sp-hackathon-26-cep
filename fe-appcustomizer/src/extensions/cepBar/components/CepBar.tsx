@@ -14,8 +14,8 @@ export interface ICepBarProps {
   apiClient: CepApiClient | undefined;
   dashboardPageUrl: string;
   optinPageUrl: string;
-  silverThreshold: number;
-  goldThreshold: number;
+  practitionerThreshold: number;
+  masterThreshold: number;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -45,14 +45,14 @@ function computeStreak(recentActiveDays: string[]): number {
 }
 
 function levelColorClass(level: string): string {
-  if (level === 'Gold' || level === 'Master') return styles.gold;
-  if (level === 'Silver' || level === 'Practitioner') return styles.silver;
+  if (level === 'Master') return styles.gold;
+  if (level === 'Practitioner') return styles.silver;
   return styles.bronze;
 }
 
 function progressClass(level: string): string {
-  if (level === 'Silver' || level === 'Practitioner') return styles.progressSilver;
-  if (level === 'Gold' || level === 'Master') return styles.progressGold;
+  if (level === 'Practitioner') return styles.progressSilver;
+  if (level === 'Master') return styles.progressGold;
   return styles.progressBronze;
 }
 
@@ -203,7 +203,7 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
 
   public render(): React.ReactElement {
     const { loadState, summary, suggestion, streak, open, showWin, showJoin, winAnim, winAnimText, suggestionDismissed, nudgesEnabled, nudgeSaving, nudgeChecking } = this.state;
-    const { dashboardPageUrl, optinPageUrl, silverThreshold, goldThreshold } = this.props;
+    const { dashboardPageUrl, optinPageUrl, practitionerThreshold, masterThreshold } = this.props;
 
     // Silently hide when not configured or error
     if (loadState === 'not_configured' || loadState === 'error') return <></>;
@@ -254,12 +254,12 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
     let ptToGo: number;
 
     if (levelLabel === 'Explorer') {
-      progressPct   = Math.min(monthly / silverThreshold, 1) * 100;
-      ptToGo        = Math.max(0, silverThreshold - monthly);
+      progressPct   = Math.min(monthly / practitionerThreshold, 1) * 100;
+      ptToGo        = Math.max(0, practitionerThreshold - monthly);
       nextLevelLabel = getNextLevelLabel(level);
     } else if (levelLabel === 'Practitioner') {
-      progressPct   = Math.min(monthly / goldThreshold, 1) * 100;
-      ptToGo        = Math.max(0, goldThreshold - monthly);
+      progressPct   = Math.min(monthly / masterThreshold, 1) * 100;
+      ptToGo        = Math.max(0, masterThreshold - monthly);
       nextLevelLabel = getNextLevelLabel(level);
     } else {
       progressPct   = 100;

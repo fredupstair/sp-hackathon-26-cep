@@ -133,8 +133,8 @@ Invoke-PnPSiteTemplate -Path .\templates\cep-lists.xml -Handlers Fields,Lists
 |-----------------|------|---------|
 | `CEP_Cfg_SyncFrequency` | Text | `daily` |
 | `CEP_Cfg_PointsPerPrompt` | Number | `1` |
-| `CEP_Cfg_LevelThresholdSilver` | Number | `500` |
-| `CEP_Cfg_LevelThresholdGold` | Number | `1500` |
+| `CEP_Cfg_LevelThresholdPractitioner` | Number | `500` |
+| `CEP_Cfg_LevelThresholdMaster` | Number | `1500` |
 | `CEP_Cfg_InactivityDaysForNudge` | Number | `3` |
 | `CEP_Cfg_LeaderboardRefreshNotifEnabled` | Boolean | `true` |
 | `CEP_Cfg_MaxUsersPerIngestionBatch` | Number | `50` |

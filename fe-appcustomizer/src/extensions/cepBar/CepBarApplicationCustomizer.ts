@@ -35,8 +35,8 @@ export default class CepBarApplicationCustomizer
   private _apiClient: CepApiClient | undefined;
   private _functionAppBaseUrl: string = '';
   private _functionAppClientId: string = '';
-  private _silverThreshold: number = 500;
-  private _goldThreshold: number = 1500;
+  private _practitionerThreshold: number = 500;
+  private _masterThreshold: number = 1500;
 
   public async onInit(): Promise<void> {
     Log.info(LOG_SOURCE, `Initialized ${strings.Title}`);
@@ -125,8 +125,8 @@ export default class CepBarApplicationCustomizer
       apiClient:         this._apiClient,
       dashboardPageUrl:  this.properties.dashboardPageUrl  ?? '',
       optinPageUrl:      this.properties.optinPageUrl      ?? '',
-      silverThreshold:   this._silverThreshold,
-      goldThreshold:     this._goldThreshold,
+      practitionerThreshold: this._practitionerThreshold,
+      masterThreshold:        this._masterThreshold,
     });
 
     // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount

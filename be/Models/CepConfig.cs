@@ -20,8 +20,8 @@ public class CepConfig
     public int PointsPerPrompt { get; set; } = 1;
     public int PointsPerWin { get; set; } = 10;
     public int MaxWinsPerDay { get; set; } = 10;
-    public int LevelThresholdSilver { get; set; } = 500;
-    public int LevelThresholdGold { get; set; } = 1500;
+    public int LevelThresholdPractitioner { get; set; } = 500;
+    public int LevelThresholdMaster { get; set; } = 1500;
 
     // ── General ───────────────────────────────────────────────
     public int InactivityDaysForNudge { get; set; } = 3;
@@ -73,8 +73,10 @@ public class CepConfig
         if (map.TryGetValue("PointsPerPrompt", out var ppp) && int.TryParse(ppp, out var pppV)) cfg.PointsPerPrompt = pppV;
         if (map.TryGetValue("PointsPerWin", out var ppw) && int.TryParse(ppw, out var ppwV)) cfg.PointsPerWin = ppwV;
         if (map.TryGetValue("MaxWinsPerDay", out var mwd) && int.TryParse(mwd, out var mwdV)) cfg.MaxWinsPerDay = mwdV;
-        if (map.TryGetValue("LevelThresholdSilver", out var lts) && int.TryParse(lts, out var ltsV)) cfg.LevelThresholdSilver = ltsV;
-        if (map.TryGetValue("LevelThresholdGold", out var ltg) && int.TryParse(ltg, out var ltgV)) cfg.LevelThresholdGold = ltgV;
+        if (map.TryGetValue("LevelThresholdPractitioner", out var lts) && int.TryParse(lts, out var ltsV)) cfg.LevelThresholdPractitioner = ltsV;
+        else if (map.TryGetValue("LevelThresholdSilver", out var ltsLegacy) && int.TryParse(ltsLegacy, out var ltsLegacyV)) cfg.LevelThresholdPractitioner = ltsLegacyV;
+        if (map.TryGetValue("LevelThresholdMaster", out var ltg) && int.TryParse(ltg, out var ltgV)) cfg.LevelThresholdMaster = ltgV;
+        else if (map.TryGetValue("LevelThresholdGold", out var ltgLegacy) && int.TryParse(ltgLegacy, out var ltgLegacyV)) cfg.LevelThresholdMaster = ltgLegacyV;
 
         // General
         if (map.TryGetValue("InactivityDaysForNudge", out var idn) && int.TryParse(idn, out var idnV)) cfg.InactivityDaysForNudge = idnV;
@@ -113,8 +115,8 @@ public class CepConfig
             ("PointsPerPrompt", PointsPerPrompt.ToString(), "scoring"),
             ("PointsPerWin", PointsPerWin.ToString(), "scoring"),
             ("MaxWinsPerDay", MaxWinsPerDay.ToString(), "scoring"),
-            ("LevelThresholdSilver", LevelThresholdSilver.ToString(), "scoring"),
-            ("LevelThresholdGold", LevelThresholdGold.ToString(), "scoring"),
+            ("LevelThresholdPractitioner", LevelThresholdPractitioner.ToString(), "scoring"),
+            ("LevelThresholdMaster", LevelThresholdMaster.ToString(), "scoring"),
             // General
             ("InactivityDaysForNudge", InactivityDaysForNudge.ToString(), "general"),
             ("LeaderboardRefreshNotificationEnabled", LeaderboardRefreshNotificationEnabled.ToString(), "general"),

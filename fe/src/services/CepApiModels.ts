@@ -14,7 +14,7 @@ export interface IEnrollmentJoinRequest {
 
 // ─── User / Me ────────────────────────────────────────────────────────────────
 
-export type CepLevel = 'Explorer' | 'Practitioner' | 'Master' | 'Bronze' | 'Silver' | 'Gold';
+export type CepLevel = 'Explorer' | 'Practitioner' | 'Master';
 
 export interface IUserSummary {
   userId: string;
@@ -113,8 +113,8 @@ export interface ICepSuggestion {
 export interface ICepConfig {
   syncFrequency: string;
   pointsPerPrompt: number;
-  levelThresholdSilver: number;
-  levelThresholdGold: number;
+  levelThresholdPractitioner: number;
+  levelThresholdMaster: number;
   inactivityDaysForNudge: number;
   leaderboardRefreshNotificationEnabled: boolean;
   maxUsersPerIngestionBatch: number;
