@@ -358,34 +358,72 @@ if ([string]::IsNullOrWhiteSpace($AppRegClientId)) {
 } else {
     Info "Configuro EasyAuth v2 (Entra ID) sulla Function App..."
 
-    # Passo 1: provider Microsoft (v2 API).
-    # NOTA: --tenant-id e --issuer sono mutualmente esclusivi;
-    # --tenant-id genera automaticamente l'issuer corretto:
-    # https://login.microsoftonline.com/{tenantId}/v2.0
-    # (sts.windows.net non è compatibile con i token v2 emessi da SPFx AadHttpClient)
-    az webapp auth microsoft update `
-        --name $functionAppName `
-        --resource-group $ResourceGroupName `
-        --client-id $AppRegClientId `
-        --tenant-id $TenantId `
-        --client-secret $AppRegClientSecret `
-        --yes `
+    # Usa ARM REST PUT diretto su authsettingsV2 invece dei comandi az webapp auth.
+    # Motivazione: az webapp auth microsoft update imposta allowedAudiences solo con il
+    # bare GUID (es. "abc-123"), mentre SPFx AadHttpClient richiede "api://abc-123" e
+    # l'agente Teams invia token con aud: "api://abc-123". Entrambi i formati devono
+    # essere in allowedAudiences:
+    #   - bare GUID          → token SPFx (aud: "<clientId>")
+    #   - "api://<clientId>" → token SPFx con aadResourceUri = "api://<clientId>"
+    #                          e token agente Teams
+    # defaultAuthorizationPolicy.allowedApplications NON va incluso:
+    #   - se presente e vuoto ([]) → EasyAuth risponde 403 a qualunque client
+    #   - se assente → nessuna restrizione sul client app (identità utente garantita dal JWT)
+    # clientSecretSettingName punta all'app setting "ClientSecret" già impostato in §6.
+    $authBody = @{
+        properties = @{
+            globalValidation = @{
+                requireAuthentication       = $true
+                unauthenticatedClientAction = "AllowAnonymous"
+            }
+            httpSettings = @{
+                requireHttps = $true
+                routes       = @{ apiPrefix = "/.auth" }
+                forwardProxy = @{ convention = "NoProxy" }
+            }
+            identityProviders = @{
+                azureActiveDirectory = @{
+                    enabled = $true
+                    login   = @{ disableWWWAuthenticate = $false }
+                    registration = @{
+                        clientId                = $AppRegClientId
+                        clientSecretSettingName = "ClientSecret"
+                        openIdIssuer            = "https://login.microsoftonline.com/$TenantId/v2.0"
+                    }
+                    validation = @{
+                        allowedAudiences = @(
+                            $AppRegClientId,
+                            "api://$AppRegClientId"
+                        )
+                        jwtClaimChecks = @{}
+                    }
+                }
+            }
+            platform = @{ enabled = $true; runtimeVersion = "~1" }
+        }
+    } | ConvertTo-Json -Depth 10 -Compress
+
+    $authBodyPath = Join-Path $env:TEMP "cep_easyauth_deploy.json"
+    $authBody | Out-File -FilePath $authBodyPath -Encoding utf8 -NoNewline
+
+    az rest --method PUT `
+        --url "https://management.azure.com/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroupName/providers/Microsoft.Web/sites/$functionAppName/config/authsettingsV2?api-version=2022-03-01" `
+        --headers "Content-Type=application/json" `
+        --body "@$authBodyPath" `
         --output none 2>$null | Out-Null
 
-    # Passo 2: abilita EasyAuth v2 con AllowAnonymous.
-    # - Richieste con Bearer token valido → EasyAuth valida + inietta X-MS-CLIENT-PRINCIPAL-ID
-    # - Richieste con token invalido/scaduto → EasyAuth blocca con 401
-    # - Richieste senza token → passano al codice (necessario per CORS preflight OPTIONS)
-    # NON usare --action (flag v1): sovrascrive la config v2 e cambia l'issuer a sts.windows.net
-    az webapp auth update `
-        --name $functionAppName `
-        --resource-group $ResourceGroupName `
-        --enabled true `
-        --unauthenticated-client-action AllowAnonymous `
-        --output none 2>$null | Out-Null
+    Remove-Item $authBodyPath -Force -ErrorAction SilentlyContinue
 
-    Ok "EasyAuth v2 abilitato – issuer: login.microsoftonline.com/$TenantId/v2.0"
-    Ok "Token validi → X-MS-CLIENT-PRINCIPAL-ID iniettato nel codice."
+    if ($LASTEXITCODE -eq 0) {
+        Ok "EasyAuth v2 configurato:"
+        Ok "  issuer           : https://login.microsoftonline.com/$TenantId/v2.0"
+        Ok "  allowedAudiences : $AppRegClientId  |  api://$AppRegClientId"
+        Ok "  allowedApplications : (nessuna restrizione – qualunque client con token utente valido)"
+        Ok "  unauthenticated  : AllowAnonymous"
+    } else {
+        Warn "EasyAuth ARM REST aggiornamento fallito – verifica manualmente con:"
+        Write-Host "    az webapp auth show --name $functionAppName --resource-group $ResourceGroupName" -ForegroundColor DarkGray
+    }
 }
 
 # ─── 7. Build + Publish + Deploy ────────────────────────────────────────────
