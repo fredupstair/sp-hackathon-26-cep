@@ -13,19 +13,14 @@ import { CepBar } from './components/CepBar';
 const LOG_SOURCE: string = 'CepBarApplicationCustomizer';
 
 // Keys must match what deploy/set-tenant-properties.ps1 sets
-const TENANT_KEY_BASE_URL  = 'CEP_FunctionAppBaseUrl';
-const TENANT_KEY_CLIENT_ID = 'CEP_FunctionAppClientId';
+const TENANT_KEY_BASE_URL      = 'CEP_FunctionAppBaseUrl';
+const TENANT_KEY_CLIENT_ID     = 'CEP_FunctionAppClientId';
+const TENANT_KEY_DASHBOARD_URL = 'CEP_DashboardPageUrl';
+const TENANT_KEY_OPTIN_URL     = 'CEP_OptinPageUrl';
 
-/**
- * Properties set via the Custom Action registration (clientSideComponentProperties JSON).
- * See deploy/deploy-azure.ps1 for the registration command.
- */
-export interface ICepBarApplicationCustomizerProperties {
-  /** Absolute URL of the page hosting the CEP Dashboard web part. */
-  dashboardPageUrl: string;
-  /** Absolute URL of the page hosting the CEP Opt-in web part. */
-  optinPageUrl: string;
-}
+// No custom properties needed – all config comes from Tenant Storage Entities.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface ICepBarApplicationCustomizerProperties {}
 
 /** A Custom Action which can be run during execution of a Client Side Application */
 export default class CepBarApplicationCustomizer
@@ -35,6 +30,8 @@ export default class CepBarApplicationCustomizer
   private _apiClient: CepApiClient | undefined;
   private _functionAppBaseUrl: string = '';
   private _functionAppClientId: string = '';
+  private _dashboardPageUrl: string = '';
+  private _optinPageUrl: string = '';
   private _practitionerThreshold: number = 500;
   private _masterThreshold: number = 1500;
 
@@ -60,7 +57,7 @@ export default class CepBarApplicationCustomizer
   private async _loadTenantProperties(): Promise<void> {
     const siteAbsUrl = this.context.pageContext.site.absoluteUrl;
     try {
-      const [baseUrlResp, clientIdResp] = await Promise.all([
+      const [baseUrlResp, clientIdResp, dashboardResp, optinResp] = await Promise.all([
         this.context.spHttpClient.get(
           `${siteAbsUrl}/_api/web/GetStorageEntity('${TENANT_KEY_BASE_URL}')`,
           SPHttpClient.configurations.v1
@@ -69,13 +66,25 @@ export default class CepBarApplicationCustomizer
           `${siteAbsUrl}/_api/web/GetStorageEntity('${TENANT_KEY_CLIENT_ID}')`,
           SPHttpClient.configurations.v1
         ),
+        this.context.spHttpClient.get(
+          `${siteAbsUrl}/_api/web/GetStorageEntity('${TENANT_KEY_DASHBOARD_URL}')`,
+          SPHttpClient.configurations.v1
+        ),
+        this.context.spHttpClient.get(
+          `${siteAbsUrl}/_api/web/GetStorageEntity('${TENANT_KEY_OPTIN_URL}')`,
+          SPHttpClient.configurations.v1
+        ),
       ]);
 
-      const baseUrlData  = await baseUrlResp.json();
-      const clientIdData = await clientIdResp.json();
+      const baseUrlData   = await baseUrlResp.json();
+      const clientIdData  = await clientIdResp.json();
+      const dashboardData = await dashboardResp.json();
+      const optinData     = await optinResp.json();
 
       this._functionAppBaseUrl  = (baseUrlData.Value  as string | null)?.trim() ?? '';
       this._functionAppClientId = (clientIdData.Value as string | null)?.trim() ?? '';
+      this._dashboardPageUrl    = (dashboardData.Value as string | null)?.trim() ?? '';
+      this._optinPageUrl        = (optinData.Value     as string | null)?.trim() ?? '';
 
       if (!this._functionAppBaseUrl || !this._functionAppClientId) {
         Log.warn(LOG_SOURCE,
@@ -122,11 +131,11 @@ export default class CepBarApplicationCustomizer
     }
 
     const element = React.createElement(CepBar, {
-      apiClient:         this._apiClient,
-      dashboardPageUrl:  this.properties.dashboardPageUrl  ?? '',
-      optinPageUrl:      this.properties.optinPageUrl      ?? '',
+      apiClient:             this._apiClient,
+      dashboardPageUrl:      this._dashboardPageUrl,
+      optinPageUrl:          this._optinPageUrl,
       practitionerThreshold: this._practitionerThreshold,
-      masterThreshold:        this._masterThreshold,
+      masterThreshold:       this._masterThreshold,
     });
 
     // eslint-disable-next-line @rushstack/pair-react-dom-render-unmount

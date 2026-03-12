@@ -11,6 +11,8 @@ import {
   ICepWinRequest,
   ICepWinResponse,
   ICepSuggestion,
+  IWinsResponse,
+  ISharedWinsResponse,
 } from './CepApiModels';
 
 export class CepApiError extends Error {
@@ -113,7 +115,32 @@ export class CepApiClient {
     await this._assertOk(response);
     return response.json() as Promise<ICepBadge[]>;
   }
+  // ─── Wins (read) ───────────────────────────────────────────────────────────────
 
+  /** Returns all personal Wins for the given month, grouped for rendering. */
+  public async getMeWins(month: string): Promise<IWinsResponse> {
+    const qs = `?month=${encodeURIComponent(month)}`;
+    const response = await this._client.get(
+      `${this._baseUrl}/api/me/wins${qs}`,
+      AadHttpClient.configurations.v1,
+      { headers: this._defaultHeaders }
+    );
+    await this._assertOk(response);
+    return response.json() as Promise<IWinsResponse>;
+  }
+
+  /** Returns community-shared Wins for the given month, optionally filtered by appKey. */
+  public async getSharedWins(month: string, appKey?: string): Promise<ISharedWinsResponse> {
+    let qs = `?month=${encodeURIComponent(month)}`;
+    if (appKey) qs += `&appKey=${encodeURIComponent(appKey)}`;
+    const response = await this._client.get(
+      `${this._baseUrl}/api/wins/shared${qs}`,
+      AadHttpClient.configurations.v1,
+      { headers: this._defaultHeaders }
+    );
+    await this._assertOk(response);
+    return response.json() as Promise<ISharedWinsResponse>;
+  }
   // ─── Leaderboard ───────────────────────────────────────────────────────────
 
   public async getLeaderboard(

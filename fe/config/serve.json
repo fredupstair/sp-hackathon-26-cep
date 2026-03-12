@@ -25,6 +25,9 @@
           }
         }
       }
+    },
+    "cepWins": {
+      "pageUrl": "https://{tenantDomain}/_layouts/workbench.aspx"
     }
   }
 }

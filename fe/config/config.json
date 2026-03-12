@@ -17,11 +17,20 @@
           "manifest": "./src/webparts/cepWelcome/CepWelcomeWebPart.manifest.json"
         }
       ]
+    },
+    "cep-wins-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/cepWins/CepWinsWebPart.js",
+          "manifest": "./src/webparts/cepWins/CepWinsWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {},
   "localizedResources": {
     "CepLeaderboardWebPartStrings": "lib/webparts/cepLeaderboard/loc/{locale}.js",
-    "CepWelcomeWebPartStrings": "lib/webparts/cepWelcome/loc/{locale}.js"
+    "CepWelcomeWebPartStrings": "lib/webparts/cepWelcome/loc/{locale}.js",
+    "CepWinsWebPartStrings": "lib/webparts/cepWins/loc/{locale}.js"
   }
 }

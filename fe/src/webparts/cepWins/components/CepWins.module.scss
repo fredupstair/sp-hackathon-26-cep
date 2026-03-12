@@ -1,0 +1,239 @@
+@import '~@microsoft/sp-office-ui-fabric-core/dist/sass/SPFabricCore.scss';
+
+.cepWins {
+  font-family: var(--fontFamilyBase, 'Segoe UI', sans-serif);
+  color: var(--bodyText, #323130);
+  padding: 16px;
+  box-sizing: border-box;
+  max-width: 960px;
+  margin: 0 auto;
+
+  // Design tokens
+  --accent: #6264a7;
+  --accent-light: #ebe9f4;
+  --border: #edebe9;
+  --card-bg: #ffffff;
+  --card-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  --meta-color: #605e5c;
+  --pill-border: #d2d0ce;
+}
+
+// ── Header ──────────────────────────────────────────────────────────────────
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--bodyText, #323130);
+}
+
+// ── Month Navigator ──────────────────────────────────────────────────────────
+
+.monthNav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.monthLabel {
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 148px;
+  text-align: center;
+  color: var(--bodyText, #323130);
+  text-transform: capitalize;
+}
+
+// ── Filter Pills ─────────────────────────────────────────────────────────────
+
+.filterPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 16px;
+}
+
+.pill {
+  border: 1px solid var(--pill-border);
+  background: #fff;
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  line-height: 1.4;
+
+  &:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+.pillActive {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+}
+
+// ── Accordion ────────────────────────────────────────────────────────────────
+
+.accordionSection {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.accordionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #f8f8f8;
+  cursor: pointer;
+  user-select: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+
+  &:hover {
+    background: var(--accent-light);
+  }
+}
+
+.accordionChevron {
+  font-size: 10px;
+  transition: transform 0.2s;
+  color: var(--meta-color);
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.expanded {
+  transform: rotate(90deg);
+}
+
+.accordionIcon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.accordionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+  color: var(--bodyText, #323130);
+}
+
+.accordionCount {
+  font-size: 12px;
+  color: var(--meta-color);
+  background: #edebe9;
+  border-radius: 10px;
+  padding: 1px 8px;
+  flex-shrink: 0;
+}
+
+.accordionBody {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+// ── WIN Card ─────────────────────────────────────────────────────────────────
+
+.winCard {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.winCardMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.winDate {
+  font-size: 12px;
+  color: var(--meta-color);
+}
+
+.winAuthor {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.winNote {
+  font-size: 14px;
+  color: var(--bodyText, #323130);
+  margin: 0;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.winCardActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2px;
+}
+
+.copiedBtn {
+  :global(i) {
+    color: #107c10 !important;
+  }
+}
+
+// ── Show more ────────────────────────────────────────────────────────────────
+
+.showMoreBtn {
+  font-size: 13px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  align-self: flex-start;
+  font-family: inherit;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+
+.emptyState {
+  text-align: center;
+  color: var(--meta-color);
+  padding: 40px 16px;
+  font-size: 14px;
+}
+
+// ── Loading ──────────────────────────────────────────────────────────────────
+
+.loadingContainer {
+  padding: 16px 0;
+}
+
+.shimmerRow {
+  margin-bottom: 10px;
+}

@@ -227,6 +227,42 @@ public class SharePointClient
         return items.Count;
     }
 
+    /// <summary>Returns all Win rows for a user in the given month, ordered by date descending.</summary>
+    public async Task<List<CepActivityLog>> GetWinsForUserAsync(
+        string aadUserId, string monthKey, CancellationToken ct = default)
+    {
+        var filter = $"fields/CEP_Log_AadUserId eq '{aadUserId}' and fields/CEP_Log_MonthKey eq '{monthKey}' and fields/CEP_Log_IsWin eq 1";
+        var items = await GetAllItemsAsync(_listActivityLog, filter, ct);
+        return items
+            .Select(i =>
+            {
+                var id = i.TryGetValue("id", out var v) ? v?.ToString() ?? "" : "";
+                return CepActivityLog.FromSpFields(id, ExtractFields(i));
+            })
+            .OrderByDescending(w => w.UsageDate)
+            .ToList();
+    }
+
+    /// <summary>Returns shared Win rows for a month from other users, optionally filtered by WinAppKey.</summary>
+    public async Task<List<CepActivityLog>> GetSharedWinsAsync(
+        string monthKey, string? appKey = null, string? excludeUserId = null, CancellationToken ct = default)
+    {
+        var filter = $"fields/CEP_Log_MonthKey eq '{monthKey}' and fields/CEP_Log_IsWin eq 1 and fields/CEP_Log_IsShared eq 1";
+        if (!string.IsNullOrEmpty(excludeUserId))
+            filter += $" and fields/CEP_Log_AadUserId ne '{excludeUserId}'";
+        if (!string.IsNullOrEmpty(appKey))
+            filter += $" and fields/CEP_Log_WinAppKey eq '{Uri.EscapeDataString(appKey)}'";
+        var items = await GetAllItemsAsync(_listActivityLog, filter, ct);
+        return items
+            .Select(i =>
+            {
+                var id = i.TryGetValue("id", out var v) ? v?.ToString() ?? "" : "";
+                return CepActivityLog.FromSpFields(id, ExtractFields(i));
+            })
+            .OrderByDescending(w => w.UsageDate)
+            .ToList();
+    }
+
     public async Task UpsertActivityLogAsync(CepActivityLog log, CancellationToken ct = default)
     {
         var fields = log.ToSpFields();

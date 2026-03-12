@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.25/MicrosoftTeams.schema.json",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "manifestVersion": "1.25",
   "id": "1336459f-9891-4da1-8f8f-300a2368c01b",
   "name": {
@@ -28,6 +28,18 @@
       "name": "Home",
       "contentUrl": "https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/SitePages/CePWelcome.aspx",
       "websiteUrl": "https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/_layouts/15/embed.aspx?source=https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/SitePages/CePWelcome.aspx",
+      "scopes": [
+        "personal"
+      ],
+      "context": [
+        "personalTab"
+      ]
+    },
+    {
+      "entityId": "cecad260-281b-44d7-a720-37d4f9573082",
+      "name": "Copilot WINS",
+      "contentUrl": "https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/SitePages/CePCopilotWINS.aspx",
+      "websiteUrl": "https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/_layouts/15/embed.aspx?source=https://<TENANT>.sharepoint.com/sites/Copilot-Engagement-Program/SitePages/CePCopilotWINS.aspx",
       "scopes": [
         "personal"
       ],

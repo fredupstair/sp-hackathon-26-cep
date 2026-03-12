@@ -1,0 +1,23 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
+  "id": "a3c7f2e1-9d45-4b8a-cf12-0e6f8d3a5b7c",
+  "alias": "CepWinsWebPart",
+  "componentType": "WebPart",
+
+  "version": "*",
+  "manifestVersion": 2,
+
+  "requiresCustomScript": false,
+  "supportedHosts": ["SharePointWebPart", "SharePointFullPage"],
+  "supportsThemeVariants": true,
+  "supportsFullBleed": true,
+
+  "preconfiguredEntries": [{
+    "groupId": "a5e2e3d8-1234-4c5a-b678-9abcdef01234",
+    "group": { "default": "Copilot Engagement Program" },
+    "title": { "default": "CEP Copilot Wins" },
+    "description": { "default": "Browse your personal Copilot Wins and the community's shared wins, organised by app." },
+    "officeFabricIconFontName": "LightningBolt",
+    "properties": {}
+  }]
+}

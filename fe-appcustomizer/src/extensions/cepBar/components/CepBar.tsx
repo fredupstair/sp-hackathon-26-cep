@@ -377,7 +377,7 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
           <span className={styles.points}>{fmt(strings.BarPoints, monthly)}</span>
 
           <span className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}>▲</span>
-        </div>
+          </div>
       </div>
     );
   }

@@ -21,6 +21,7 @@ namespace CepFunctions.Functions;
 /// GET /api/me/summary?month=YYYY-MM
 /// GET /api/me/usage?from=YYYY-MM-DD&amp;to=YYYY-MM-DD
 /// GET /api/me/badges
+/// GET /api/me/wins?month=YYYY-MM
 /// POST /api/me/wins
 /// GET /api/me/suggestion
 /// GET /api/me/preferences
@@ -192,6 +193,39 @@ public class MeApi
             earnedDate = b.EarnedDate,
             monthKey = b.MonthKey,
         }));
+    }
+
+    // ------------------------------------------------------------------
+    // GET /api/me/wins?month=YYYY-MM
+    // ------------------------------------------------------------------
+
+    [Function("MeGetWins")]
+    public async Task<IActionResult> GetWinsAsync(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "me/wins")] HttpRequest req,
+        CancellationToken ct)
+    {
+        var aadUserId = GetCallerId(req);
+        if (aadUserId is null) return Unauthorized();
+
+        var user = await _sp.GetUserByAadIdAsync(aadUserId, ct);
+        if (user is null || !user.IsActive) return new NotFoundObjectResult("User not enrolled.");
+
+        var month = req.Query["month"].FirstOrDefault() ?? DateTime.UtcNow.ToString("yyyy-MM");
+        var wins = await _sp.GetWinsForUserAsync(aadUserId, month, ct);
+
+        return new OkObjectResult(new
+        {
+            month,
+            items = wins.Select(w => new
+            {
+                id = w.SpItemId,
+                date = w.UsageDate.ToString("yyyy-MM-dd"),
+                appKey = w.WinAppKey,
+                note = w.WinNote,
+                isShared = w.IsShared,
+                pointsEarned = w.PointsEarned,
+            })
+        });
     }
 
     // ------------------------------------------------------------------

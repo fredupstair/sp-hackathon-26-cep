@@ -108,6 +108,35 @@ export interface ICepSuggestion {
   text: string;
 }
 
+// ─── Wins (read) ─────────────────────────────────────────────────────────────
+
+export interface IWinItem {
+  id: string;
+  date: string;           // YYYY-MM-DD
+  appKey: string;         // WinAppKey: Word | Teams | etc.
+  note: string;
+  isShared: boolean;
+  pointsEarned: number;
+}
+
+export interface IWinItemShared {
+  id: string;
+  date: string;           // YYYY-MM-DD
+  appKey: string;
+  note: string;
+  displayName: string;    // "First L." – privacy-safe
+}
+
+export interface IWinsResponse {
+  month: string;
+  items: IWinItem[];
+}
+
+export interface ISharedWinsResponse {
+  month: string;
+  items: IWinItemShared[];
+}
+
 // ─── Admin ───────────────────────────────────────────────────────────────────
 
 export interface ICepConfig {
