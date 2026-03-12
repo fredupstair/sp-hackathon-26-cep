@@ -4,30 +4,42 @@ namespace Prompts {
 
     ## MARKING A WIN FROM A PROMPT
 
-    When the user says "mark this as a win", "log this win", "track this", "log it", or similar short commands,
+    When the user says "mark this as a win", "log this win", "track this", "log it", "amazing! mark it as a win", or similar short commands,
     you MUST follow these steps:
 
     1. EXTRACT AND CLEAN THE WIN NOTE FROM CONTEXT
-       Use the most recent prompt or activity the user described as the source.
-       Apply MINIMAL and TARGETED sanitization: preserve the original sentence structure and intent.
-       Only replace specific sensitive identifiers with generic equivalents — do NOT rephrase or summarise.
-       Replacement rules:
-         - Named files (e.g. "Report Q1.xlsx", "Presentation 7.pptx") → replace with the generic file type
-           ("an Excel file", "a PowerPoint presentation", "a Word document", etc.)
+       The user's trigger message (e.g. "Amazing! Mark it as a Copilot Win!") is the SIGNAL to log a win — it is NEVER the win note itself.
+       NEVER use the trigger phrase as the note, even partially.
+
+       Look back in the conversation and find the EARLIEST / ORIGINAL prompt the user sent to Copilot — the one that describes what Copilot actually did for them.
+       Ignore any follow-up messages, reactions, or instructions that came after that original prompt.
+       That original prompt is the source of the win note.
+
+       FIRST: check whether the prompt contains any sensitive identifiers:
+         - Named files (e.g. "Report Q1.xlsx", "Presentation 7.pptx")
+         - People names or email addresses
+         - Internal project or code names
+         - Internal URLs
+         - Numbered or coded identifiers
+
+       IF NONE of the above are present → copy the prompt VERBATIM, word for word, without any changes.
+       Do NOT rephrase, summarise, shorten, or rewrite even a single word.
+
+       IF sensitive identifiers ARE present → apply ONLY the minimum replacements needed:
+         - Named files → replace with the generic file type ("an Excel file", "a PowerPoint presentation", etc.)
          - People names, email addresses → "a colleague" / "the team"
          - Internal project/code names → "a project"
          - Internal URLs → "an internal page"
          - Numbered or coded identifiers → remove them silently
-       The note MUST still read as a natural sentence describing what Copilot was asked to do.
-       Example: "Summarise the Smith-Acme contract emails" → "Summarise the contract emails from a colleague"
-       Example: "Offer risk mitigation strategies for Presentation 7.pptx" → "Offer risk mitigation strategies for a PowerPoint presentation"
+       Everything else in the prompt stays exactly as written.
 
-       HANDLING LONG OR MULTI-PART PROMPTS
-       When the source prompt is long or describes multiple tasks, do NOT collapse it into a single generic phrase.
-       Instead, keep ALL the key tasks and structural details — just strip the sensitive identifiers as above.
-       The goal is a note that is concise but complete: a reader should understand everything the user asked Copilot to do.
-       WRONG (over-compressed): "Summarize unread emails and messages into a prioritized list with actions"
-       RIGHT (preserves intent): "Summarize unread Teams messages and Outlook emails into a bulleted list with title, context and action item, sorted by priority based on work patterns from the last 3 days, and suggest the most effective course of actions for the day"
+       Examples:
+         No sensitive data → copy verbatim:
+           Original: "You are a skilled personal assistant... summarizing unread Teams messages and Outlook emails..."
+           Note: "You are a skilled personal assistant... summarizing unread Teams messages and Outlook emails..." (identical)
+         Sensitive data present → replace only identifiers:
+           Original: "Summarise the Smith-Acme contract emails" → "Summarise the contract emails from a colleague"
+           Original: "Offer risk mitigation strategies for Presentation 7.pptx" → "Offer risk mitigation strategies for a PowerPoint presentation"
 
     2. DEDUCE THE APP FROM WHERE COPILOT WAS USED (the surface/interface), NOT from the file type
        The appKey reflects the Copilot experience the user was working in, not the file that was referenced.

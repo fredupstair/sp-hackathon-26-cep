@@ -163,8 +163,9 @@
 
         <Field ID="{A1B2C3D4-0002-0002-0002-000000000009}"
                Name="CEP_Log_WinNote"       DisplayName="Win Note"
-               Type="Text"                  Group="CEP Columns"
-               MaxLength="140" />
+               Type="Note"                  Group="CEP Columns"
+               NumLines="6"                 RichText="FALSE"
+               UnlimitedLengthInDocumentLibrary="FALSE" />
 
         <Field ID="{A1B2C3D4-0002-0002-0002-000000000010}"
                Name="CEP_Log_IsShared"      DisplayName="Is Shared"

@@ -114,7 +114,7 @@ export class WinCallout extends React.Component<IWinCalloutProps, IWinCalloutSta
             <label className={styles.winCalloutLabel}>{strings.WinCalloutNote}</label>
             <textarea
               className={styles.winCalloutTextarea}
-              maxLength={140}
+              maxLength={1000}
               value={note}
               placeholder={strings.WinCalloutNotePlaceholder}
               onChange={(e) => this.setState({ note: e.target.value })}

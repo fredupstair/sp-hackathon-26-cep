@@ -20,7 +20,7 @@ define([], function() {
     "WinCalloutTitle":         "Segna come Copilot Win",
     "WinCalloutApp":           "App",
     "WinCalloutNote":          "Come ti ha aiutato Copilot? (opzionale)",
-    "WinCalloutNotePlaceholder": "Max 140 caratteri...",
+    "WinCalloutNotePlaceholder": "Max 1000 caratteri...",
     "WinCalloutShare":         "Condividi in modo anonimo come consiglio",
     "WinCalloutSubmit":        "+10 pt!",
     "WinLimitReached":         "Limite giornaliero di 10 win raggiunto. Riprova domani!",
