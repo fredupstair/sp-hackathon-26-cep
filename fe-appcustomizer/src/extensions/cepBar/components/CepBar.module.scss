@@ -603,3 +603,57 @@ $flyout-width: 280px;
   cursor: pointer;
   border: none;
 }
+
+// ─── Draggable chip ───────────────────────────────────────────────────────────
+.cepHostDragging {
+  cursor: grabbing !important;
+
+  * { cursor: grabbing !important; }
+}
+
+.chipHolding {
+  animation: holdCharge 2s linear forwards;
+  cursor: grab;
+
+  &:hover {
+    transform: none;
+  }
+}
+
+@keyframes holdCharge {
+  0%   { box-shadow: 0 0 0 0px rgba(0, 120, 212, 0), 0 2px 8px rgba(0,0,0,0.12); border-color: #e1dfdd; }
+  100% { box-shadow: 0 0 0 5px rgba(0, 120, 212, 0.35), 0 2px 8px rgba(0,0,0,0.12); border-color: #0078d4; }
+}
+
+.chipDragging {
+  border: 2px dashed #0078d4;
+  box-shadow: 0 8px 24px rgba(0, 120, 212, 0.25);
+  cursor: grabbing;
+  opacity: 0.92;
+
+  &:hover {
+    transform: none;
+    box-shadow: 0 8px 24px rgba(0, 120, 212, 0.25);
+  }
+}
+
+.resetBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 4px;
+  border: none;
+  background: rgba(0, 120, 212, 0.12);
+  border-radius: 50%;
+  font-size: 11px;
+  color: #0078d4;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(0, 120, 212, 0.25); }
+}

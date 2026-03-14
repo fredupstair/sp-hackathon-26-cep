@@ -19,7 +19,7 @@ define([], function() {
     "BarMarkWin":              "Mark Win",
     "WinCalloutTitle":         "Mark as Copilot Win",
     "WinCalloutApp":           "App",
-    "WinCalloutNote":          "What did Copilot help you with? (optional)",
+    "WinCalloutNote":          "What did Copilot help you with?",
     "WinCalloutNotePlaceholder": "Max 1000 characters...",
     "WinCalloutShare":         "Share anonymously as a tip",
     "WinCalloutSubmit":        "+10 pts!",

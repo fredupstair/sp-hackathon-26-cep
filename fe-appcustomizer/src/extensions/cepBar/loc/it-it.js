@@ -19,7 +19,7 @@ define([], function() {
     "BarMarkWin":              "Segna Win",
     "WinCalloutTitle":         "Segna come Copilot Win",
     "WinCalloutApp":           "App",
-    "WinCalloutNote":          "Come ti ha aiutato Copilot? (opzionale)",
+    "WinCalloutNote":          "Come ti ha aiutato Copilot?",
     "WinCalloutNotePlaceholder": "Max 1000 caratteri...",
     "WinCalloutShare":         "Condividi in modo anonimo come consiglio",
     "WinCalloutSubmit":        "+10 pt!",

@@ -78,6 +78,10 @@ interface ICepBarState {
   nudgesEnabled: boolean;
   nudgeSaving: boolean;
   nudgeChecking: boolean;
+  // ── Draggable chip ─────────────────────────────────────────────────────
+  dragPos: { x: number; y: number } | undefined;
+  isDragging: boolean;
+  isHolding: boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -85,6 +89,11 @@ interface ICepBarState {
 export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
   private readonly _winBtnRef = React.createRef<HTMLButtonElement>();
   private readonly _hostRef = React.createRef<HTMLDivElement>();
+  private readonly _chipRef = React.createRef<HTMLDivElement>();
+  private _holdTimeoutRef: number | null = null;
+  private _dragActive = false;
+  private _dragOffsetX = 0;
+  private _dragOffsetY = 0;
 
   constructor(props: ICepBarProps) {
     super(props);
@@ -102,16 +111,31 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
       nudgesEnabled: true,
       nudgeSaving: false,
       nudgeChecking: false,
+      dragPos: undefined,
+      isDragging: false,
+      isHolding: false,
     };
   }
 
   public componentDidMount(): void {
     this._load().catch(console.error);
     document.addEventListener('mousedown', this._handleClickOutside);
+    try {
+      const saved = localStorage.getItem('cep_chip_pos');
+      if (saved) {
+        const pos = JSON.parse(saved) as { x: number; y: number };
+        if (typeof pos.x === 'number' && typeof pos.y === 'number') {
+          this.setState({ dragPos: pos });
+        }
+      }
+    } catch { /* ignore */ }
   }
 
   public componentWillUnmount(): void {
     document.removeEventListener('mousedown', this._handleClickOutside);
+    this._clearHold();
+    document.removeEventListener('mousemove', this._handleDragMove);
+    document.removeEventListener('mouseup', this._handleDragEnd);
   }
 
   private _handleClickOutside = (e: MouseEvent): void => {
@@ -201,17 +225,86 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
     this.setState({ nudgesEnabled: prefs.isEngagementNudgesEnabled });
   };
 
+  // ── Drag support ─────────────────────────────────────────────────────────────
+
+  private _clearHold = (): void => {
+    if (this._holdTimeoutRef !== null) {
+      clearTimeout(this._holdTimeoutRef);
+      this._holdTimeoutRef = null;
+    }
+  };
+
+  private _handleChipMouseDown = (e: React.MouseEvent<HTMLDivElement>): void => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    const chip = this._chipRef.current;
+    if (!chip) return;
+    const rect = chip.getBoundingClientRect();
+    this._dragOffsetX = e.clientX - rect.left;
+    this._dragOffsetY = e.clientY - rect.top;
+    this.setState({ isHolding: true });
+    this._holdTimeoutRef = window.setTimeout(() => {
+      this._holdTimeoutRef = null;
+      this._dragActive = true;
+      document.body.style.cursor = 'grabbing';
+      this.setState({ isDragging: true, isHolding: false, open: false, showWin: false });
+      document.addEventListener('mousemove', this._handleDragMove);
+      document.addEventListener('mouseup', this._handleDragEnd);
+    }, 2000);
+  };
+
+  private _handleChipMouseUp = (): void => {
+    if (this._dragActive) return;
+    if (this._holdTimeoutRef !== null) {
+      this._clearHold();
+      this.setState({ isHolding: false });
+      this._toggleOpen();
+    }
+  };
+
+  private _handleDragMove = (e: MouseEvent): void => {
+    const x = Math.max(0, Math.min(window.innerWidth - 100, e.clientX - this._dragOffsetX));
+    const y = Math.max(0, Math.min(window.innerHeight - 48, e.clientY - this._dragOffsetY));
+    this.setState({ dragPos: { x, y } });
+  };
+
+  private _handleDragEnd = (): void => {
+    document.removeEventListener('mousemove', this._handleDragMove);
+    document.removeEventListener('mouseup', this._handleDragEnd);
+    document.body.style.cursor = '';
+    this._dragActive = false;
+    const { dragPos } = this.state;
+    if (dragPos) {
+      try { localStorage.setItem('cep_chip_pos', JSON.stringify(dragPos)); } catch { /* ignore */ }
+    }
+    this.setState({ isDragging: false });
+  };
+
+  private _handleReset = (): void => {
+    this._clearHold();
+    document.removeEventListener('mousemove', this._handleDragMove);
+    document.removeEventListener('mouseup', this._handleDragEnd);
+    document.body.style.cursor = '';
+    this._dragActive = false;
+    try { localStorage.removeItem('cep_chip_pos'); } catch { /* ignore */ }
+    this.setState({ dragPos: undefined, isDragging: false, isHolding: false });
+  };
+
   public render(): React.ReactElement {
-    const { loadState, summary, suggestion, streak, open, showWin, showJoin, winAnim, winAnimText, suggestionDismissed, nudgesEnabled, nudgeSaving, nudgeChecking } = this.state;
+    const { loadState, summary, suggestion, streak, open, showWin, showJoin, winAnim, winAnimText, suggestionDismissed, nudgesEnabled, nudgeSaving, nudgeChecking, dragPos, isDragging, isHolding } = this.state;
     const { dashboardPageUrl, optinPageUrl, practitionerThreshold, masterThreshold } = this.props;
 
     // Silently hide when not configured or error
     if (loadState === 'not_configured' || loadState === 'error') return <></>;
 
+    const hostStyle: React.CSSProperties = dragPos
+      ? { bottom: 'auto' as const, right: 'auto' as const, left: dragPos.x, top: dragPos.y }
+      : {};
+
     // ── Loading chip ────────────────────────────────────────────────────────
     if (loadState === 'loading') {
       return (
-        <div className={styles.cepHost} ref={this._hostRef}>
+        <div className={styles.cepHost} ref={this._hostRef} style={hostStyle}>
           <div className={styles.chipLoading}>
             <Spinner size={SpinnerSize.xSmall} />
             <span className={styles.barLoading}>{strings.BarLoading}</span>
@@ -223,7 +316,7 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
     // ── Not enrolled chip ───────────────────────────────────────────────────
     if (loadState === 'not_enrolled') {
       return (
-        <div className={styles.cepHost} ref={this._hostRef}>
+        <div className={styles.cepHost} ref={this._hostRef} style={hostStyle}>
           <div
             className={styles.chipNotEnrolled}
             onClick={() => this.setState({ showJoin: true })}
@@ -270,7 +363,11 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
     const showSuggestion = !suggestionDismissed && !!suggestion;
 
     return (
-      <div className={styles.cepHost} ref={this._hostRef}>
+      <div
+        className={`${styles.cepHost} ${isDragging ? styles.cepHostDragging : ''}`}
+        ref={this._hostRef}
+        style={hostStyle}
+      >
         {/* Win animation */}
         {winAnim && (
           <span className={styles.winAnim} aria-live="polite">{winAnimText}</span>
@@ -360,7 +457,16 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
         )}
 
         {/* Chip */}
-        <div className={styles.chip} onClick={this._toggleOpen} role="button" tabIndex={0} aria-expanded={open}>
+        <div
+          ref={this._chipRef}
+          className={`${styles.chip} ${isDragging ? styles.chipDragging : ''} ${isHolding ? styles.chipHolding : ''}`}
+          onMouseDown={this._handleChipMouseDown}
+          onMouseUp={this._handleChipMouseUp}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (!isDragging && (e.key === 'Enter' || e.key === ' ')) this._toggleOpen(); }}
+          aria-expanded={open}
+        >
           {streak > 0 && (
             <>
               <span className={styles.streak} title={fmt(strings.StreakTooltip, streak)}>
@@ -377,7 +483,17 @@ export class CepBar extends React.Component<ICepBarProps, ICepBarState> {
           <span className={styles.points}>{fmt(strings.BarPoints, monthly)}</span>
 
           <span className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}>▲</span>
-          </div>
+
+          {dragPos !== undefined && (
+            <button
+              className={styles.resetBadge}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={this._handleReset}
+              title="Reset position"
+              aria-label="Reset chip position"
+            >↺</button>
+          )}
+        </div>
       </div>
     );
   }
