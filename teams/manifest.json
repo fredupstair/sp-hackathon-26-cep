@@ -61,7 +61,7 @@
     }
   ],
   "validDomains": [
-    "federicoporceddumvp.sharepoint.com",
+    "<TENANT>.sharepoint.com",
     "func-cephackathon.azurewebsites.net"
   ],
   "webApplicationInfo": {

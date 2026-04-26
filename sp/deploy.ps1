@@ -105,8 +105,8 @@ Write-Host "`n[1/3] Connecting to $SiteUrl ..." -ForegroundColor Yellow
 # Derive tenant from SiteUrl when not explicitly provided
 # e.g. https://contoso.sharepoint.com/sites/... → contoso.onmicrosoft.com
 if (-not $Tenant -and $ClientId) {
-    $spHost = ([Uri]$SiteUrl).Host                        # federicoporceddumvp.sharepoint.com
-    $subdomain = $spHost.Split('.')[0]                    # federicoporceddumvp
+    $spHost = ([Uri]$SiteUrl).Host                        # <TENANT>.sharepoint.com
+    $subdomain = $spHost.Split('.')[0]                    # <TENANT>
     $Tenant = "$subdomain.onmicrosoft.com"
     Write-Host "      Tenant : $Tenant (auto-derived from SiteUrl)" -ForegroundColor DarkGray
 }

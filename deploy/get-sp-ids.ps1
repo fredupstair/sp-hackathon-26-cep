@@ -15,7 +15,7 @@ param(
 
 if (-not $Tenant) {
     # Derive <prefix>.onmicrosoft.com from the SharePoint URL host
-    $prefix = ([System.Uri]$SiteUrl).Host.Split('.')[0]   # e.g. "federicoporceddumvp"
+    $prefix = ([System.Uri]$SiteUrl).Host.Split('.')[0]   # e.g. "<TENANT>"
     $Tenant = "$prefix.onmicrosoft.com"
 }
 

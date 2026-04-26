@@ -17,7 +17,7 @@
 
 .PARAMETER AdminSiteUrl
     URL del sito di amministrazione SharePoint.
-    Es: https://federicoporceddumvp-admin.sharepoint.com
+    Es: https://<TENANT>-admin.sharepoint.com
 
 .PARAMETER FunctionAppBaseUrl
     URL base della Azure Function App (senza trailing slash).
@@ -38,7 +38,7 @@
     Default: dd024163-fc77-44ee-8389-1ff0b5e8da2a
 
 .EXAMPLE
-    .\set-tenant-properties.ps1 -AdminSiteUrl "https://federicoporceddumvp-admin.sharepoint.com"
+    .\set-tenant-properties.ps1 -AdminSiteUrl "https://<TENANT>-admin.sharepoint.com"
 
 .EXAMPLE
     .\set-tenant-properties.ps1 `
@@ -49,7 +49,7 @@
         -OptinPageUrl        "https://contoso.sharepoint.com/sites/CEP/SitePages/CEP-Onboarding.aspx"
 #>
 param(
-    [string]$AdminSiteUrl = "https://federicoporceddumvp-admin.sharepoint.com",
+    [string]$AdminSiteUrl = "https://<TENANT>-admin.sharepoint.com",
 
     [string]$FunctionAppBaseUrl   = "https://func-cephackathon.azurewebsites.net",
     [string]$FunctionAppClientId  = "0cb84638-30db-4bbd-936f-54a599840aec",
