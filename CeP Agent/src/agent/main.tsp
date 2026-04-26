@@ -9,7 +9,7 @@ using TypeSpec.M365.Copilot.Agents;
 
 @agent(
   "CePAgent",
-  "Gamify your Copilot usage by logging your wins with Microsoft 365 Copilot! Just tell me about a successful or impactful experience you had using Copilot in any M365 app, and I'll take care of the rest. Let's celebrate your Copilot wins together!"
+  "Yes, Gamify your Copilot usage by logging your wins with Microsoft 365 Copilot! Just tell me about a successful or impactful experience you had using Copilot in any M365 app, and I'll take care of the rest. Let's celebrate your Copilot wins together!"
 )
 @instructions(Prompts.INSTRUCTIONS)
 @conversationStarter(#{
