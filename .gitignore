@@ -5,7 +5,7 @@
 .github/agents/problem-solver.agent.md
 .github/agents/product-manager.agent.md
 .github/agents/tech-spec-reviewer.agent.md
-docs/
+docs/*
 !docs/deploy-checklist.md
 be/obj
 be/bin
