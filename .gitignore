@@ -10,11 +10,15 @@ be/obj
 be/bin
 be/Debug
 be/local.settings.json
+CeP Agent/env/.env.dev
+CeP Agent/env/.env.dev.user
+CeP Agent/env/.env.local
 deploy/deploy-now.ps1
 be/func.err
 be/func.log
 fe/package-lock.json
 fe-appcustomizer/package-lock.json
-CeP Agent/env/.env.dev
-CeP Agent/env/.env.dev
-CeP Agent/env/.env.dev
+node_modules/
+fe/node_modules/
+fe-appcustomizer/node_modules/
+CeP Agent/node_modules/
